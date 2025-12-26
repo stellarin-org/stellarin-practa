@@ -1,0 +1,16 @@
+{
+  "name": "hello-world",
+  "version": "1.0.0",
+  "displayName": "Hello World",
+  "description": "A minimal Practa starter template with interactive tap counter",
+  "author": "Your Name",
+  "type": "widget",
+  "category": "wellbeing",
+  "tags": [
+    "practa",
+    "meditation",
+    "wellbeing"
+  ],
+  "estimatedDuration": 15,
+  "requiredPermissions": []
+}
