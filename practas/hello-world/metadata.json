@@ -1,16 +1,13 @@
 {
-  "name": "hello-world",
-  "version": "1.0.0",
-  "displayName": "Hello World",
-  "description": "A minimal Practa starter template with interactive tap counter",
-  "author": "Your Name",
-  "type": "widget",
-  "category": "wellbeing",
-  "tags": [
-    "practa",
-    "meditation",
-    "wellbeing"
-  ],
+  "id": "hello-world",
+  "name": "Hello World",
+  "version": "1.0.1",
+  "description": "A simple interactive Practa that counts taps",
+  "author": "Stellarin",
   "estimatedDuration": 15,
-  "requiredPermissions": []
+  "category": "starter",
+  "tags": [
+    "interactive",
+    "demo"
+  ]
 }

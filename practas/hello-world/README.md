@@ -1,6 +1,6 @@
 # Hello World
 
-A minimal Practa starter template with interactive tap counter
+A simple interactive Practa that counts taps
 
 ## Installation
 
@@ -34,8 +34,8 @@ This component accepts the standard Practa props:
 
 ## Author
 
-Created by Your Name
+Created by Stellarin
 
 ## Version
 
-1.0.0
+1.0.1
