@@ -274,6 +274,9 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
   const [iconTaps, setIconTaps] = useState(0);
   const [showSplash, setShowSplash] = useState(true);
   const [splashImageLoaded, setSplashImageLoaded] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showTimer, setShowTimer] = useState(false);
+  const [showErrors, setShowErrors] = useState(false);
   const lastTapTime = useRef(0);
   const selectedCellRef = useRef<{ row: number; col: number } | null>(null);
 
@@ -323,6 +326,31 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
     }, 5000);
     return () => clearTimeout(timeoutFallback);
   }, [showSplash, splashImageLoaded, hideSplash]);
+
+  useEffect(() => {
+    context.storage?.get<boolean>("showTimer").then((val) => {
+      if (val === true || val === false) setShowTimer(val);
+    }).catch(() => {});
+    context.storage?.get<boolean>("showErrors").then((val) => {
+      if (val === true || val === false) setShowErrors(val);
+    }).catch(() => {});
+  }, []);
+
+  const handleToggleTimer = useCallback(() => {
+    setShowTimer((prev) => {
+      const newVal = !prev;
+      context.storage?.set("showTimer", newVal).catch(() => {});
+      return newVal;
+    });
+  }, [context.storage]);
+
+  const handleToggleErrors = useCallback(() => {
+    setShowErrors((prev) => {
+      const newVal = !prev;
+      context.storage?.set("showErrors", newVal).catch(() => {});
+      return newVal;
+    });
+  }, [context.storage]);
 
   const splashAnimStyle = useAnimatedStyle(() => ({
     opacity: splashOpacity.value,
@@ -613,33 +641,44 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
             <Pressable onPress={handleIconTap} style={[styles.iconContainer, { backgroundColor: theme.primary }]}>
               <Feather name="grid" size={20} color="#fff" />
             </Pressable>
-            <View>
+            <View style={styles.titleTextContainer}>
               <ThemedText style={styles.title}>Daily Sudoku</ThemedText>
               <ThemedText style={[styles.dateText, { color: theme.textSecondary }]}>
                 {getTodaysDate()}
               </ThemedText>
             </View>
+            <Pressable onPress={() => setShowSettings(true)} style={[styles.settingsButton, { backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)" }]}>
+              <Feather name="settings" size={20} color={theme.textSecondary} />
+            </Pressable>
           </View>
 
-          <GlassCard style={styles.statsCard}>
-            <View style={styles.statsRow}>
-              <View style={styles.stat}>
-                <Feather name="clock" size={18} color={theme.primary} />
-                <Animated.View style={timerAnimStyle}>
-                  <ThemedText style={[styles.statValue, { color: theme.text }]}>
-                    {formatTime(timer)}
-                  </ThemedText>
-                </Animated.View>
+          {showTimer || showErrors ? (
+            <GlassCard style={styles.statsCard}>
+              <View style={styles.statsRow}>
+                {showTimer ? (
+                  <View style={styles.stat}>
+                    <Feather name="clock" size={18} color={theme.primary} />
+                    <Animated.View style={timerAnimStyle}>
+                      <ThemedText style={[styles.statValue, { color: theme.text }]}>
+                        {formatTime(timer)}
+                      </ThemedText>
+                    </Animated.View>
+                  </View>
+                ) : null}
+                {showTimer && showErrors ? (
+                  <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
+                ) : null}
+                {showErrors ? (
+                  <View style={styles.stat}>
+                    <Feather name="x-circle" size={18} color={mistakes > 0 ? theme.error : theme.textSecondary} />
+                    <ThemedText style={[styles.statValue, { color: mistakes > 0 ? theme.error : theme.text }]}>
+                      {mistakes}
+                    </ThemedText>
+                  </View>
+                ) : null}
               </View>
-              <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
-              <View style={styles.stat}>
-                <Feather name="x-circle" size={18} color={mistakes > 0 ? theme.error : theme.textSecondary} />
-                <ThemedText style={[styles.statValue, { color: mistakes > 0 ? theme.error : theme.text }]}>
-                  {mistakes}
-                </ThemedText>
-              </View>
-            </View>
-          </GlassCard>
+            </GlassCard>
+          ) : null}
         </Animated.View>
 
         <Animated.View entering={FadeIn.delay(100).duration(400)} style={[styles.difficultyRow, headerAnimStyle]}>
@@ -758,6 +797,41 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
           </Pressable>
         ) : null}
       </View>
+
+      {showSettings ? (
+        <Pressable style={styles.modalOverlay} onPress={() => setShowSettings(false)}>
+          <Pressable style={[styles.settingsModal, { backgroundColor: isDark ? "#2a2a2a" : "#fff" }]} onPress={(e) => e.stopPropagation()}>
+            <View style={styles.settingsHeader}>
+              <ThemedText style={styles.settingsTitle}>Settings</ThemedText>
+              <Pressable onPress={() => setShowSettings(false)} style={styles.closeButton}>
+                <Feather name="x" size={22} color={theme.textSecondary} />
+              </Pressable>
+            </View>
+            
+            <View style={styles.settingsContent}>
+              <Pressable style={styles.settingRow} onPress={handleToggleTimer}>
+                <View style={styles.settingInfo}>
+                  <Feather name="clock" size={20} color={theme.primary} />
+                  <ThemedText style={styles.settingLabel}>Show Timer</ThemedText>
+                </View>
+                <View style={[styles.toggle, { backgroundColor: showTimer ? theme.primary : (isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)") }]}>
+                  <View style={[styles.toggleKnob, { transform: [{ translateX: showTimer ? 18 : 2 }] }]} />
+                </View>
+              </Pressable>
+              
+              <Pressable style={styles.settingRow} onPress={handleToggleErrors}>
+                <View style={styles.settingInfo}>
+                  <Feather name="x-circle" size={20} color={theme.error} />
+                  <ThemedText style={styles.settingLabel}>Show Mistake Count</ThemedText>
+                </View>
+                <View style={[styles.toggle, { backgroundColor: showErrors ? theme.primary : (isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)") }]}>
+                  <View style={[styles.toggleKnob, { transform: [{ translateX: showErrors ? 18 : 2 }] }]} />
+                </View>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      ) : null}
 
       {showSplash ? (
         <Animated.View style={[styles.splashOverlay, { backgroundColor: "#fff" }, splashAnimStyle]}>
@@ -984,5 +1058,75 @@ const styles = StyleSheet.create({
   splashImage: {
     width: "100%",
     height: "100%",
+  },
+  titleTextContainer: {
+    flex: 1,
+  },
+  settingsButton: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.md,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 90,
+  },
+  settingsModal: {
+    width: "85%",
+    maxWidth: 340,
+    borderRadius: BorderRadius.xl,
+    overflow: "hidden",
+  },
+  settingsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(128,128,128,0.2)",
+  },
+  settingsTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  closeButton: {
+    padding: Spacing.xs,
+  },
+  settingsContent: {
+    padding: Spacing.lg,
+    gap: Spacing.md,
+  },
+  settingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: Spacing.sm,
+  },
+  settingInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+  },
+  settingLabel: {
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  toggle: {
+    width: 44,
+    height: 26,
+    borderRadius: 13,
+    justifyContent: "center",
+  },
+  toggleKnob: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: "#fff",
   },
 });
