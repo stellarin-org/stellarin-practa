@@ -1,21 +1,35 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import {
   View,
   StyleSheet,
   Pressable,
   Dimensions,
   Platform,
-  ScrollView,
+  Image,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withSequence,
+  withTiming,
+  withDelay,
+  runOnJS,
+  FadeIn,
+  FadeInDown,
+  SlideInUp,
+} from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { Feather } from "@expo/vector-icons";
 import { PractaContext, PractaCompleteHandler } from "@/types/flow";
+import { ImageSourcePropType } from "react-native";
 
 interface MyPractaProps {
   context: PractaContext;
@@ -26,7 +40,7 @@ interface MyPractaProps {
 const GRID_SIZE = 9;
 const BOX_SIZE = 3;
 
-type Difficulty = "easy" | "medium" | "hard";
+type Difficulty = "lite" | "easy" | "medium" | "hard";
 
 interface CellData {
   value: number;
@@ -34,7 +48,27 @@ interface CellData {
   isError: boolean;
 }
 
-const generateSudoku = (difficulty: Difficulty): CellData[][] => {
+const createSeededRandom = (seed: number) => {
+  let state = seed;
+  return () => {
+    state = (state * 1103515245 + 12345) & 0x7fffffff;
+    return state / 0x7fffffff;
+  };
+};
+
+const getTodaysSeed = (): number => {
+  const now = new Date();
+  const dateString = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+  let hash = 0;
+  for (let i = 0; i < dateString.length; i++) {
+    const char = dateString.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+};
+
+const generateSudoku = (difficulty: Difficulty): { grid: CellData[][]; solution: number[][] } => {
   const base: number[][] = [
     [5, 3, 4, 6, 7, 8, 9, 1, 2],
     [6, 7, 2, 1, 9, 5, 3, 4, 8],
@@ -47,8 +81,13 @@ const generateSudoku = (difficulty: Difficulty): CellData[][] => {
     [3, 4, 5, 2, 8, 6, 1, 7, 9],
   ];
 
-  const shuffled = shuffleBoard(base);
-  const cellsToRemove = difficulty === "easy" ? 35 : difficulty === "medium" ? 45 : 55;
+  const difficultyOffset = difficulty === "lite" ? -1000 : difficulty === "easy" ? 0 : difficulty === "medium" ? 1000 : 2000;
+  const seed = getTodaysSeed() + difficultyOffset;
+  const random = createSeededRandom(seed);
+
+  const shuffled = shuffleBoard(base, random);
+  const solution = shuffled.map((row) => [...row]);
+  const cellsToRemove = difficulty === "lite" ? 25 : difficulty === "easy" ? 35 : difficulty === "medium" ? 45 : 55;
   const positions: [number, number][] = [];
 
   for (let i = 0; i < GRID_SIZE; i++) {
@@ -58,7 +97,7 @@ const generateSudoku = (difficulty: Difficulty): CellData[][] => {
   }
 
   for (let i = positions.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(random() * (i + 1));
     [positions[i], positions[j]] = [positions[j], positions[i]];
   }
 
@@ -71,25 +110,25 @@ const generateSudoku = (difficulty: Difficulty): CellData[][] => {
     grid[row][col] = { value: 0, isOriginal: false, isError: false };
   }
 
-  return grid;
+  return { grid, solution };
 };
 
-const shuffleBoard = (board: number[][]): number[][] => {
+const shuffleBoard = (board: number[][], random: () => number): number[][] => {
   const result = board.map((row) => [...row]);
 
   for (let i = 0; i < 5; i++) {
-    const band = Math.floor(Math.random() * 3);
-    const row1 = band * 3 + Math.floor(Math.random() * 3);
-    const row2 = band * 3 + Math.floor(Math.random() * 3);
+    const band = Math.floor(random() * 3);
+    const row1 = band * 3 + Math.floor(random() * 3);
+    const row2 = band * 3 + Math.floor(random() * 3);
     if (row1 !== row2) {
       [result[row1], result[row2]] = [result[row2], result[row1]];
     }
   }
 
   for (let i = 0; i < 5; i++) {
-    const stack = Math.floor(Math.random() * 3);
-    const col1 = stack * 3 + Math.floor(Math.random() * 3);
-    const col2 = stack * 3 + Math.floor(Math.random() * 3);
+    const stack = Math.floor(random() * 3);
+    const col1 = stack * 3 + Math.floor(random() * 3);
+    const col2 = stack * 3 + Math.floor(random() * 3);
     if (col1 !== col2) {
       for (let row = 0; row < 9; row++) {
         [result[row][col1], result[row][col2]] = [result[row][col2], result[row][col1]];
@@ -145,22 +184,182 @@ const triggerHaptic = (style: "light" | "medium" | "error" | "success") => {
   }
 };
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+const CONFETTI_COLORS = ["#FFD700", "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", "#DDA0DD", "#98D8C8"];
+const CONFETTI_COUNT = 50;
+
+const ConfettiPiece = ({ delay, screenWidth, screenHeight }: { delay: number; screenWidth: number; screenHeight: number }) => {
+  const translateY = useSharedValue(-50);
+  const translateX = useSharedValue(Math.random() * screenWidth);
+  const rotate = useSharedValue(0);
+  const opacity = useSharedValue(1);
+  const scale = useSharedValue(0.5 + Math.random() * 0.5);
+  const color = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+  const size = 8 + Math.random() * 8;
+
+  useEffect(() => {
+    const duration = 2500 + Math.random() * 1500;
+    translateY.value = withTiming(screenHeight + 100, { duration: duration + delay });
+    translateX.value = withTiming(translateX.value + (Math.random() - 0.5) * 200, { duration: duration + delay });
+    rotate.value = withTiming(360 * (2 + Math.random() * 3), { duration: duration + delay });
+    opacity.value = withTiming(0, { duration: duration + delay });
+  }, []);
+
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: translateX.value },
+      { translateY: translateY.value },
+      { rotate: `${rotate.value}deg` },
+      { scale: scale.value },
+    ],
+    opacity: opacity.value,
+  }));
+
+  return (
+    <Animated.View
+      style={[
+        {
+          position: "absolute",
+          width: size,
+          height: size * 0.6,
+          backgroundColor: color,
+          borderRadius: 2,
+        },
+        animStyle,
+      ]}
+    />
+  );
+};
+
+const Confetti = ({ screenWidth, screenHeight }: { screenWidth: number; screenHeight: number }) => {
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      {Array.from({ length: CONFETTI_COUNT }, (_, i) => (
+        <ConfettiPiece key={i} delay={i * 30} screenWidth={screenWidth} screenHeight={screenHeight} />
+      ))}
+    </View>
+  );
+};
+
+const GlassCard = ({ children, style, intensity = 40 }: { children: React.ReactNode; style?: any; intensity?: number }) => {
+  const { isDark } = useTheme();
+  
+  if (Platform.OS === "web") {
+    return (
+      <View style={[styles.glassCardFallback, { backgroundColor: isDark ? "rgba(40,40,40,0.85)" : "rgba(255,255,255,0.85)" }, style]}>
+        {children}
+      </View>
+    );
+  }
+  
+  return (
+    <BlurView intensity={intensity} tint={isDark ? "dark" : "light"} style={[styles.glassCard, style]}>
+      {children}
+    </BlurView>
+  );
+};
+
 export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps) {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
-  const [grid, setGrid] = useState<CellData[][]>(() => generateSudoku("easy"));
+  const [grid, setGrid] = useState<CellData[][]>(() => generateSudoku("easy").grid);
+  const [solution, setSolution] = useState<number[][]>(() => generateSudoku("easy").solution);
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
   const [isComplete, setIsComplete] = useState(false);
   const [mistakes, setMistakes] = useState(0);
   const [timer, setTimer] = useState(0);
-  const [isRunning, setIsRunning] = useState(true);
+  const [isRunning, setIsRunning] = useState(false);
+  const [iconTaps, setIconTaps] = useState(0);
+  const [showSplash, setShowSplash] = useState(true);
+  const [splashImageLoaded, setSplashImageLoaded] = useState(false);
+  const lastTapTime = useRef(0);
+  const selectedCellRef = useRef<{ row: number; col: number } | null>(null);
 
   const screenWidth = Dimensions.get("window").width;
-  const gridSize = Math.min(screenWidth - Spacing.xl * 2, 340);
+  const screenHeight = Dimensions.get("window").height;
+  const gridSize = Math.min(screenWidth - Spacing["3xl"] * 2, 360);
   const cellSize = gridSize / GRID_SIZE;
 
-  React.useEffect(() => {
+  const timerScale = useSharedValue(1);
+  const headerOpacity = useSharedValue(1);
+  const controlsOpacity = useSharedValue(1);
+  const congratsOpacity = useSharedValue(0);
+  const congratsTranslateY = useSharedValue(20);
+  const splashOpacity = useSharedValue(1);
+  const splashImageOpacity = useSharedValue(0);
+
+  const hideSplash = useCallback(() => {
+    setShowSplash(false);
+    setIsRunning(true);
+  }, []);
+
+  const handleSplashImageLoad = useCallback(() => {
+    setSplashImageLoaded(true);
+  }, []);
+
+  const handleSplashImageError = useCallback(() => {
+    hideSplash();
+  }, [hideSplash]);
+
+  useEffect(() => {
+    if (!splashImageLoaded) return;
+    
+    splashImageOpacity.value = withTiming(1, { duration: 400 });
+    splashOpacity.value = withDelay(2400, withTiming(0, { duration: 400 }));
+    const timeout = setTimeout(() => {
+      hideSplash();
+    }, 2800);
+    return () => clearTimeout(timeout);
+  }, [splashImageLoaded]);
+
+  useEffect(() => {
+    if (!showSplash) return;
+    const timeoutFallback = setTimeout(() => {
+      if (!splashImageLoaded) {
+        hideSplash();
+      }
+    }, 5000);
+    return () => clearTimeout(timeoutFallback);
+  }, [showSplash, splashImageLoaded, hideSplash]);
+
+  const splashAnimStyle = useAnimatedStyle(() => ({
+    opacity: splashOpacity.value,
+  }));
+
+  const splashImageAnimStyle = useAnimatedStyle(() => ({
+    opacity: splashImageOpacity.value,
+  }));
+
+  useEffect(() => {
+    if (isComplete) {
+      headerOpacity.value = withTiming(0, { duration: 400 });
+      controlsOpacity.value = withTiming(0, { duration: 400 });
+      congratsOpacity.value = withTiming(1, { duration: 500 });
+      congratsTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 });
+    } else {
+      headerOpacity.value = withTiming(1, { duration: 300 });
+      controlsOpacity.value = withTiming(1, { duration: 300 });
+      congratsOpacity.value = 0;
+      congratsTranslateY.value = 20;
+    }
+  }, [isComplete]);
+
+  const headerAnimStyle = useAnimatedStyle(() => ({
+    opacity: headerOpacity.value,
+  }));
+
+  const controlsAnimStyle = useAnimatedStyle(() => ({
+    opacity: controlsOpacity.value,
+  }));
+
+  const congratsAnimStyle = useAnimatedStyle(() => ({
+    opacity: congratsOpacity.value,
+    transform: [{ translateY: congratsTranslateY.value }],
+  }));
+
+  useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isRunning && !isComplete) {
       interval = setInterval(() => {
@@ -176,15 +375,22 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
+  const getTodaysDate = (): string => {
+    const now = new Date();
+    return now.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  };
+
   const handleCellPress = useCallback((row: number, col: number) => {
+    selectedCellRef.current = { row, col };
     setSelectedCell({ row, col });
     triggerHaptic("light");
   }, []);
 
   const handleNumberPress = useCallback((num: number) => {
-    if (!selectedCell || isComplete) return;
+    const cell = selectedCellRef.current || selectedCell;
+    if (!cell || isComplete) return;
 
-    const { row, col } = selectedCell;
+    const { row, col } = cell;
     if (grid[row][col].isOriginal) return;
 
     triggerHaptic("medium");
@@ -213,13 +419,17 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
   }, [selectedCell, grid, isComplete]);
 
   const handleNewGame = useCallback((diff: Difficulty) => {
+    const { grid: newGrid, solution: newSolution } = generateSudoku(diff);
     setDifficulty(diff);
-    setGrid(generateSudoku(diff));
+    setGrid(newGrid);
+    setSolution(newSolution);
+    selectedCellRef.current = null;
     setSelectedCell(null);
     setIsComplete(false);
     setMistakes(0);
     setTimer(0);
     setIsRunning(true);
+    setIconTaps(0);
     triggerHaptic("medium");
   }, []);
 
@@ -227,6 +437,34 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
     if (!selectedCell || isComplete) return;
     handleNumberPress(0);
   }, [selectedCell, isComplete, handleNumberPress]);
+
+  const handleIconTap = useCallback(() => {
+    const now = Date.now();
+    if (now - lastTapTime.current > 500) {
+      setIconTaps(1);
+    } else {
+      setIconTaps((prev) => {
+        const newCount = prev + 1;
+        if (newCount >= 10) {
+          const newGrid = grid.map((r, rowIdx) => 
+            r.map((c, colIdx) => ({
+              value: solution[rowIdx][colIdx],
+              isOriginal: c.isOriginal,
+              isError: false,
+            }))
+          );
+          setGrid(newGrid);
+          triggerHaptic("success");
+          setIsComplete(true);
+          setIsRunning(false);
+          return 0;
+        }
+        return newCount;
+      });
+    }
+    lastTapTime.current = now;
+    triggerHaptic("light");
+  }, [grid, solution]);
 
   const handleComplete = () => {
     triggerHaptic("success");
@@ -244,6 +482,10 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
     });
   };
 
+  const timerAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: timerScale.value }],
+  }));
+
   const renderCell = (row: number, col: number) => {
     const cell = grid[row][col];
     const isSelected = selectedCell?.row === row && selectedCell?.col === col;
@@ -258,13 +500,15 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
     const isRightBorder = (col + 1) % BOX_SIZE === 0 && col < GRID_SIZE - 1;
     const isBottomBorder = (row + 1) % BOX_SIZE === 0 && row < GRID_SIZE - 1;
 
-    let backgroundColor = theme.backgroundDefault;
-    if (isSelected) {
-      backgroundColor = theme.primary + "40";
+    let backgroundColor = "transparent";
+    if (cell.isError) {
+      backgroundColor = isDark ? "rgba(239,68,68,0.35)" : "rgba(239,68,68,0.25)";
+    } else if (isSelected) {
+      backgroundColor = theme.primary + "50";
     } else if (isSameValue) {
-      backgroundColor = theme.primary + "20";
+      backgroundColor = theme.primary + "25";
     } else if (isSameRow || isSameCol || isSameBox) {
-      backgroundColor = theme.backgroundSecondary;
+      backgroundColor = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)";
     }
 
     return (
@@ -279,7 +523,8 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
             backgroundColor,
             borderRightWidth: isRightBorder ? 2 : 0.5,
             borderBottomWidth: isBottomBorder ? 2 : 0.5,
-            borderColor: theme.border,
+            borderRightColor: isRightBorder ? theme.primary + "60" : (isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.12)"),
+            borderBottomColor: isBottomBorder ? theme.primary + "60" : (isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.12)"),
           },
         ]}
       >
@@ -288,12 +533,13 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
             style={[
               styles.cellText,
               {
+                fontSize: cellSize * 0.5,
                 color: cell.isOriginal
                   ? theme.text
                   : cell.isError
                   ? theme.error
                   : theme.primary,
-                fontWeight: cell.isOriginal ? "600" : "400",
+                fontWeight: cell.isOriginal ? "700" : "500",
               },
             ]}
           >
@@ -304,20 +550,35 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
     );
   };
 
-  const renderNumberButton = (num: number) => {
+  const NumberButton = ({ num }: { num: number }) => {
     const count = grid.flat().filter((c) => c.value === num).length;
     const isDisabled = count >= 9;
+    const scale = useSharedValue(1);
+
+    const animStyle = useAnimatedStyle(() => ({
+      transform: [{ scale: scale.value }],
+    }));
+
+    const handlePress = () => {
+      scale.value = withSequence(
+        withSpring(0.9, { damping: 15 }),
+        withSpring(1, { damping: 10 })
+      );
+      handleNumberPress(num);
+    };
 
     return (
-      <Pressable
-        key={num}
-        onPress={() => handleNumberPress(num)}
+      <AnimatedPressable
+        onPress={handlePress}
         disabled={isDisabled}
         style={[
           styles.numberButton,
+          animStyle,
           {
-            backgroundColor: isDisabled ? theme.backgroundSecondary : theme.backgroundDefault,
-            opacity: isDisabled ? 0.5 : 1,
+            backgroundColor: isDisabled 
+              ? (isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)")
+              : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"),
+            opacity: isDisabled ? 0.4 : 1,
           },
         ]}
       >
@@ -329,140 +590,189 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
         >
           {num}
         </ThemedText>
-        <ThemedText style={[styles.countText, { color: theme.textSecondary }]}>
-          {9 - count}
-        </ThemedText>
-      </Pressable>
+        <View style={[styles.countBadge, { backgroundColor: theme.primary + "20" }]}>
+          <ThemedText style={[styles.countText, { color: theme.primary }]}>
+            {9 - count}
+          </ThemedText>
+        </View>
+      </AnimatedPressable>
     );
   };
 
+  const gradientColors = isDark 
+    ? ["#1a1a2e", "#16213e", "#0f3460"] as const
+    : ["#ffffff", "#f8f9fa", "#f1f3f5"] as const;
+
   return (
-    <ThemedView style={[styles.container, { paddingTop: insets.top + Spacing.lg }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <ThemedText style={styles.title}>Sudoku</ThemedText>
-          <View style={styles.statsRow}>
-            <View style={styles.stat}>
-              <Feather name="clock" size={16} color={theme.textSecondary} />
-              <ThemedText style={[styles.statText, { color: theme.textSecondary }]}>
-                {formatTime(timer)}
-              </ThemedText>
-            </View>
-            <View style={styles.stat}>
-              <Feather name="x-circle" size={16} color={theme.error} />
-              <ThemedText style={[styles.statText, { color: theme.error }]}>
-                {mistakes}
+    <View style={styles.container}>
+      <LinearGradient colors={gradientColors} style={StyleSheet.absoluteFill} />
+      
+      <View style={[styles.content, { paddingTop: insets.top + Spacing.lg, paddingBottom: insets.bottom + Spacing.lg }]}>
+        <Animated.View entering={FadeInDown.duration(400)} style={[styles.header, headerAnimStyle]}>
+          <View style={styles.titleRow}>
+            <Pressable onPress={handleIconTap} style={[styles.iconContainer, { backgroundColor: theme.primary }]}>
+              <Feather name="grid" size={20} color="#fff" />
+            </Pressable>
+            <View>
+              <ThemedText style={styles.title}>Daily Sudoku</ThemedText>
+              <ThemedText style={[styles.dateText, { color: theme.textSecondary }]}>
+                {getTodaysDate()}
               </ThemedText>
             </View>
           </View>
-        </View>
 
-        <View style={styles.difficultyRow}>
-          {(["easy", "medium", "hard"] as Difficulty[]).map((diff) => (
+          <GlassCard style={styles.statsCard}>
+            <View style={styles.statsRow}>
+              <View style={styles.stat}>
+                <Feather name="clock" size={18} color={theme.primary} />
+                <Animated.View style={timerAnimStyle}>
+                  <ThemedText style={[styles.statValue, { color: theme.text }]}>
+                    {formatTime(timer)}
+                  </ThemedText>
+                </Animated.View>
+              </View>
+              <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
+              <View style={styles.stat}>
+                <Feather name="x-circle" size={18} color={mistakes > 0 ? theme.error : theme.textSecondary} />
+                <ThemedText style={[styles.statValue, { color: mistakes > 0 ? theme.error : theme.text }]}>
+                  {mistakes}
+                </ThemedText>
+              </View>
+            </View>
+          </GlassCard>
+        </Animated.View>
+
+        <Animated.View entering={FadeIn.delay(100).duration(400)} style={[styles.difficultyRow, headerAnimStyle]}>
+          {(["lite", "easy", "medium", "hard"] as Difficulty[]).map((diff) => (
             <Pressable
               key={diff}
               onPress={() => handleNewGame(diff)}
               style={[
                 styles.difficultyButton,
                 {
-                  backgroundColor:
-                    difficulty === diff ? theme.primary : theme.backgroundSecondary,
+                  backgroundColor: difficulty === diff 
+                    ? theme.primary 
+                    : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"),
                 },
               ]}
             >
               <ThemedText
                 style={[
                   styles.difficultyText,
-                  { color: difficulty === diff ? "#fff" : theme.text },
+                  { color: difficulty === diff ? "#fff" : theme.textSecondary },
                 ]}
               >
                 {diff.charAt(0).toUpperCase() + diff.slice(1)}
               </ThemedText>
             </Pressable>
           ))}
-        </View>
+        </Animated.View>
 
-        <View
-          style={[
-            styles.gridContainer,
-            {
-              width: gridSize,
-              height: gridSize,
-              borderColor: theme.text,
-              backgroundColor: theme.backgroundDefault,
-            },
-          ]}
-        >
-          {Array.from({ length: GRID_SIZE }, (_, row) => (
-            <View key={row} style={styles.row}>
-              {Array.from({ length: GRID_SIZE }, (_, col) => renderCell(row, col))}
+        <Animated.View entering={FadeIn.delay(200).duration(400)}>
+          <GlassCard style={[styles.gridWrapper, { padding: Spacing.sm }, isComplete && { borderColor: theme.success + "30" }]} intensity={60}>
+            <View
+              style={[
+                styles.gridContainer,
+                {
+                  width: gridSize,
+                  height: gridSize,
+                  borderColor: isComplete ? theme.success + "40" : theme.primary + "40",
+                },
+              ]}
+            >
+              {Array.from({ length: GRID_SIZE }, (_, row) => (
+                <View key={row} style={styles.row}>
+                  {Array.from({ length: GRID_SIZE }, (_, col) => renderCell(row, col))}
+                </View>
+              ))}
             </View>
-          ))}
-        </View>
+          </GlassCard>
+        </Animated.View>
 
         {isComplete ? (
-          <View style={styles.completeBanner}>
-            <ThemedText style={[styles.completeText, { color: theme.success }]}>
-              Puzzle Complete!
-            </ThemedText>
-            <ThemedText style={[styles.completeSubtext, { color: theme.textSecondary }]}>
-              Time: {formatTime(timer)} | Mistakes: {mistakes}
-            </ThemedText>
-            <View style={styles.completeButtons}>
-              <Pressable
-                onPress={() => handleNewGame(difficulty)}
-                style={[styles.secondaryButton, { borderColor: theme.primary }]}
-              >
-                <ThemedText style={[styles.secondaryButtonText, { color: theme.primary }]}>
-                  New Game
+          <Animated.View style={[styles.congratsContainer, congratsAnimStyle]}>
+            <Confetti screenWidth={screenWidth} screenHeight={screenHeight} />
+            <View style={styles.completeHeader}>
+              <View style={[styles.successIconSmall, { backgroundColor: theme.success + "20" }]}>
+                <Feather name="check-circle" size={28} color={theme.success} />
+              </View>
+              <View>
+                <ThemedText style={[styles.completeTextSmall, { color: theme.success }]}>
+                  Puzzle Complete!
                 </ThemedText>
-              </Pressable>
-              <Pressable
-                onPress={handleComplete}
-                style={[styles.primaryButton, { backgroundColor: theme.primary }]}
-              >
-                <ThemedText style={styles.primaryButtonText}>Complete</ThemedText>
-              </Pressable>
-            </View>
-          </View>
-        ) : (
-          <View style={styles.controls}>
-            {selectedCell && grid[selectedCell.row][selectedCell.col].isOriginal ? (
-              <ThemedText style={[styles.hintText, { color: theme.textSecondary }]}>
-                This cell cannot be changed
-              </ThemedText>
-            ) : !selectedCell ? (
-              <ThemedText style={[styles.hintText, { color: theme.textSecondary }]}>
-                Tap an empty cell to select it
-              </ThemedText>
-            ) : null}
-            <View style={styles.numberPad}>
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(renderNumberButton)}
+                <ThemedText style={[styles.completeSubtextSmall, { color: theme.textSecondary }]}>
+                  {formatTime(timer)} | {mistakes} {mistakes === 1 ? "mistake" : "mistakes"}
+                </ThemedText>
+              </View>
             </View>
             <Pressable
-              onPress={handleClear}
-              style={[styles.clearButton, { backgroundColor: theme.backgroundSecondary }]}
+              onPress={handleComplete}
+              style={[styles.primaryButton, { backgroundColor: theme.primary, marginTop: Spacing.lg }]}
             >
-              <Feather name="delete" size={24} color={theme.text} />
-              <ThemedText style={{ marginLeft: Spacing.sm, color: theme.text }}>
-                Clear
-              </ThemedText>
+              <ThemedText style={styles.primaryButtonText}>Done</ThemedText>
+              <Feather name="arrow-right" size={16} color="#fff" style={{ marginLeft: Spacing.xs }} />
             </Pressable>
-          </View>
-        )}
-      </ScrollView>
+          </Animated.View>
+        ) : null}
 
-      {onSkip ? (
-        <Pressable
-          onPress={onSkip}
-          style={[styles.skipButton, { paddingBottom: insets.bottom + Spacing.md }]}
-        >
-          <ThemedText style={[styles.skipText, { color: theme.textSecondary }]}>
-            Skip
-          </ThemedText>
-        </Pressable>
+        <Animated.View entering={FadeIn.delay(300).duration(400)} style={[styles.controls, controlsAnimStyle]}>
+            <View style={styles.hintContainer}>
+              {selectedCell && grid[selectedCell.row][selectedCell.col].isOriginal ? (
+                <View style={[styles.hintBadge, { backgroundColor: theme.warning + "20" }]}>
+                  <Feather name="lock" size={14} color={theme.warning} />
+                  <ThemedText style={[styles.hintText, { color: theme.warning }]}>
+                    Fixed cell
+                  </ThemedText>
+                </View>
+              ) : !selectedCell ? (
+                <View style={[styles.hintBadge, { backgroundColor: theme.primary + "15" }]}>
+                  <Feather name="target" size={14} color={theme.primary} />
+                  <ThemedText style={[styles.hintText, { color: theme.primary }]}>
+                    Tap a cell to select
+                  </ThemedText>
+                </View>
+              ) : null}
+            </View>
+            
+            <View style={styles.numberPad}>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                <NumberButton key={num} num={num} />
+              ))}
+              <Pressable
+                onPress={handleClear}
+                style={[
+                  styles.numberButton,
+                  { backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)" },
+                ]}
+              >
+                <Feather name="delete" size={22} color={theme.textSecondary} />
+              </Pressable>
+            </View>
+          </Animated.View>
+
+        {onSkip && !isComplete ? (
+          <Pressable onPress={onSkip} style={styles.skipButton}>
+            <ThemedText style={[styles.skipText, { color: theme.textSecondary }]}>
+              Skip
+            </ThemedText>
+          </Pressable>
+        ) : null}
+      </View>
+
+      {showSplash ? (
+        <Animated.View style={[styles.splashOverlay, { backgroundColor: "#fff" }, splashAnimStyle]}>
+          {context.assets?.splash ? (
+            <Animated.Image
+              source={context.assets.splash as ImageSourcePropType}
+              style={[styles.splashImage, splashImageAnimStyle]}
+              resizeMode="cover"
+              onLoad={handleSplashImageLoad}
+              onError={handleSplashImageError}
+            />
+          ) : null}
+        </Animated.View>
       ) : null}
-    </ThemedView>
+    </View>
   );
 }
 
@@ -470,33 +780,68 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollContent: {
+  content: {
+    flex: 1,
     alignItems: "center",
     paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.xl,
   },
   header: {
     width: "100%",
     alignItems: "center",
     marginBottom: Spacing.lg,
   },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  iconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.md,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "700",
-    marginBottom: Spacing.xs,
+    letterSpacing: -0.5,
+  },
+  dateText: {
+    fontSize: 13,
+    marginTop: 2,
+  },
+  glassCard: {
+    borderRadius: BorderRadius.lg,
+    overflow: "hidden",
+  },
+  glassCardFallback: {
+    borderRadius: BorderRadius.lg,
+    overflow: "hidden",
+  },
+  statsCard: {
+    paddingHorizontal: Spacing["2xl"],
+    paddingVertical: Spacing.md,
   },
   statsRow: {
     flexDirection: "row",
+    alignItems: "center",
     gap: Spacing.xl,
   },
   stat: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.xs,
+    gap: Spacing.sm,
   },
-  statText: {
-    fontSize: 14,
-    fontWeight: "500",
+  statValue: {
+    fontSize: 18,
+    fontWeight: "600",
+    fontVariant: ["tabular-nums"],
+  },
+  statDivider: {
+    width: 1,
+    height: 24,
   },
   difficultyRow: {
     flexDirection: "row",
@@ -505,12 +850,15 @@ const styles = StyleSheet.create({
   },
   difficultyButton: {
     paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.lg,
+    paddingVertical: Spacing.sm + 2,
+    borderRadius: BorderRadius.full,
   },
   difficultyText: {
     fontSize: 13,
     fontWeight: "600",
+  },
+  gridWrapper: {
+    marginBottom: Spacing.lg,
   },
   gridContainer: {
     borderWidth: 2,
@@ -525,90 +873,116 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cellText: {
-    fontSize: 18,
+    fontWeight: "600",
   },
   controls: {
-    marginTop: Spacing.lg,
     width: "100%",
     alignItems: "center",
+    flex: 1,
+  },
+  hintContainer: {
+    height: 32,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: Spacing.sm,
+  },
+  hintBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.xs,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs + 2,
+    borderRadius: BorderRadius.full,
   },
   hintText: {
-    fontSize: 14,
-    marginBottom: Spacing.md,
-    textAlign: "center",
+    fontSize: 13,
+    fontWeight: "500",
   },
   numberPad: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
     gap: Spacing.sm,
-    maxWidth: 320,
+    maxWidth: 340,
   },
   numberButton: {
-    width: 52,
-    height: 58,
+    width: 58,
+    height: 64,
     borderRadius: BorderRadius.md,
     justifyContent: "center",
     alignItems: "center",
   },
   numberButtonText: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "600",
+  },
+  countBadge: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    justifyContent: "center",
+    alignItems: "center",
   },
   countText: {
     fontSize: 10,
-    marginTop: 1,
-  },
-  clearButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    marginTop: Spacing.md,
-  },
-  completeBanner: {
-    marginTop: Spacing.xl,
-    alignItems: "center",
-  },
-  completeText: {
-    fontSize: 24,
     fontWeight: "700",
   },
-  completeSubtext: {
-    fontSize: 14,
-    marginTop: Spacing.sm,
-  },
-  completeButtons: {
-    flexDirection: "row",
-    gap: Spacing.md,
+  congratsContainer: {
+    alignItems: "center",
     marginTop: Spacing.lg,
   },
+  completeHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  successIconSmall: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  completeTextSmall: {
+    fontSize: 20,
+    fontWeight: "700",
+  },
+  completeSubtextSmall: {
+    fontSize: 13,
+    marginTop: 2,
+  },
   primaryButton: {
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.lg,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: Spacing["2xl"],
+    paddingVertical: Spacing.md + 2,
+    borderRadius: BorderRadius.full,
   },
   primaryButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
   },
-  secondaryButton: {
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-  },
-  secondaryButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
   skipButton: {
-    alignItems: "center",
     padding: Spacing.md,
+    marginTop: Spacing.sm,
   },
   skipText: {
     fontSize: 14,
+    fontWeight: "500",
+  },
+  splashOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 100,
+  },
+  splashImage: {
+    width: "100%",
+    height: "100%",
   },
 });
