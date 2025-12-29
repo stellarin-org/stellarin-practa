@@ -388,11 +388,11 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
   }));
 
   const wordlist = useMemo(() => {
-    return (context.assets?.wordlist as unknown as string[]) || [];
+    return (context.assets?.wordlist as string[]) || [];
   }, [context.assets]);
 
   const validWords = useMemo(() => {
-    const words = (context.assets?.validWords as unknown as string[]) || [];
+    const words = (context.assets?.validWords as string[]) || [];
     return new Set(words);
   }, [context.assets]);
 

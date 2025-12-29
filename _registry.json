@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2025-12-29T18:43:30.020Z",
+  "registryVersion": "2025-12-29T18:50:56.024Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -12,13 +12,13 @@
       "practaType": "mind",
       "estimatedDuration": 120,
       "assets": {
-        "puzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/puzzles_all.json",
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/splash.png"
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/splash.png",
+        "puzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/puzzles_all.json"
       }
     },
     {
       "slug": "six",
-      "version": "1.0.28",
+      "version": "1.1.2",
       "buildId": "d65f36c4-2d03-4357-8c0f-4db5d19562cc",
       "name": "Six",
       "description": "A daily word guessing game - guess the 6-letter word in 6 tries",
@@ -29,8 +29,8 @@
       "assets": {
         "six": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six.png",
         "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.png",
-        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json",
-        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json"
+        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json",
+        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json"
       }
     }
   ]
