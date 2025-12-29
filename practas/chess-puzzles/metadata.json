@@ -1,0 +1,18 @@
+{
+  "id": "chess-puzzles",
+  "name": "Daily Chess Puzzles",
+  "version": "1.0.20",
+  "description": "Train your chess tactics with a new puzzle every day across 5 difficulty levels",
+  "author": "Practa",
+  "estimatedDuration": 120,
+  "category": "mind",
+  "tags": [
+    "chess",
+    "puzzles",
+    "tactics",
+    "brain training"
+  ],
+  "assets": {
+    "splash": "splash.png"
+  }
+}
