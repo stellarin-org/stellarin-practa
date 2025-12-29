@@ -1,10 +1,10 @@
 {
-  "buildId": "2e12ca57-1c7d-444b-9c48-615c41f6b585",
-  "createdAt": "2025-12-29T11:20:16.190Z",
+  "buildId": "d65f36c4-2d03-4357-8c0f-4db5d19562cc",
+  "createdAt": "2025-12-29T11:44:54.433Z",
   "assets": {
-    "six": "https://storage.googleapis.com/replit-objstore-b74bc498-5f8d-4fca-b9ba-531f07dd1cd0/public/practa/six/2e12ca57-1c7d-444b-9c48-615c41f6b585/six.png",
-    "sixLogo": "https://storage.googleapis.com/replit-objstore-b74bc498-5f8d-4fca-b9ba-531f07dd1cd0/public/practa/six/2e12ca57-1c7d-444b-9c48-615c41f6b585/six_logo.png",
-    "validWords": "https://storage.googleapis.com/replit-objstore-b74bc498-5f8d-4fca-b9ba-531f07dd1cd0/public/practa/six/2e12ca57-1c7d-444b-9c48-615c41f6b585/valid-words.json",
-    "wordlist": "https://storage.googleapis.com/replit-objstore-b74bc498-5f8d-4fca-b9ba-531f07dd1cd0/public/practa/six/2e12ca57-1c7d-444b-9c48-615c41f6b585/wordlist.json"
+    "six": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six.png",
+    "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.png",
+    "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json",
+    "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json"
   }
 }
