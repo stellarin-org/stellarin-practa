@@ -20,7 +20,6 @@ import { ThemedView } from "@/components/ThemedView";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { PractaContext, PractaCompleteHandler } from "@/types/flow";
-import puzzlesData from "./puzzles_all.json";
 
 interface MyPractaProps {
   context: PractaContext;
@@ -559,7 +558,10 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
     triggerHaptic("light");
     setSelectedDifficulty(difficulty);
     
-    const puzzles = (puzzlesData.puzzles as any)[difficulty] as Puzzle[];
+    const puzzlesData = context.assets?.puzzles as { puzzles: Record<Difficulty, Puzzle[]> } | undefined;
+    if (!puzzlesData) return;
+    
+    const puzzles = puzzlesData.puzzles[difficulty];
     const index = getDeterministicPuzzleIndex(difficulty) % puzzles.length;
     const puzzle = puzzles[index];
     
@@ -593,7 +595,7 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
       setIsPlayerTurn(true);
       triggerHaptic("light");
     }, 1200);
-  }, []);
+  }, [context.assets]);
 
   const getValidMovesForSquare = useCallback((square: string): string[] => {
     if (!isPlayerTurn || puzzleSolved || moveIndex >= moves.length) return [];
