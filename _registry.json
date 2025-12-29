@@ -1,6 +1,21 @@
 {
-  "registryVersion": "2025-12-29T11:44:54.480Z",
+  "registryVersion": "2025-12-29T18:43:30.020Z",
   "practas": [
+    {
+      "slug": "chess-puzzles",
+      "version": "1.1.2",
+      "buildId": "f4738c7e-cb32-4e5c-9d88-3bd1d10bd000",
+      "name": "Daily Chess Puzzles",
+      "description": "Train your chess tactics with a new puzzle every day across 5 difficulty levels",
+      "author": "Practa",
+      "category": "mind",
+      "practaType": "mind",
+      "estimatedDuration": 120,
+      "assets": {
+        "puzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/puzzles_all.json",
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/splash.png"
+      }
+    },
     {
       "slug": "six",
       "version": "1.0.28",
@@ -14,8 +29,8 @@
       "assets": {
         "six": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six.png",
         "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.png",
-        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json",
-        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json"
+        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json",
+        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json"
       }
     }
   ]
