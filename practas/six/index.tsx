@@ -19,8 +19,6 @@ import { ThemedView } from "@/components/ThemedView";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { PractaContext, PractaCompleteHandler } from "@/types/flow";
-import { WORDS } from "./wordlist";
-import { VALID_WORDS } from "./validWords";
 import { ImageSourcePropType } from "react-native";
 
 const WORD_LENGTH = 6;
@@ -98,13 +96,13 @@ function useResponsiveSizes(): ResponsiveSizes {
   }, [height, insets]);
 }
 
-function getDailyWord(): string {
+function getDailyWord(words: string[]): string {
   const startDate = Date.UTC(2025, 0, 1);
   const now = new Date();
   const todayUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
   const dayIndex = Math.floor((todayUTC - startDate) / (1000 * 60 * 60 * 24));
-  const safeIndex = ((dayIndex % WORDS.length) + WORDS.length) % WORDS.length;
-  return WORDS[safeIndex];
+  const safeIndex = ((dayIndex % words.length) + words.length) % words.length;
+  return words[safeIndex];
 }
 
 type LetterState = "empty" | "filled" | "correct" | "present" | "absent";
@@ -389,7 +387,20 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
     opacity: gameOpacity.value,
   }));
 
-  const targetWord = useMemo(() => getDailyWord(), []);
+  const wordlist = useMemo(() => {
+    return (context.assets?.wordlist as unknown as string[]) || [];
+  }, [context.assets]);
+
+  const validWords = useMemo(() => {
+    const words = (context.assets?.validWords as unknown as string[]) || [];
+    return new Set(words);
+  }, [context.assets]);
+
+  const targetWord = useMemo(() => {
+    if (wordlist.length === 0) return "";
+    return getDailyWord(wordlist);
+  }, [wordlist]);
+
   const [guesses, setGuesses] = useState<string[]>([]);
   const [currentGuess, setCurrentGuess] = useState("");
   const [gameState, setGameState] = useState<GameState>("playing");
@@ -442,7 +453,7 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
       const states = evaluatePartialGuess(newGuess, targetWord);
       updateKeyboardStates(newGuess, states);
 
-      if (!VALID_WORDS.has(newGuess)) {
+      if (!validWords.has(newGuess)) {
         triggerHaptic("error");
         setWarningMessage("Not a valid word - you lost a row!");
         setTimeout(() => setWarningMessage(""), 2000);
