@@ -362,30 +362,6 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
   const insets = useSafeAreaInsets();
   const sizes = useResponsiveSizes();
 
-  const [showIntro, setShowIntro] = useState(true);
-  const introOpacity = useSharedValue(0);
-  const gameOpacity = useSharedValue(0);
-
-  useEffect(() => {
-    introOpacity.value = withTiming(1, { duration: 600, easing: Easing.out(Easing.ease) });
-    
-    const timer = setTimeout(() => {
-      introOpacity.value = withTiming(0, { duration: 500, easing: Easing.in(Easing.ease) }, () => {
-        runOnJS(setShowIntro)(false);
-      });
-      gameOpacity.value = withDelay(300, withTiming(1, { duration: 400 }));
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const introAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: introOpacity.value,
-  }));
-
-  const gameAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: gameOpacity.value,
-  }));
 
   const wordlist = useMemo(() => {
     return (context.assets?.wordlist as string[]) || [];
@@ -563,19 +539,7 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
   return (
     <SizingContext.Provider value={sizes}>
       <ThemedView style={styles.container}>
-        {showIntro ? (
-          <Animated.View style={[styles.introContainer, introAnimatedStyle]}>
-            {context.assets?.six ? (
-              <Image
-                source={context.assets.six as ImageSourcePropType}
-                style={styles.introImage}
-                resizeMode="cover"
-              />
-            ) : null}
-          </Animated.View>
-        ) : null}
-
-        <Animated.View style={[styles.gameContainer, { paddingTop: insets.top + (sizes.isCompact ? Spacing.sm : Spacing.lg) }, gameAnimatedStyle]}>
+        <View style={[styles.gameContainer, { paddingTop: insets.top + (sizes.isCompact ? Spacing.sm : Spacing.lg) }]}>
           <View style={[styles.header, { marginBottom: sizes.headerSpacing }]}>
             {context.assets?.sixLogo ? (
               <Image
@@ -664,7 +628,7 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
             ) : null}
           </View>
         )}
-        </Animated.View>
+        </View>
       </ThemedView>
     </SizingContext.Provider>
   );
@@ -673,16 +637,6 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  introContainer: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 10,
-  },
-  introImage: {
-    width: "100%",
-    height: "100%",
   },
   gameContainer: {
     flex: 1,
