@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo, createContext, useContext } from "react";
-import { View, StyleSheet, Pressable, Platform, Image, useWindowDimensions } from "react-native";
+import { View, StyleSheet, Pressable, Platform, Image, useWindowDimensions, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
+import { Feather } from "@expo/vector-icons";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -12,7 +13,10 @@ import Animated, {
   Easing,
   runOnJS,
   interpolate,
+  FadeIn,
+  FadeOut,
 } from "react-native-reanimated";
+import { BlurView } from "expo-blur";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -23,6 +27,13 @@ import { ImageSourcePropType } from "react-native";
 
 const WORD_LENGTH = 6;
 const INITIAL_ROWS = 6;
+
+const EXAMPLE_WORDS = [
+  "NOTICE", "BREATH", "CENTER", "LISTEN", "UNISON", "ANCHOR",
+  "BEYOND", "GROUND", "ACCEPT", "ORIGIN", "SHADOW", "SILENT",
+  "INTENT", "HUMBLE", "EMBODY", "FUSION", "INSIDE", "UNFOLD",
+  "ENTIRE", "CIRCLE", "ATTUNE", "SERENE", "GENTLE", "NATURE",
+];
 
 const COLORS = {
   correct: "#6AAA64",
@@ -163,6 +174,78 @@ function evaluatePartialGuess(guess: string, target: string): LetterState[] {
   return result;
 }
 
+interface GhostLetterTileProps {
+  letter: string;
+  fadeIn: boolean;
+  delay: number;
+  fadeOutDelay?: number;
+}
+
+function GhostLetterTile({ letter, fadeIn, delay, fadeOutDelay = 0 }: GhostLetterTileProps) {
+  const { isDark } = useTheme();
+  const sizes = useContext(SizingContext);
+  const letterOpacity = useSharedValue(0);
+  const tileOpacity = useSharedValue(1);
+
+  useEffect(() => {
+    if (fadeIn && letter) {
+      letterOpacity.value = withDelay(
+        delay,
+        withTiming(0.4, { duration: 1400, easing: Easing.inOut(Easing.ease) })
+      );
+      tileOpacity.value = withDelay(
+        delay,
+        withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) })
+      );
+    } else {
+      letterOpacity.value = withDelay(
+        fadeOutDelay,
+        withTiming(0, { duration: 800, easing: Easing.out(Easing.ease) })
+      );
+      tileOpacity.value = withDelay(
+        fadeOutDelay,
+        withTiming(0.97, { duration: 600, easing: Easing.out(Easing.ease) })
+      );
+    }
+  }, [fadeIn, letter, delay, fadeOutDelay]);
+
+  const letterStyle = useAnimatedStyle(() => ({
+    opacity: letterOpacity.value,
+  }));
+
+  const tileStyle = useAnimatedStyle(() => ({
+    opacity: tileOpacity.value,
+  }));
+
+  return (
+    <Animated.View
+      style={[
+        styles.tile,
+        {
+          width: sizes.tileSize,
+          height: sizes.tileSize,
+          backgroundColor: isDark ? COLORS.tile.dark : COLORS.tile.light,
+          borderColor: isDark ? COLORS.tileBorder.dark : COLORS.tileBorder.light,
+        },
+        tileStyle,
+      ]}
+    >
+      <Animated.Text
+        style={[
+          styles.tileLetter,
+          { 
+            fontSize: sizes.tileFontSize,
+            color: isDark ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.55)",
+          },
+          letterStyle,
+        ]}
+      >
+        {letter}
+      </Animated.Text>
+    </Animated.View>
+  );
+}
+
 interface LetterTileProps {
   letter: string;
   state: LetterState;
@@ -265,6 +348,8 @@ interface KeyboardKeyProps {
   letter: string;
   state?: LetterState;
   onPress: (letter: string) => void;
+  shimmerProgress?: number;
+  keyIndex?: number;
 }
 
 interface ToastProps {
@@ -301,10 +386,104 @@ function Toast({ message, visible }: ToastProps) {
   );
 }
 
-function KeyboardKey({ letter, state, onPress }: KeyboardKeyProps) {
+interface TutorialOverlayProps {
+  visible: boolean;
+  onDismiss: () => void;
+}
+
+function TutorialOverlay({ visible, onDismiss }: TutorialOverlayProps) {
+  const { theme, isDark } = useTheme();
+  const insets = useSafeAreaInsets();
+  
+  if (!visible) return null;
+  
+  const tips = [
+    { icon: "edit-3" as const, title: "Start smart", text: "Begin with words that have common vowels like A, E, O and popular consonants like R, S, T." },
+    { icon: "eye" as const, title: "Read the colors", text: "Green means correct spot. Yellow means right letter, wrong spot. Gray means the letter isn't in the word." },
+    { icon: "zap" as const, title: "Use what you learn", text: "Each guess gives you clues. Use confirmed letters in your next guess to narrow down faster." },
+  ];
+  
+  return (
+    <Animated.View 
+      entering={FadeIn.duration(200)}
+      exiting={FadeOut.duration(150)}
+      style={[styles.tutorialFullScreen, { backgroundColor: isDark ? '#121213' : '#FFFFFF' }]}
+    >
+      <View style={[styles.tutorialContainer, { paddingTop: insets.top + Spacing.lg, paddingBottom: insets.bottom + Spacing.lg }]}>
+        <View style={styles.tutorialHeader}>
+          <ThemedText style={styles.tutorialTitle}>How to Play</ThemedText>
+        </View>
+        
+        <ScrollView style={styles.tutorialContent} showsVerticalScrollIndicator={false} contentContainerStyle={styles.tutorialScrollContent}>
+          {tips.map((tip, index) => (
+            <View key={index} style={styles.tutorialTip}>
+              <View style={[styles.tutorialIconContainer, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }]}>
+                <Feather name={tip.icon} size={20} color={theme.primary} />
+              </View>
+              <View style={styles.tutorialTipText}>
+                <ThemedText style={styles.tutorialTipTitle}>{tip.title}</ThemedText>
+                <ThemedText style={[styles.tutorialTipDescription, { color: theme.textSecondary }]}>
+                  {tip.text}
+                </ThemedText>
+              </View>
+            </View>
+          ))}
+          
+          <View style={[styles.tutorialColorGuide, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
+            <View style={styles.tutorialColorRow}>
+              <View style={[styles.tutorialColorBox, { backgroundColor: COLORS.correct }]} />
+              <ThemedText style={styles.tutorialColorText}>Correct position</ThemedText>
+            </View>
+            <View style={styles.tutorialColorRow}>
+              <View style={[styles.tutorialColorBox, { backgroundColor: COLORS.present }]} />
+              <ThemedText style={styles.tutorialColorText}>Wrong position</ThemedText>
+            </View>
+            <View style={styles.tutorialColorRow}>
+              <View style={[styles.tutorialColorBox, { backgroundColor: isDark ? COLORS.absent.dark : COLORS.absent.light }]} />
+              <ThemedText style={styles.tutorialColorText}>Not in word</ThemedText>
+            </View>
+          </View>
+        </ScrollView>
+        
+        <Pressable 
+          onPress={onDismiss}
+          style={({ pressed }) => [
+            styles.tutorialButton,
+            { backgroundColor: theme.primary, opacity: pressed ? 0.9 : 1 }
+          ]}
+        >
+          <ThemedText style={styles.tutorialButtonText}>Got it!</ThemedText>
+        </Pressable>
+      </View>
+    </Animated.View>
+  );
+}
+
+function KeyboardKey({ letter, state, onPress, shimmerProgress = -1, keyIndex = 0 }: KeyboardKeyProps) {
   const { theme, isDark } = useTheme();
   const sizes = useContext(SizingContext);
   const scale = useSharedValue(1);
+  const shimmerScale = useSharedValue(1);
+  const shimmerOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    if (shimmerProgress >= 0) {
+      const distance = Math.abs(shimmerProgress - keyIndex);
+      const inRange = distance < 3;
+      
+      if (inRange) {
+        const intensity = 1 - (distance / 3);
+        shimmerScale.value = withSpring(1 + intensity * 0.08, { damping: 12, stiffness: 200 });
+        shimmerOpacity.value = withTiming(intensity * 0.25, { duration: 150 });
+      } else {
+        shimmerScale.value = withSpring(1, { damping: 15, stiffness: 180 });
+        shimmerOpacity.value = withTiming(0, { duration: 200 });
+      }
+    } else {
+      shimmerScale.value = withSpring(1, { damping: 15, stiffness: 180 });
+      shimmerOpacity.value = withTiming(0, { duration: 300 });
+    }
+  }, [shimmerProgress, keyIndex]);
 
   const getBackgroundColor = () => {
     switch (state) {
@@ -332,15 +511,33 @@ function KeyboardKey({ letter, state, onPress }: KeyboardKeyProps) {
   };
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
+    transform: [{ scale: scale.value * shimmerScale.value }],
+  }));
+
+  const shimmerOverlayStyle = useAnimatedStyle(() => ({
+    opacity: shimmerOpacity.value,
   }));
 
   return (
     <Animated.View style={animatedStyle}>
       <Pressable
         onPress={handlePress}
-        style={[styles.key, { backgroundColor: getBackgroundColor(), height: sizes.keyHeight }]}
+        style={[styles.key, { backgroundColor: getBackgroundColor(), height: sizes.keyHeight, overflow: 'hidden' }]}
       >
+        <Animated.View 
+          style={[
+            { 
+              position: 'absolute', 
+              top: 0, 
+              left: 0, 
+              right: 0, 
+              bottom: 0, 
+              backgroundColor: isDark ? '#FFFFFF' : '#000000',
+              borderRadius: 6,
+            },
+            shimmerOverlayStyle
+          ]} 
+        />
         <ThemedText style={[styles.keyText, { color: textColor, fontSize: sizes.keyFontSize }]}>
           {letter}
         </ThemedText>
@@ -386,6 +583,146 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
   const [hiddenRows, setHiddenRows] = useState<Set<number>>(new Set());
   const [warningMessage, setWarningMessage] = useState("");
   const [popIndex, setPopIndex] = useState(-1);
+  const [showTutorial, setShowTutorial] = useState(false);
+  
+  const [ghostWords, setGhostWords] = useState<string[]>(() => {
+    const shuffled = [...EXAMPLE_WORDS].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, INITIAL_ROWS);
+  });
+  const [activeGhostRows, setActiveGhostRows] = useState<Set<number>>(new Set());
+  const [isFadingOut, setIsFadingOut] = useState(false);
+  
+  const ghostTimersRef = React.useRef<NodeJS.Timeout[]>([]);
+  const ghostCycleRef = React.useRef<NodeJS.Timeout | null>(null);
+  
+  const isGridEmpty = guesses.length === 0 && currentGuess.length === 0;
+  
+  const clearGhostTimers = useCallback(() => {
+    ghostTimersRef.current.forEach(t => clearTimeout(t));
+    ghostTimersRef.current = [];
+    if (ghostCycleRef.current) {
+      clearInterval(ghostCycleRef.current);
+      ghostCycleRef.current = null;
+    }
+  }, []);
+  
+  useEffect(() => {
+    if (!isGridEmpty) {
+      clearGhostTimers();
+      setActiveGhostRows(new Set());
+      setIsFadingOut(false);
+      return;
+    }
+    
+    let isMounted = true;
+    
+    const revealNextRow = (rowIndex: number) => {
+      if (!isMounted || rowIndex >= INITIAL_ROWS) return;
+      
+      setActiveGhostRows(prev => new Set([...prev, rowIndex]));
+      
+      if (rowIndex + 1 < INITIAL_ROWS) {
+        const timer = setTimeout(() => {
+          if (isMounted) revealNextRow(rowIndex + 1);
+        }, 350 + rowIndex * 50);
+        ghostTimersRef.current.push(timer);
+      }
+    };
+    
+    const startReveal = () => {
+      if (!isMounted) return;
+      setIsFadingOut(false);
+      revealNextRow(0);
+    };
+    
+    const startTimer = setTimeout(startReveal, 600);
+    ghostTimersRef.current.push(startTimer);
+    
+    ghostCycleRef.current = setInterval(() => {
+      if (!isMounted) return;
+      
+      setIsFadingOut(true);
+      
+      const fadeOutDuration = INITIAL_ROWS * 60 + 800;
+      const transitionTimer = setTimeout(() => {
+        if (!isMounted) return;
+        setActiveGhostRows(new Set());
+        
+        const shuffled = [...EXAMPLE_WORDS].sort(() => Math.random() - 0.5);
+        setGhostWords(shuffled.slice(0, INITIAL_ROWS));
+        
+        const revealTimer = setTimeout(startReveal, 400);
+        ghostTimersRef.current.push(revealTimer);
+      }, fadeOutDuration);
+      ghostTimersRef.current.push(transitionTimer);
+    }, 9000);
+    
+    return () => {
+      isMounted = false;
+      clearGhostTimers();
+    };
+  }, [isGridEmpty, clearGhostTimers]);
+
+  const [shimmerProgress, setShimmerProgress] = useState(-1);
+  const shimmerTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const shimmerIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
+  const lastActivityRef = React.useRef<number>(Date.now());
+  
+  const TOTAL_KEYS = 26;
+  const INACTIVITY_DELAY = 7000;
+  const SHIMMER_COOLDOWN = 15000;
+  const lastShimmerRef = React.useRef<number>(0);
+  
+  const resetInactivityTimer = useCallback(() => {
+    lastActivityRef.current = Date.now();
+    setShimmerProgress(-1);
+    
+    if (shimmerIntervalRef.current) {
+      clearInterval(shimmerIntervalRef.current);
+      shimmerIntervalRef.current = null;
+    }
+  }, []);
+  
+  useEffect(() => {
+    if (gameState !== "playing") {
+      resetInactivityTimer();
+      return;
+    }
+    
+    const runShimmer = () => {
+      if (shimmerIntervalRef.current) return;
+      
+      lastShimmerRef.current = Date.now();
+      let progress = 0;
+      
+      shimmerIntervalRef.current = setInterval(() => {
+        setShimmerProgress(progress);
+        progress++;
+        if (progress > TOTAL_KEYS + 5) {
+          clearInterval(shimmerIntervalRef.current!);
+          shimmerIntervalRef.current = null;
+          setShimmerProgress(-1);
+        }
+      }, 60);
+    };
+    
+    const checkInactivity = () => {
+      const now = Date.now();
+      const elapsed = now - lastActivityRef.current;
+      const timeSinceLastShimmer = now - lastShimmerRef.current;
+      
+      if (elapsed >= INACTIVITY_DELAY && timeSinceLastShimmer >= SHIMMER_COOLDOWN && !shimmerIntervalRef.current) {
+        runShimmer();
+      }
+    };
+    
+    shimmerTimerRef.current = setInterval(checkInactivity, 1000);
+    
+    return () => {
+      if (shimmerTimerRef.current) clearInterval(shimmerTimerRef.current);
+      if (shimmerIntervalRef.current) clearInterval(shimmerIntervalRef.current);
+    };
+  }, [gameState, resetInactivityTimer]);
 
   const triggerHaptic = useCallback((type: "light" | "success" | "error") => {
     if (Platform.OS === "web") return;
@@ -471,6 +808,11 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
     }
   }, [gameState, currentGuess, guesses, targetWord, remainingRows, fallingRow, triggerHaptic, updateKeyboardStates]);
 
+  const handleKeyPressWithReset = useCallback((key: string) => {
+    resetInactivityTimer();
+    handleKeyPress(key);
+  }, [handleKeyPress, resetInactivityTimer]);
+
   const handleComplete = useCallback(() => {
     triggerHaptic("success");
     onComplete({
@@ -500,6 +842,10 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
       const guessStates = isSubmittedRow 
         ? evaluateGuess(guesses[i], targetWord) 
         : (isCurrentRow ? currentGuessStates : []);
+      
+      const showGhostWord = isGridEmpty && !isHidden && !isFalling;
+      const ghostWord = ghostWords[i] || "";
+      const isGhostActive = activeGhostRows.has(i);
 
       const cells = [];
       for (let j = 0; j < WORD_LENGTH; j++) {
@@ -508,18 +854,32 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
         if (isSubmittedRow || (isCurrentRow && j < currentGuess.length)) {
           state = guessStates[j] || "filled";
         }
-        cells.push(
-          <LetterTile
-            key={`${i}-${j}-${isFalling}`}
-            letter={letter}
-            state={state}
-            immediate={isCurrentRow || isSubmittedRow}
-            pop={isCurrentRow && j === popIndex}
-            falling={isFalling}
-            fallDelay={j * 100}
-            hidden={isHidden}
-          />
-        );
+        
+        if (showGhostWord) {
+          const fadeOutDelay = isFadingOut ? (INITIAL_ROWS - 1 - i) * 60 + (WORD_LENGTH - 1 - j) * 30 : 0;
+          cells.push(
+            <GhostLetterTile
+              key={`ghost-${i}-${j}`}
+              letter={ghostWord[j] || ""}
+              fadeIn={isGhostActive && !isFadingOut}
+              delay={j * 100}
+              fadeOutDelay={fadeOutDelay}
+            />
+          );
+        } else {
+          cells.push(
+            <LetterTile
+              key={`${i}-${j}-${isFalling}`}
+              letter={letter}
+              state={state}
+              immediate={isCurrentRow || isSubmittedRow}
+              pop={isCurrentRow && j === popIndex}
+              falling={isFalling}
+              fallDelay={j * 100}
+              hidden={isHidden}
+            />
+          );
+        }
       }
       rows.push(
         <View key={i} style={[styles.row, { gap: sizes.tileGap, marginBottom: sizes.tileGap }]}>
@@ -549,40 +909,44 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
               />
             ) : null}
             {!sizes.isCompact ? (
-              <ThemedText style={[styles.instructions, { color: theme.textSecondary }]}>
-                Guess the six letter word. Start by writing a word to find which letters match.{" "}
-                <ThemedText 
-                  style={[styles.instructionsLink, { color: theme.primary }]}
-                  onPress={() => {
-                    import("expo-web-browser").then((WebBrowser) => {
-                      WebBrowser.openBrowserAsync("https://www.nytimes.com/games/wordle/index.html");
-                    });
-                  }}
-                >
-                  Learn more
+              <View style={styles.instructionsContainer}>
+                <ThemedText style={[styles.instructions, { color: theme.textSecondary }]}>
+                  Guess the six letter word. Start by writing a word to find which letters match.{" "}
                 </ThemedText>
-              </ThemedText>
+                <Pressable onPress={() => setShowTutorial(true)}>
+                  <ThemedText style={[styles.instructionsLink, { color: theme.primary }]}>
+                    Learn more
+                  </ThemedText>
+                </Pressable>
+              </View>
             ) : null}
           </View>
 
           <View style={styles.grid}>{renderGrid()}</View>
 
           <Toast message={warningMessage} visible={!!warningMessage} />
+          
+          <TutorialOverlay visible={showTutorial} onDismiss={() => setShowTutorial(false)} />
 
           {gameState === "playing" ? (
             <View style={[styles.keyboard, { paddingBottom: insets.bottom + Spacing.md }]}>
-              {KEYBOARD_ROWS.map((row, rowIndex) => (
-                <View key={rowIndex} style={[styles.keyboardRow, { gap: sizes.keyGap, marginBottom: sizes.keyRowGap }]}>
-                  {row.map((key) => (
-                    <KeyboardKey
-                      key={key}
-                      letter={key}
-                      state={letterStates[key]}
-                      onPress={handleKeyPress}
-                    />
-                  ))}
-                </View>
-              ))}
+              {KEYBOARD_ROWS.map((row, rowIndex) => {
+                const rowStartIndex = rowIndex === 0 ? 0 : rowIndex === 1 ? 10 : 19;
+                return (
+                  <View key={rowIndex} style={[styles.keyboardRow, { gap: sizes.keyGap, marginBottom: sizes.keyRowGap }]}>
+                    {row.map((key, keyIdx) => (
+                      <KeyboardKey
+                        key={key}
+                        letter={key}
+                        state={letterStates[key]}
+                        onPress={handleKeyPressWithReset}
+                        shimmerProgress={shimmerProgress}
+                        keyIndex={rowStartIndex + keyIdx}
+                      />
+                    ))}
+                  </View>
+                );
+              })}
             </View>
         ) : (
           <View style={[styles.resultContainer, { paddingBottom: insets.bottom + Spacing.xl }]}>
@@ -650,15 +1014,98 @@ const styles = StyleSheet.create({
     height: 40,
     marginBottom: Spacing.xs,
   },
+  instructionsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+  },
   instructions: {
     fontSize: 14,
     textAlign: "center",
-    marginTop: Spacing.sm,
-    paddingHorizontal: Spacing.lg,
     lineHeight: 20,
   },
   instructionsLink: {
     fontSize: 14,
+    fontWeight: "600",
+  },
+  tutorialFullScreen: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 200,
+  },
+  tutorialContainer: {
+    flex: 1,
+    paddingHorizontal: Spacing.xl,
+  },
+  tutorialHeader: {
+    alignItems: "center",
+    marginBottom: Spacing.md,
+  },
+  tutorialTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+  },
+  tutorialContent: {
+    flex: 1,
+  },
+  tutorialScrollContent: {
+    paddingTop: Spacing.md,
+  },
+  tutorialTip: {
+    flexDirection: "row",
+    marginBottom: Spacing.md,
+  },
+  tutorialIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: Spacing.sm,
+  },
+  tutorialTipText: {
+    flex: 1,
+  },
+  tutorialTipTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    marginBottom: 2,
+  },
+  tutorialTipDescription: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  tutorialColorGuide: {
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    marginTop: Spacing.xs,
+    marginBottom: Spacing.sm,
+  },
+  tutorialColorRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 4,
+  },
+  tutorialColorBox: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    marginRight: Spacing.sm,
+  },
+  tutorialColorText: {
+    fontSize: 13,
+  },
+  tutorialButton: {
+    borderRadius: BorderRadius.md,
+    paddingVertical: Spacing.sm + 2,
+    alignItems: "center",
+    marginTop: Spacing.xs,
+  },
+  tutorialButtonText: {
+    color: "#FFFFFF",
+    fontSize: 15,
     fontWeight: "600",
   },
   toast: {
