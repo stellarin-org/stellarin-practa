@@ -1,0 +1,44 @@
+{
+  "registryVersion": "2025-12-29T09:59:35.498Z",
+  "practas": [
+    {
+      "slug": "chess-puzzles",
+      "version": "1.0.20",
+      "buildId": "afba5861-cc4d-4fc5-8596-6af927b5d17f",
+      "name": "Daily Chess Puzzles",
+      "description": "Train your chess tactics with a new puzzle every day across 5 difficulty levels",
+      "author": "Practa",
+      "category": "mind",
+      "practaType": "mind",
+      "estimatedDuration": 120,
+      "assets": {}
+    },
+    {
+      "slug": "daily-sudoku",
+      "version": "1.0.27",
+      "buildId": "5ea9738f-b81c-448e-abbc-dfd32fda2bbc",
+      "name": "Daily Sudoku",
+      "description": "A calming Sudoku puzzle game to exercise your mind and focus",
+      "author": "Practa Creator",
+      "category": "mindfulness",
+      "practaType": "mindfulness",
+      "estimatedDuration": 300,
+      "assets": {}
+    },
+    {
+      "slug": "six",
+      "version": "1.0.22",
+      "buildId": "2e12ca57-1c7d-444b-9c48-615c41f6b585",
+      "name": "Six",
+      "description": "A daily word guessing game - guess the 6-letter word in 6 tries",
+      "author": "Your Name",
+      "category": "games",
+      "practaType": "games",
+      "estimatedDuration": 180,
+      "assets": {
+        "six": "https://storage.googleapis.com/replit-objstore-b74bc498-5f8d-4fca-b9ba-531f07dd1cd0/practa/six/2e12ca57-1c7d-444b-9c48-615c41f6b585/six.png",
+        "sixLogo": "https://storage.googleapis.com/replit-objstore-b74bc498-5f8d-4fca-b9ba-531f07dd1cd0/practa/six/2e12ca57-1c7d-444b-9c48-615c41f6b585/six_logo.png"
+      }
+    }
+  ]
+}
