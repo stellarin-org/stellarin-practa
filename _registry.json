@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2025-12-29T11:20:16.297Z",
+  "registryVersion": "2025-12-29T11:22:14.715Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -27,7 +27,7 @@
       "practaType": "mindfulness",
       "estimatedDuration": 300,
       "assets": {
-        "splash": "https://storage.googleapis.com/replit-objstore-b74bc498-5f8d-4fca-b9ba-531f07dd1cd0/practa/daily-sudoku/5ea9738f-b81c-448e-abbc-dfd32fda2bbc/sudoku_splash.png"
+        "splash": "https://storage.googleapis.com/replit-objstore-b74bc498-5f8d-4fca-b9ba-531f07dd1cd0/public/practa/daily-sudoku/5ea9738f-b81c-448e-abbc-dfd32fda2bbc/sudoku_splash.png"
       }
     },
     {
@@ -43,8 +43,8 @@
       "assets": {
         "six": "https://storage.googleapis.com/replit-objstore-b74bc498-5f8d-4fca-b9ba-531f07dd1cd0/public/practa/six/2e12ca57-1c7d-444b-9c48-615c41f6b585/six.png",
         "sixLogo": "https://storage.googleapis.com/replit-objstore-b74bc498-5f8d-4fca-b9ba-531f07dd1cd0/public/practa/six/2e12ca57-1c7d-444b-9c48-615c41f6b585/six_logo.png",
-        "validWords": "https://storage.googleapis.com/replit-objstore-b74bc498-5f8d-4fca-b9ba-531f07dd1cd0/public/practa/six/2e12ca57-1c7d-444b-9c48-615c41f6b585/valid-words.json",
-        "wordlist": "https://storage.googleapis.com/replit-objstore-b74bc498-5f8d-4fca-b9ba-531f07dd1cd0/public/practa/six/2e12ca57-1c7d-444b-9c48-615c41f6b585/wordlist.json"
+        "wordlist": "https://storage.googleapis.com/replit-objstore-b74bc498-5f8d-4fca-b9ba-531f07dd1cd0/public/practa/six/2e12ca57-1c7d-444b-9c48-615c41f6b585/wordlist.json",
+        "validWords": "https://storage.googleapis.com/replit-objstore-b74bc498-5f8d-4fca-b9ba-531f07dd1cd0/public/practa/six/2e12ca57-1c7d-444b-9c48-615c41f6b585/valid-words.json"
       }
     }
   ]

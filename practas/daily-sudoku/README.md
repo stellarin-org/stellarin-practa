@@ -1,34 +1,41 @@
-# My Practa
+# Daily Sudoku
 
-A starter template for creating custom wellbeing experiences for Stellarin.
+A calming Sudoku puzzle game to exercise your mind and focus
 
-## Description
+## Installation
 
-This Practa provides a simple interactive experience with a welcome screen and completion flow. Use it as a starting point to build your own custom wellbeing experience.
-
-## Props
-
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| `context` | `PractaContext` | Yes | Context from previous Practa in the flow |
-| `onComplete` | `(output: PractaOutput) => void` | Yes | Callback when the experience is finished |
-| `onSkip` | `() => void` | No | Optional callback to skip the experience |
+This Practa component is designed for the Stellarin app.
 
 ## Usage
 
-The component receives context from the flow system and calls `onComplete` when the user finishes the experience.
-
 ```tsx
-<MyPracta
-  context={{ flowId: "flow-123", practaIndex: 0 }}
-  onComplete={(output) => console.log("Completed:", output)}
-  onSkip={() => console.log("Skipped")}
-/>
+import DailySudoku from "@stellarin/practa-daily-sudoku";
+
+function MyFlow() {
+  return (
+    <DailySudoku
+      context={{ flowId: "my-flow", practaIndex: 0 }}
+      onComplete={(output) => console.log("Completed:", output)}
+      onSkip={() => console.log("Skipped")}
+    />
+  );
+}
 ```
 
-## Output
+## Props
 
-When completed, this Practa outputs:
-- `content.type`: "text"
-- `content.value`: "Practa completed successfully!"
-- `metadata.completedAt`: Timestamp of completion
+This component accepts the standard Practa props:
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `context` | PractaContext | Yes | Flow context from previous Practa |
+| `onComplete` | (output: PractaOutput) => void | Yes | Callback when the Practa completes |
+| `onSkip` | () => void | No | Optional callback to skip the Practa |
+
+## Author
+
+Created by Practa Creator
+
+## Version
+
+1.0.30
