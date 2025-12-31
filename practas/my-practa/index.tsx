@@ -613,9 +613,11 @@ export default function SqueezeRelease({ context, onComplete, onSkip }: SqueezeR
   // Position circles in lower portion of screen (on the ottoman)
   const OTTOMAN_TOP = SCREEN_HEIGHT * 0.55;
 
+  const splashSource = context.assets?.splash as number | { uri: string } | undefined;
+
   return (
     <ImageBackground 
-      source={require("./assets/splash.png")} 
+      source={splashSource} 
       style={styles.fullscreenContainer}
       resizeMode="cover"
       imageStyle={styles.backgroundImage}
