@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2025-12-29T20:24:03.154Z",
+  "registryVersion": "2025-12-31T05:42:58.019Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -31,6 +31,22 @@
       }
     },
     {
+      "slug": "my-practa",
+      "version": "2.2.5",
+      "buildId": "a03cd8d2-6b13-4ab8-96a2-8ddc910d015a",
+      "name": "Pressure Grounding",
+      "description": "A relaxation exercise using multitouch. Place both thumbs on the circles, hold and squeeze, then slowly release to let tension melt away.",
+      "author": "Your Name",
+      "category": "relaxation",
+      "practaType": "relaxation",
+      "estimatedDuration": 20,
+      "assets": {
+        "content": "https://stellarin-practa-verification.replit.app/assets/practa/my-practa/a03cd8d2-6b13-4ab8-96a2-8ddc910d015a/content.json",
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/my-practa/a03cd8d2-6b13-4ab8-96a2-8ddc910d015a/splash.png",
+        "wellness-bg": "https://stellarin-practa-verification.replit.app/assets/practa/my-practa/a03cd8d2-6b13-4ab8-96a2-8ddc910d015a/wellness-bg.png"
+      }
+    },
+    {
       "slug": "six",
       "version": "1.2.9",
       "buildId": "d65f36c4-2d03-4357-8c0f-4db5d19562cc",
@@ -41,10 +57,10 @@
       "practaType": "games",
       "estimatedDuration": 180,
       "assets": {
-        "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.png",
         "splash": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/splash.png",
-        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json",
-        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json"
+        "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.png",
+        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json",
+        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json"
       }
     }
   ]
