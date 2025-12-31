@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2025-12-31T06:25:35.031Z",
+  "registryVersion": "2025-12-31T23:04:04.375Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -31,6 +31,21 @@
       }
     },
     {
+      "slug": "grounding-thumbs",
+      "version": "2.4.4",
+      "buildId": "ae435e2f-0360-4b16-b7ee-f61f30a45dce",
+      "name": "Grounding Thumbs",
+      "description": "A relaxation exercise using multitouch. Place both thumbs on the circles, hold and squeeze, then slowly release to let tension melt away.",
+      "author": "Mike Messenger",
+      "category": "relaxation",
+      "practaType": "relaxation",
+      "estimatedDuration": 20,
+      "assets": {
+        "content": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/content.json",
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/splash.png"
+      }
+    },
+    {
       "slug": "my-practa",
       "version": "2.3.0",
       "buildId": "a03cd8d2-6b13-4ab8-96a2-8ddc910d015a",
@@ -41,8 +56,8 @@
       "practaType": "relaxation",
       "estimatedDuration": 20,
       "assets": {
-        "content": "https://stellarin-practa-verification.replit.app/assets/practa/my-practa/a03cd8d2-6b13-4ab8-96a2-8ddc910d015a/content.json",
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/my-practa/a03cd8d2-6b13-4ab8-96a2-8ddc910d015a/splash.png"
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/my-practa/a03cd8d2-6b13-4ab8-96a2-8ddc910d015a/splash.png",
+        "content": "https://stellarin-practa-verification.replit.app/assets/practa/my-practa/a03cd8d2-6b13-4ab8-96a2-8ddc910d015a/content.json"
       }
     },
     {
