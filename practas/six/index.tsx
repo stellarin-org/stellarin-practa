@@ -23,6 +23,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { PractaContext, PractaCompleteHandler } from "@/types/flow";
+import { usePractaChrome } from "@/context/PractaChromeContext";
 import { ImageSourcePropType } from "react-native";
 
 const WORD_LENGTH = 6;
@@ -558,6 +559,7 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
   const { theme, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const sizes = useResponsiveSizes();
+  const { setConfig, resetConfig } = usePractaChrome();
 
 
   const wordlist = useMemo(() => {
@@ -584,6 +586,35 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
   const [warningMessage, setWarningMessage] = useState("");
   const [popIndex, setPopIndex] = useState(-1);
   const [showTutorial, setShowTutorial] = useState(false);
+
+  useEffect(() => {
+    setConfig({
+      headerMode: "minimal",
+      showProgressDots: false,
+      rightAction: (
+        <Pressable 
+          onPress={() => setShowTutorial(true)}
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+            justifyContent: "center",
+            alignItems: "center",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+          }}
+        >
+          <Feather name="help-circle" size={18} color="rgba(0, 0, 0, 0.8)" />
+        </Pressable>
+      ),
+    });
+    return () => {
+      resetConfig();
+    };
+  }, [setConfig, resetConfig]);
   
   const [ghostWords, setGhostWords] = useState<string[]>(() => {
     const shuffled = [...EXAMPLE_WORDS].sort(() => Math.random() - 0.5);
@@ -899,7 +930,7 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
   return (
     <SizingContext.Provider value={sizes}>
       <ThemedView style={styles.container}>
-        <View style={[styles.gameContainer, { paddingTop: insets.top + (sizes.isCompact ? Spacing.sm : Spacing.lg) }]}>
+        <View style={[styles.gameContainer, { paddingTop: insets.top + 44 + (sizes.isCompact ? Spacing.xs : Spacing.sm) }]}>
           <View style={[styles.header, { marginBottom: sizes.headerSpacing }]}>
             {context.assets?.sixLogo ? (
               <Image
@@ -911,13 +942,8 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
             {!sizes.isCompact ? (
               <View style={styles.instructionsContainer}>
                 <ThemedText style={[styles.instructions, { color: theme.textSecondary }]}>
-                  Guess the six letter word. Start by writing a word to find which letters match.{" "}
+                  Guess the six letter word. Start by writing a word to find which letters match.
                 </ThemedText>
-                <Pressable onPress={() => setShowTutorial(true)}>
-                  <ThemedText style={[styles.instructionsLink, { color: theme.primary }]}>
-                    Learn more
-                  </ThemedText>
-                </Pressable>
               </View>
             ) : null}
           </View>
@@ -1026,10 +1052,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
     lineHeight: 20,
-  },
-  instructionsLink: {
-    fontSize: 14,
-    fontWeight: "600",
   },
   tutorialFullScreen: {
     ...StyleSheet.absoluteFillObject,
