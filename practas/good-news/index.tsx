@@ -1,8 +1,9 @@
-import React, { useEffect } from "react";
-import { View, StyleSheet, FlatList, Pressable, Platform, Linking } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet, FlatList, Pressable, Platform, Linking, ActivityIndicator, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { Feather } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -20,18 +21,30 @@ interface NewsItem {
   theme: string;
   tone: string;
   date: string;
-  source_hints: string[];
-  source_urls: string[];
-  created_at: string;
+  sourceHints: string[];
+  sourceUrls: string[];
+  createdAt: string;
+}
+
+interface NewsResponse {
+  generatedAt: string;
+  snippetCount: number;
+  snippets: NewsItem[];
 }
 
 interface GoodNewsProps extends PractaProps {}
+
+const INITIAL_ARTICLE_COUNT = 14;
 
 const themeColors: Record<string, { bg: string; icon: string; iconName: keyof typeof Feather.glyphMap }> = {
   "Nature Bouncing Back": { bg: "#E8F5E9", icon: "#4CAF50", iconName: "sun" },
   "Knowledge Breakthroughs": { bg: "#E3F2FD", icon: "#2196F3", iconName: "zap" },
   "Human Kindness": { bg: "#FFF3E0", icon: "#FF9800", iconName: "heart" },
   "Progress & Innovation": { bg: "#F3E5F5", icon: "#9C27B0", iconName: "trending-up" },
+  "Healing & Recovery": { bg: "#FCE4EC", icon: "#E91E63", iconName: "activity" },
+  "Human Ingenuity": { bg: "#E8EAF6", icon: "#3F51B5", iconName: "tool" },
+  "People Helping People": { bg: "#FFF8E1", icon: "#FFC107", iconName: "users" },
+  "Joy & Delight": { bg: "#FFFDE7", icon: "#FFEB3B", iconName: "smile" },
 };
 
 function getThemeStyle(theme: string) {
@@ -57,21 +70,35 @@ function formatDate(dateString: string): string {
 function NewsCard({ item, theme: appTheme }: { item: NewsItem; theme: any }) {
   const themeStyle = getThemeStyle(item.theme);
   
-  const handlePress = async () => {
+  const handleSourcePress = async () => {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     
-    if (item.source_urls && item.source_urls.length > 0) {
-      try {
-        await Linking.openURL(item.source_urls[0]);
-      } catch (error) {
-      }
+    if (item.sourceUrls && item.sourceUrls.length > 0) {
+      const sourceName = item.sourceHints?.[0] || "this website";
+      
+      Alert.alert(
+        "Open Link",
+        `Are you sure you want to visit ${sourceName}?`,
+        [
+          { text: "No", style: "cancel" },
+          { 
+            text: "Yes", 
+            onPress: async () => {
+              try {
+                await Linking.openURL(item.sourceUrls[0]);
+              } catch (error) {
+              }
+            }
+          },
+        ]
+      );
     }
   };
 
   return (
-    <Card style={styles.newsCard} onPress={handlePress}>
+    <Card style={styles.newsCard}>
       <View style={styles.cardHeader}>
         <View style={[styles.themeIcon, { backgroundColor: themeStyle.bg }]}>
           <Feather name={themeStyle.iconName} size={18} color={themeStyle.icon} />
@@ -91,23 +118,36 @@ function NewsCard({ item, theme: appTheme }: { item: NewsItem; theme: any }) {
         {item.body}
       </ThemedText>
       
-      {item.source_hints && item.source_hints.length > 0 ? (
-        <View style={styles.sourceRow}>
-          <Feather name="external-link" size={12} color={appTheme.textSecondary} />
-          <ThemedText style={[styles.sourceText, { color: appTheme.textSecondary }]}>
-            {item.source_hints[0]}
+      {item.sourceHints && item.sourceHints.length > 0 && item.sourceUrls && item.sourceUrls.length > 0 ? (
+        <Pressable onPress={handleSourcePress} style={[styles.sourceRow, { backgroundColor: "#F0F0F0" }]}>
+          <Feather name="external-link" size={11} color="#999" />
+          <ThemedText style={styles.sourceText} numberOfLines={1}>
+            {item.sourceHints[0].length > 30 ? item.sourceHints[0].slice(0, 30) + "..." : item.sourceHints[0]}
           </ThemedText>
-        </View>
+        </Pressable>
       ) : null}
     </Card>
   );
 }
+
+const CDN_NEWS_PATH = "assets/shared/300a73ff-5180-43a6-b9dd-f3bac1d73dc2/news.json";
 
 export default function GoodNews({ context, onComplete, onSkip, onSettings, showSettings }: GoodNewsProps) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const { setConfig } = usePractaChrome();
   const headerHeight = useHeaderHeight();
+  const [visibleCount, setVisibleCount] = useState(INITIAL_ARTICLE_COUNT);
+
+  const { data: response, isLoading, error, refetch } = useQuery<NewsResponse>({
+    queryKey: ["/api/cdn-proxy", CDN_NEWS_PATH],
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const allNews = response?.snippets || [];
+  const displayedNews = allNews.slice(0, visibleCount);
+  const hasMoreArticles = visibleCount < allNews.length;
+  const isAtEnd = visibleCount >= allNews.length && allNews.length > 0;
 
   useEffect(() => {
     setConfig({
@@ -117,8 +157,6 @@ export default function GoodNews({ context, onComplete, onSkip, onSettings, show
       onSettings,
     });
   }, [setConfig, showSettings, onSettings]);
-
-  const newsData = (context.assets?.news as NewsItem[]) || [];
 
   const handleComplete = () => {
     if (Platform.OS !== "web") {
@@ -131,9 +169,16 @@ export default function GoodNews({ context, onComplete, onSkip, onSettings, show
       },
       metadata: { 
         completedAt: Date.now(),
-        itemsRead: newsData.length
+        itemsRead: displayedNews.length
       },
     });
+  };
+
+  const handleReadMore = () => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    setVisibleCount((prev) => prev + INITIAL_ARTICLE_COUNT);
   };
 
   const renderItem = ({ item }: { item: NewsItem }) => (
@@ -151,6 +196,32 @@ export default function GoodNews({ context, onComplete, onSkip, onSettings, show
 
   const ListFooter = () => (
     <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.xl }]}>
+      {hasMoreArticles ? (
+        <Pressable
+          onPress={handleReadMore}
+          style={[styles.readMoreButton, { borderColor: theme.primary }]}
+        >
+          <Feather name="chevron-down" size={20} color={theme.primary} />
+          <ThemedText style={[styles.readMoreText, { color: theme.primary }]}>
+            Read More
+          </ThemedText>
+        </Pressable>
+      ) : null}
+
+      {isAtEnd ? (
+        <View style={styles.congratsContainer}>
+          <View style={[styles.congratsIcon, { backgroundColor: "#E8F5E9" }]}>
+            <Feather name="award" size={32} color="#4CAF50" />
+          </View>
+          <ThemedText style={styles.congratsTitle}>
+            You made it to the end!
+          </ThemedText>
+          <ThemedText style={[styles.congratsSubtitle, { color: theme.textSecondary }]}>
+            Thanks for spreading positivity today. The world is a little brighter because you chose to focus on the good.
+          </ThemedText>
+        </View>
+      ) : null}
+
       <Pressable
         onPress={handleComplete}
         style={[styles.completeButton, { backgroundColor: theme.primary }]}
@@ -169,19 +240,47 @@ export default function GoodNews({ context, onComplete, onSkip, onSettings, show
     </View>
   );
 
-  const EmptyState = () => (
+  const LoadingState = () => (
     <View style={styles.emptyState}>
-      <Feather name="inbox" size={48} color={theme.textSecondary} />
+      <ActivityIndicator size="large" color={theme.primary} />
       <ThemedText style={[styles.emptyText, { color: theme.textSecondary }]}>
-        No news available yet
+        Loading good news...
       </ThemedText>
     </View>
   );
 
+  const ErrorState = () => (
+    <View style={styles.emptyState}>
+      <Feather name="wifi-off" size={48} color={theme.textSecondary} />
+      <ThemedText style={[styles.emptyText, { color: theme.textSecondary }]}>
+        Could not load news
+      </ThemedText>
+      <Pressable 
+        onPress={() => refetch()} 
+        style={[styles.retryButton, { backgroundColor: theme.primary }]}
+      >
+        <ThemedText style={styles.retryText}>Try Again</ThemedText>
+      </Pressable>
+    </View>
+  );
+
+  const EmptyState = () => {
+    if (isLoading) return <LoadingState />;
+    if (error) return <ErrorState />;
+    return (
+      <View style={styles.emptyState}>
+        <Feather name="inbox" size={48} color={theme.textSecondary} />
+        <ThemedText style={[styles.emptyText, { color: theme.textSecondary }]}>
+          No news available yet
+        </ThemedText>
+      </View>
+    );
+  };
+
   return (
     <ThemedView style={styles.container}>
       <FlatList
-        data={newsData}
+        data={displayedNews}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={[
@@ -260,10 +359,16 @@ const styles = StyleSheet.create({
   sourceRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.xs,
+    alignSelf: "flex-start",
+    gap: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 12,
   },
   sourceText: {
     fontSize: 12,
+    fontWeight: "400",
+    color: "#888",
   },
   separator: {
     height: Spacing.md,
@@ -271,6 +376,45 @@ const styles = StyleSheet.create({
   footer: {
     paddingTop: Spacing["2xl"],
     paddingBottom: Spacing.xl,
+  },
+  readMoreButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 2,
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
+  readMoreText: {
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  congratsContainer: {
+    alignItems: "center",
+    paddingVertical: Spacing.xl,
+    marginBottom: Spacing.lg,
+  },
+  congratsIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: Spacing.md,
+  },
+  congratsTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    marginBottom: Spacing.sm,
+    textAlign: "center",
+  },
+  congratsSubtitle: {
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: "center",
+    paddingHorizontal: Spacing.lg,
   },
   completeButton: {
     flexDirection: "row",
@@ -301,5 +445,16 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: Spacing.md,
     fontSize: 16,
+  },
+  retryButton: {
+    marginTop: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
+  },
+  retryText: {
+    color: "white",
+    fontWeight: "600",
+    fontSize: 14,
   },
 });
