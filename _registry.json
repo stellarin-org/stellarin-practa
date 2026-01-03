@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-01-03T04:06:39.844Z",
+  "registryVersion": "2026-01-03T06:02:01.176Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -31,6 +31,20 @@
       }
     },
     {
+      "slug": "good-news",
+      "version": "1.0.3",
+      "buildId": "eb6d297d-9b7e-4164-9287-520b076b14fb",
+      "name": "Good News",
+      "description": "A feed of positive and uplifting news stories",
+      "author": "Your Name",
+      "category": "wellness",
+      "practaType": "wellness",
+      "estimatedDuration": 60,
+      "assets": {
+        "news": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/news.json"
+      }
+    },
+    {
       "slug": "grounding-thumbs",
       "version": "2.4.4",
       "buildId": "ae435e2f-0360-4b16-b7ee-f61f30a45dce",
@@ -56,9 +70,9 @@
       "practaType": "mind",
       "estimatedDuration": 90,
       "assets": {
-        "mini_puzzles_all_v2": "https://stellarin-practa-verification.replit.app/assets/practa/mini-chess-puzzles/609a9860-8c2a-4e2d-93f9-25279f385082/mini_puzzles_all_v2.json",
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/mini-chess-puzzles/609a9860-8c2a-4e2d-93f9-25279f385082/splash.png",
         "puzzles_all": "https://stellarin-practa-verification.replit.app/assets/practa/mini-chess-puzzles/609a9860-8c2a-4e2d-93f9-25279f385082/puzzles_all.json",
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/mini-chess-puzzles/609a9860-8c2a-4e2d-93f9-25279f385082/splash.png"
+        "mini_puzzles_all_v2": "https://stellarin-practa-verification.replit.app/assets/practa/mini-chess-puzzles/609a9860-8c2a-4e2d-93f9-25279f385082/mini_puzzles_all_v2.json"
       }
     },
     {
