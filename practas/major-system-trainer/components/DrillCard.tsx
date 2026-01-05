@@ -4,7 +4,7 @@ import { Image } from "expo-image";
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
-import { Drill, DrillChoice, DrillType } from "../lib/types";
+import { StandardDrill, DrillChoice, DrillType } from "../lib/types";
 
 const NUMBER_BUTTON_HEIGHT = 72;
 const NUMBER_GRID_GAP = Spacing.md;
@@ -12,7 +12,7 @@ const HEADER_AND_PADDING = 200;
 const IMAGE_PROMPT_HEIGHT = 120;
 
 interface DrillCardProps {
-  drill: Drill;
+  drill: StandardDrill;
   onAnswer: (index: number) => void;
   disabled?: boolean;
   selectedIndex?: number;

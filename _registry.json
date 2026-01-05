@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-01-05T05:51:26.594Z",
+  "registryVersion": "2026-01-05T06:49:23.266Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -61,7 +61,7 @@
     },
     {
       "slug": "major-system-trainer",
-      "version": "1.5.0",
+      "version": "1.5.9",
       "buildId": "a3f5f7d0-a4f7-46b0-a61f-480348dfddd9",
       "name": "Major System Trainer",
       "description": "Learn the Major System 00-99 with images and spaced repetition",
@@ -170,7 +170,8 @@
         "img_97_book": "https://stellarin-practa-verification.replit.app/assets/practa/major-system-trainer/a3f5f7d0-a4f7-46b0-a61f-480348dfddd9/97_book.webp",
         "img_98_puff": "https://stellarin-practa-verification.replit.app/assets/practa/major-system-trainer/a3f5f7d0-a4f7-46b0-a61f-480348dfddd9/98_puff.webp",
         "img_99_poop": "https://stellarin-practa-verification.replit.app/assets/practa/major-system-trainer/a3f5f7d0-a4f7-46b0-a61f-480348dfddd9/99_poop.webp",
-        "deck": "https://stellarin-practa-verification.replit.app/assets/practa/major-system-trainer/a3f5f7d0-a4f7-46b0-a61f-480348dfddd9/cards_00_99.json"
+        "deck": "https://stellarin-practa-verification.replit.app/assets/practa/major-system-trainer/a3f5f7d0-a4f7-46b0-a61f-480348dfddd9/cards_00_99.json",
+        "historical_dates": "https://stellarin-practa-verification.replit.app/assets/practa/major-system-trainer/a3f5f7d0-a4f7-46b0-a61f-480348dfddd9/historical_dates.json"
       }
     },
     {
@@ -187,21 +188,6 @@
         "splash": "https://stellarin-practa-verification.replit.app/assets/practa/mini-chess-puzzles/609a9860-8c2a-4e2d-93f9-25279f385082/splash.png",
         "puzzles_all": "https://stellarin-practa-verification.replit.app/assets/practa/mini-chess-puzzles/609a9860-8c2a-4e2d-93f9-25279f385082/puzzles_all.json",
         "mini_puzzles_all_v2": "https://stellarin-practa-verification.replit.app/assets/practa/mini-chess-puzzles/609a9860-8c2a-4e2d-93f9-25279f385082/mini_puzzles_all_v2.json"
-      }
-    },
-    {
-      "slug": "my-practa",
-      "version": "1.3.7",
-      "buildId": "83b8577b-df5b-46d1-ad42-a646bb0fdbbf",
-      "name": "My Practa",
-      "description": "A starter template for your custom wellbeing experience",
-      "author": "Your Name",
-      "category": "wellness",
-      "practaType": "wellness",
-      "estimatedDuration": 30,
-      "assets": {
-        "content": "https://stellarin-practa-verification.replit.app/assets/practa/my-practa/83b8577b-df5b-46d1-ad42-a646bb0fdbbf/content.json",
-        "wellnessBg": "https://stellarin-practa-verification.replit.app/assets/practa/my-practa/83b8577b-df5b-46d1-ad42-a646bb0fdbbf/wellness-bg.png"
       }
     },
     {

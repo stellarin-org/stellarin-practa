@@ -76,20 +76,69 @@ export interface SRSState {
   introduced_order: string[];
 }
 
-export type DrillType = "NUMBER_TO_IMAGE" | "IMAGE_TO_NUMBER" | "NUMBER_TO_WORD";
+export type DrillType = "NUMBER_TO_IMAGE" | "IMAGE_TO_NUMBER" | "NUMBER_TO_WORD" | "PI_SEQUENCE" | "HISTORICAL_DATE";
 
 export interface DrillChoice {
   number: string;
   variant: CardVariant;
 }
 
-export interface Drill {
+export interface BaseDrill {
   id: string;
   type: DrillType;
+}
+
+export interface StandardDrill extends BaseDrill {
+  type: "NUMBER_TO_IMAGE" | "IMAGE_TO_NUMBER" | "NUMBER_TO_WORD";
   targetNumber: string;
   targetVariant: CardVariant;
   choices: DrillChoice[];
   correctIndex: number;
+}
+
+export interface PiSequenceCard {
+  number: string;
+  variant: CardVariant;
+}
+
+export interface PiSequenceDrill extends BaseDrill {
+  type: "PI_SEQUENCE";
+  sequence: PiSequenceCard[];
+  displayNumbers: string;
+}
+
+export interface HistoricalDateEntry {
+  date: string;
+  date_type: "year_ce" | "full_date";
+  event: string;
+  quote: string;
+  why_important: string;
+}
+
+export interface HistoricalDateCard {
+  number: string;
+  variant: CardVariant;
+}
+
+export interface HistoricalDateDrill extends BaseDrill {
+  type: "HISTORICAL_DATE";
+  dateEntry: HistoricalDateEntry;
+  cards: HistoricalDateCard[];
+  correctAnswer: string;
+}
+
+export type Drill = StandardDrill | PiSequenceDrill | HistoricalDateDrill;
+
+export function isStandardDrill(drill: Drill): drill is StandardDrill {
+  return drill.type !== "PI_SEQUENCE" && drill.type !== "HISTORICAL_DATE";
+}
+
+export function isPiSequenceDrill(drill: Drill): drill is PiSequenceDrill {
+  return drill.type === "PI_SEQUENCE";
+}
+
+export function isHistoricalDateDrill(drill: Drill): drill is HistoricalDateDrill {
+  return drill.type === "HISTORICAL_DATE";
 }
 
 export interface DrillResult {

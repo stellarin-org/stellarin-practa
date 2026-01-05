@@ -1,9 +1,19 @@
-import { Deck, Card, CardVariant, Drill, DrillChoice, DrillType } from "./types";
+import { Deck, Card, CardVariant, Drill, StandardDrill, PiSequenceDrill, HistoricalDateDrill, HistoricalDateEntry, DrillChoice, DrillType } from "./types";
 import { SRSManager } from "./srs-manager";
 
 const SESSION_SIZE = 10;
 const NEW_CARD_RATIO = 0.3;
-const DRILL_TYPES: DrillType[] = ["NUMBER_TO_IMAGE", "IMAGE_TO_NUMBER", "NUMBER_TO_WORD"];
+const PI_SEQUENCE_CHANCE = 0.15;
+const HISTORICAL_DATE_CHANCE = 0.12;
+const STANDARD_DRILL_TYPES: Array<"NUMBER_TO_IMAGE" | "IMAGE_TO_NUMBER" | "NUMBER_TO_WORD"> = ["NUMBER_TO_IMAGE", "IMAGE_TO_NUMBER", "NUMBER_TO_WORD"];
+
+const PI_DIGITS_PAIRS = [
+  "14", "15", "92", "65", "35", "89", "79", "32", "38", "46",
+  "26", "43", "38", "32", "79", "50", "28", "84", "19", "71",
+  "69", "39", "93", "75", "10", "58", "20", "97", "49", "44",
+  "59", "23", "07", "81", "64", "06", "28", "62", "08", "99",
+  "86", "28", "03", "48", "25", "34", "21", "17", "06", "79"
+];
 
 function shuffle<T>(array: T[]): T[] {
   const result = [...array];
@@ -156,8 +166,8 @@ function selectDistractors(
 
 let drillCounter = 0;
 
-function selectDrillType(targetCard: Card, srsManager: SRSManager): DrillType {
-  const weights: [DrillType, number][] = [
+function selectStandardDrillType(targetCard: Card, srsManager: SRSManager): "NUMBER_TO_IMAGE" | "IMAGE_TO_NUMBER" | "NUMBER_TO_WORD" {
+  const weights: ["NUMBER_TO_IMAGE" | "IMAGE_TO_NUMBER" | "NUMBER_TO_WORD", number][] = [
     ["NUMBER_TO_IMAGE", 40],
     ["IMAGE_TO_NUMBER", 30],
     ["NUMBER_TO_WORD", 30],
@@ -171,22 +181,22 @@ function selectDrillType(targetCard: Card, srsManager: SRSManager): DrillType {
     if (random <= 0) return type;
   }
 
-  return DRILL_TYPES[0];
+  return STANDARD_DRILL_TYPES[0];
 }
 
-export function generateDrill(
+export function generateStandardDrill(
   targetNumber: string,
   deck: Deck,
   srsManager: SRSManager,
-  forceType?: DrillType
-): Drill {
+  forceType?: "NUMBER_TO_IMAGE" | "IMAGE_TO_NUMBER" | "NUMBER_TO_WORD"
+): StandardDrill {
   const targetCard = deck.cards.find(c => c.number === targetNumber);
   if (!targetCard) {
     throw new Error(`Card not found: ${targetNumber}`);
   }
 
   const targetVariant = getDisplayVariant(targetCard, srsManager);
-  const type = forceType || selectDrillType(targetCard, srsManager);
+  const type = forceType || selectStandardDrillType(targetCard, srsManager);
   const distractorCards = selectDistractors(targetNumber, deck, srsManager, 3);
 
   const choices: DrillChoice[] = [
@@ -210,9 +220,80 @@ export function generateDrill(
   };
 }
 
+export function generatePiSequenceDrill(
+  deck: Deck,
+  srsManager: SRSManager,
+  sequenceLength: number = 3
+): PiSequenceDrill {
+  const startIndex = Math.floor(Math.random() * (PI_DIGITS_PAIRS.length - sequenceLength));
+  const sequenceNumbers = PI_DIGITS_PAIRS.slice(startIndex, startIndex + sequenceLength);
+  
+  const sequence = sequenceNumbers.map(num => {
+    const card = deck.cards.find(c => c.number === num);
+    if (!card) {
+      const fallbackCard = deck.cards[Math.floor(Math.random() * deck.cards.length)];
+      return {
+        number: fallbackCard.number,
+        variant: getDisplayVariant(fallbackCard, srsManager),
+      };
+    }
+    return {
+      number: num,
+      variant: getDisplayVariant(card, srsManager),
+    };
+  });
+
+  return {
+    id: `pi_drill_${++drillCounter}_${Date.now()}`,
+    type: "PI_SEQUENCE",
+    sequence,
+    displayNumbers: sequenceNumbers.join(" "),
+  };
+}
+
+export function generateHistoricalDateDrill(
+  dateEntry: HistoricalDateEntry,
+  deck: Deck,
+  srsManager: SRSManager
+): HistoricalDateDrill {
+  const dateDigits = dateEntry.date.replace(/[^0-9]/g, "");
+  const pairs: string[] = [];
+  
+  for (let i = 0; i < dateDigits.length; i += 2) {
+    if (i + 1 < dateDigits.length) {
+      pairs.push(dateDigits.substring(i, i + 2));
+    }
+  }
+
+  const cards = pairs.map(num => {
+    const card = deck.cards.find(c => c.number === num);
+    if (!card) {
+      const fallbackNum = num.padStart(2, "0");
+      const fallbackCard = deck.cards.find(c => c.number === fallbackNum) || deck.cards[0];
+      return {
+        number: fallbackCard.number,
+        variant: getDisplayVariant(fallbackCard, srsManager),
+      };
+    }
+    return {
+      number: num,
+      variant: getDisplayVariant(card, srsManager),
+    };
+  });
+
+  return {
+    id: `hist_drill_${++drillCounter}_${Date.now()}`,
+    type: "HISTORICAL_DATE",
+    dateEntry,
+    cards,
+    correctAnswer: dateEntry.date,
+  };
+}
+
 export function generateSession(
   srsManager: SRSManager,
-  deck: Deck
+  deck: Deck,
+  historicalDates?: HistoricalDateEntry[]
 ): Drill[] {
   const cardNumbers = generateSessionCards(srsManager, deck);
   
@@ -222,5 +303,21 @@ export function generateSession(
     }
   }
 
-  return cardNumbers.map(num => generateDrill(num, deck, srsManager));
+  const drills: Drill[] = [];
+  
+  for (let i = 0; i < cardNumbers.length; i++) {
+    const piCount = drills.filter(d => d.type === "PI_SEQUENCE").length;
+    const histCount = drills.filter(d => d.type === "HISTORICAL_DATE").length;
+    
+    if (Math.random() < PI_SEQUENCE_CHANCE && piCount < 2) {
+      drills.push(generatePiSequenceDrill(deck, srsManager));
+    } else if (historicalDates && historicalDates.length > 0 && Math.random() < HISTORICAL_DATE_CHANCE && histCount < 2) {
+      const randomDate = historicalDates[Math.floor(Math.random() * historicalDates.length)];
+      drills.push(generateHistoricalDateDrill(randomDate, deck, srsManager));
+    } else {
+      drills.push(generateStandardDrill(cardNumbers[i], deck, srsManager));
+    }
+  }
+
+  return drills;
 }

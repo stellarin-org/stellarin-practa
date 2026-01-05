@@ -12,11 +12,13 @@ import { PractaProps } from "@/types/flow";
 import { usePractaChrome } from "@/context/PractaChromeContext";
 import { useHeaderHeight } from "@/components/PractaChromeHeader";
 
-import { Deck, Drill, DrillResult, SessionSummary } from "./lib/types";
+import { Deck, Drill, DrillResult, SessionSummary, isStandardDrill, isPiSequenceDrill, isHistoricalDateDrill, StandardDrill, HistoricalDateEntry } from "./lib/types";
 import { loadAndValidateDeck } from "./lib/deck-validator";
 import { SRSManager } from "./lib/srs-manager";
 import { generateSession } from "./lib/session-generator";
 import { DrillCard } from "./components/DrillCard";
+import { PiSequenceDrill } from "./components/PiSequenceDrill";
+import { HistoricalDateDrill } from "./components/HistoricalDateDrill";
 import { FeedbackOverlay } from "./components/FeedbackOverlay";
 import { ProgressBar } from "./components/ProgressBar";
 import { SessionSummaryView } from "./components/SessionSummary";
@@ -41,6 +43,7 @@ export default function MajorSystemTrainer({
   const [phase, setPhase] = useState<Phase>("loading");
   const [deck, setDeck] = useState<Deck | null>(null);
   const [srsManager, setSRSManager] = useState<SRSManager | null>(null);
+  const [historicalDates, setHistoricalDates] = useState<HistoricalDateEntry[]>([]);
   const [drills, setDrills] = useState<Drill[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | undefined>();
@@ -70,6 +73,11 @@ export default function MajorSystemTrainer({
 
         const validatedDeck = loadAndValidateDeck(deckData);
         setDeck(validatedDeck);
+
+        const datesData = context.assets?.historical_dates;
+        if (datesData && Array.isArray(datesData)) {
+          setHistoricalDates(datesData as HistoricalDateEntry[]);
+        }
 
         let manager: SRSManager;
         if (context.storage) {
@@ -143,11 +151,21 @@ export default function MajorSystemTrainer({
     const nextDrill = drills[nextIndex];
     const imagesToPrefetch: string[] = [];
     
-    if (nextDrill.type === "IMAGE_TO_NUMBER") {
-      imagesToPrefetch.push(nextDrill.targetVariant.image);
-    } else if (nextDrill.type === "NUMBER_TO_IMAGE") {
-      nextDrill.choices.forEach((choice) => {
-        imagesToPrefetch.push(choice.variant.image);
+    if (isStandardDrill(nextDrill)) {
+      if (nextDrill.type === "IMAGE_TO_NUMBER") {
+        imagesToPrefetch.push(nextDrill.targetVariant.image);
+      } else if (nextDrill.type === "NUMBER_TO_IMAGE") {
+        nextDrill.choices.forEach((choice) => {
+          imagesToPrefetch.push(choice.variant.image);
+        });
+      }
+    } else if (isPiSequenceDrill(nextDrill)) {
+      nextDrill.sequence.forEach((card) => {
+        imagesToPrefetch.push(card.variant.image);
+      });
+    } else if (isHistoricalDateDrill(nextDrill)) {
+      nextDrill.cards.forEach((card) => {
+        imagesToPrefetch.push(card.variant.image);
       });
     }
     
@@ -169,7 +187,7 @@ export default function MajorSystemTrainer({
   const startSession = useCallback(() => {
     if (!deck || !srsManager) return;
 
-    const sessionDrills = generateSession(srsManager, deck);
+    const sessionDrills = generateSession(srsManager, deck, historicalDates);
     setDrills(sessionDrills);
     setCurrentIndex(0);
     setResults([]);
@@ -179,13 +197,15 @@ export default function MajorSystemTrainer({
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-  }, [deck, srsManager]);
+  }, [deck, srsManager, historicalDates]);
 
   const handleAnswer = useCallback(
     (index: number) => {
       if (selectedIndex !== undefined) return;
 
       const drill = drills[currentIndex];
+      if (!isStandardDrill(drill)) return;
+      
       const responseMs = Date.now() - drillStartTimeRef.current;
       const isCorrect = index === drill.correctIndex;
 
@@ -237,6 +257,66 @@ export default function MajorSystemTrainer({
     }
   }, [currentIndex, drills.length, srsManager]);
 
+  const handlePiSequenceComplete = useCallback(
+    (isCorrect: boolean) => {
+      const drill = drills[currentIndex];
+      const responseMs = Date.now() - drillStartTimeRef.current;
+
+      const result: DrillResult = {
+        drill,
+        selectedIndex: isCorrect ? 0 : -1,
+        isCorrect,
+        responseMs,
+      };
+
+      setCurrentResult(result);
+      setResults((prev) => [...prev, result]);
+
+      if (Platform.OS !== "web") {
+        if (isCorrect) {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        } else {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        }
+      }
+
+      setTimeout(() => {
+        handleContinue();
+      }, 1200);
+    },
+    [drills, currentIndex, handleContinue]
+  );
+
+  const handleHistoricalDateComplete = useCallback(
+    (isCorrect: boolean, enteredAnswer: string) => {
+      const drill = drills[currentIndex];
+      const responseMs = Date.now() - drillStartTimeRef.current;
+
+      const result: DrillResult = {
+        drill,
+        selectedIndex: isCorrect ? 0 : -1,
+        isCorrect,
+        responseMs,
+      };
+
+      setCurrentResult(result);
+      setResults((prev) => [...prev, result]);
+
+      if (Platform.OS !== "web") {
+        if (isCorrect) {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        } else {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        }
+      }
+
+      setTimeout(() => {
+        handleContinue();
+      }, 1800);
+    },
+    [drills, currentIndex, handleContinue]
+  );
+
   const getSummary = useCallback((): SessionSummary => {
     const correctCount = results.filter((r) => r.isCorrect).length;
     const stats = srsManager?.getStats();
@@ -246,7 +326,13 @@ export default function MajorSystemTrainer({
       correctCount,
       accuracy: results.length > 0 ? correctCount / results.length : 0,
       newCardsIntroduced: drills.filter(
-        (d, i) => results[i] && !results.slice(0, i).some((r) => r.drill.targetNumber === d.targetNumber)
+        (d, i) => {
+          if (!results[i] || !isStandardDrill(d)) return false;
+          return !results.slice(0, i).some((r) => {
+            if (!isStandardDrill(r.drill)) return false;
+            return r.drill.targetNumber === d.targetNumber;
+          });
+        }
       ).length,
       cardsReviewed: results.length,
       dueRemaining: stats?.dueNow || 0,
@@ -394,7 +480,7 @@ export default function MajorSystemTrainer({
       </View>
 
       <View style={styles.drillContent}>
-        {currentDrill ? (
+        {currentDrill && isStandardDrill(currentDrill) ? (
           <DrillCard
             drill={currentDrill}
             onAnswer={handleAnswer}
@@ -403,9 +489,25 @@ export default function MajorSystemTrainer({
             resolveImageAsset={resolveImageAsset}
           />
         ) : null}
+        {currentDrill && isPiSequenceDrill(currentDrill) ? (
+          <PiSequenceDrill
+            drill={currentDrill}
+            onComplete={handlePiSequenceComplete}
+            disabled={false}
+            resolveImageAsset={resolveImageAsset}
+          />
+        ) : null}
+        {currentDrill && isHistoricalDateDrill(currentDrill) ? (
+          <HistoricalDateDrill
+            drill={currentDrill}
+            onComplete={handleHistoricalDateComplete}
+            disabled={false}
+            resolveImageAsset={resolveImageAsset}
+          />
+        ) : null}
       </View>
 
-      {phase === "feedback" && currentResult ? (
+      {phase === "feedback" && currentResult && isStandardDrill(currentResult.drill) ? (
         <FeedbackOverlay
           result={currentResult}
           onContinue={handleContinue}
