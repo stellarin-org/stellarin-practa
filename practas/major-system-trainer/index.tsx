@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { View, StyleSheet, Pressable, Platform, ActivityIndicator } from "react-native";
+import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 
@@ -132,6 +133,31 @@ export default function MajorSystemTrainer({
     },
     [context.assets]
   );
+
+  useEffect(() => {
+    if (phase !== "drilling" || drills.length === 0) return;
+    
+    const nextIndex = currentIndex + 1;
+    if (nextIndex >= drills.length) return;
+    
+    const nextDrill = drills[nextIndex];
+    const imagesToPrefetch: string[] = [];
+    
+    if (nextDrill.type === "IMAGE_TO_NUMBER") {
+      imagesToPrefetch.push(nextDrill.targetVariant.image);
+    } else if (nextDrill.type === "NUMBER_TO_IMAGE") {
+      nextDrill.choices.forEach((choice) => {
+        imagesToPrefetch.push(choice.variant.image);
+      });
+    }
+    
+    imagesToPrefetch.forEach((imageName) => {
+      const asset = resolveImageAsset(imageName);
+      if (asset && typeof asset === "object" && "uri" in asset) {
+        Image.prefetch(asset.uri);
+      }
+    });
+  }, [phase, currentIndex, drills, resolveImageAsset]);
 
   const handleTutorialComplete = useCallback(async () => {
     if (context.storage) {

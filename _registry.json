@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-01-05T05:38:59.761Z",
+  "registryVersion": "2026-01-05T05:51:26.594Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -61,7 +61,7 @@
     },
     {
       "slug": "major-system-trainer",
-      "version": "1.4.9",
+      "version": "1.5.0",
       "buildId": "a3f5f7d0-a4f7-46b0-a61f-480348dfddd9",
       "name": "Major System Trainer",
       "description": "Learn the Major System 00-99 with images and spaced repetition",

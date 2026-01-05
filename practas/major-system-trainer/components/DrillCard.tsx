@@ -1,5 +1,5 @@
-import React from "react";
-import { View, StyleSheet, Pressable, useWindowDimensions } from "react-native";
+import React, { useState } from "react";
+import { View, StyleSheet, Pressable, useWindowDimensions, ActivityIndicator } from "react-native";
 import { Image } from "expo-image";
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -60,6 +60,8 @@ export function DrillCard({
                 source={resolveImageAsset(drill.targetVariant.image)}
                 style={styles.promptImage}
                 contentFit="cover"
+                placeholder={{ blurhash: "L6PZfSi_.AyE_3t7t7R**0o#DgR4" }}
+                transition={200}
               />
               <View style={styles.promptWordOverlay}>
                 <ThemedText style={styles.promptWordOverlayText}>{drill.targetVariant.word}</ThemedText>
@@ -109,6 +111,8 @@ export function DrillCard({
               source={resolveImageAsset(choice.variant.image)}
               style={styles.choiceImage}
               contentFit="cover"
+              placeholder={{ blurhash: "L6PZfSi_.AyE_3t7t7R**0o#DgR4" }}
+              transition={150}
             />
             <View style={styles.wordOverlay}>
               <ThemedText style={styles.wordOverlayText}>{choice.variant.word}</ThemedText>
