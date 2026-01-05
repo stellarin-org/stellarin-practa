@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-01-05T05:16:01.617Z",
+  "registryVersion": "2026-01-05T05:38:59.761Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -61,7 +61,7 @@
     },
     {
       "slug": "major-system-trainer",
-      "version": "1.4.4",
+      "version": "1.4.9",
       "buildId": "a3f5f7d0-a4f7-46b0-a61f-480348dfddd9",
       "name": "Major System Trainer",
       "description": "Learn the Major System 00-99 with images and spaced repetition",
@@ -170,7 +170,7 @@
         "img_97_book": "https://stellarin-practa-verification.replit.app/assets/practa/major-system-trainer/a3f5f7d0-a4f7-46b0-a61f-480348dfddd9/97_book.webp",
         "img_98_puff": "https://stellarin-practa-verification.replit.app/assets/practa/major-system-trainer/a3f5f7d0-a4f7-46b0-a61f-480348dfddd9/98_puff.webp",
         "img_99_poop": "https://stellarin-practa-verification.replit.app/assets/practa/major-system-trainer/a3f5f7d0-a4f7-46b0-a61f-480348dfddd9/99_poop.webp",
-        "deck": "https://stellarin-practa-verification.replit.app/assets/practa/major-system-trainer/a3f5f7d0-a4f7-46b0-a61f-480348dfddd9/Cards 01-99.json"
+        "deck": "https://stellarin-practa-verification.replit.app/assets/practa/major-system-trainer/a3f5f7d0-a4f7-46b0-a61f-480348dfddd9/cards_00_99.json"
       }
     },
     {
