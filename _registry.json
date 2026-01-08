@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-01-06T07:07:39.819Z",
+  "registryVersion": "2026-01-08T06:32:17.607Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -185,8 +185,8 @@
       "practaType": "mind",
       "estimatedDuration": 90,
       "assets": {
-        "puzzles": "https://stellarin-practa-verification.replit.app/assets/practa/mini-chess-puzzles/609a9860-8c2a-4e2d-93f9-25279f385082/mini_puzzles_all_v2.json",
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/mini-chess-puzzles/609a9860-8c2a-4e2d-93f9-25279f385082/splash.webp"
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/mini-chess-puzzles/609a9860-8c2a-4e2d-93f9-25279f385082/splash.webp",
+        "puzzles": "https://stellarin-practa-verification.replit.app/assets/practa/mini-chess-puzzles/609a9860-8c2a-4e2d-93f9-25279f385082/mini_puzzles_all_v2.json"
       }
     },
     {
@@ -204,6 +204,21 @@
         "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.png",
         "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json",
         "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json"
+      }
+    },
+    {
+      "slug": "sort-a-few-things",
+      "version": "1.1.4",
+      "buildId": "b0dada3b-f4fb-4391-a164-8687d0d44d55",
+      "name": "Sort a Few Things",
+      "description": "A gentle exercise to surface priorities and choose one place to begin",
+      "author": "Practa Developer",
+      "category": "prioritization",
+      "practaType": "prioritization",
+      "estimatedDuration": 180,
+      "assets": {
+        "content": "https://stellarin-practa-verification.replit.app/assets/practa/sort-a-few-things/b0dada3b-f4fb-4391-a164-8687d0d44d55/content.json",
+        "wellness-bg": "https://stellarin-practa-verification.replit.app/assets/practa/sort-a-few-things/b0dada3b-f4fb-4391-a164-8687d0d44d55/wellness-bg.png"
       }
     }
   ]
