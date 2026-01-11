@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-01-08T06:32:17.607Z",
+  "registryVersion": "2026-01-11T22:38:31.655Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -185,8 +185,8 @@
       "practaType": "mind",
       "estimatedDuration": 90,
       "assets": {
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/mini-chess-puzzles/609a9860-8c2a-4e2d-93f9-25279f385082/splash.webp",
-        "puzzles": "https://stellarin-practa-verification.replit.app/assets/practa/mini-chess-puzzles/609a9860-8c2a-4e2d-93f9-25279f385082/mini_puzzles_all_v2.json"
+        "puzzles": "https://stellarin-practa-verification.replit.app/assets/practa/mini-chess-puzzles/609a9860-8c2a-4e2d-93f9-25279f385082/mini_puzzles_all_v2.json",
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/mini-chess-puzzles/609a9860-8c2a-4e2d-93f9-25279f385082/splash.webp"
       }
     },
     {
