@@ -1,0 +1,22 @@
+{
+  "id": "six",
+  "name": "Six",
+  "version": "1.4.3",
+  "description": "A daily word guessing game - guess the 6-letter word in 6 tries",
+  "author": "Your Name",
+  "type": "widget",
+  "category": "games",
+  "tags": [
+    "word",
+    "puzzle",
+    "daily"
+  ],
+  "estimatedDuration": 180,
+  "requiredPermissions": [],
+  "assets": {
+    "splash": "splash.png",
+    "sixLogo": "six_logo.png",
+    "validWords": "valid-words.json",
+    "wordlist": "wordlist.json"
+  }
+}

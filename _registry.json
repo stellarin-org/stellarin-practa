@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-01-11T22:38:31.655Z",
+  "registryVersion": "2026-01-20T05:26:59.502Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -10,6 +10,7 @@
       "author": "Practa",
       "category": "mind",
       "practaType": "mind",
+      "type": "community",
       "estimatedDuration": 120,
       "assets": {
         "splash": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/splash.png",
@@ -25,6 +26,7 @@
       "author": "Practa Creator",
       "category": "mindfulness",
       "practaType": "mindfulness",
+      "type": "community",
       "estimatedDuration": 300,
       "assets": {
         "splash": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/sudoku_splash.png"
@@ -39,6 +41,7 @@
       "author": "Your Name",
       "category": "wellness",
       "practaType": "wellness",
+      "type": "community",
       "estimatedDuration": 60,
       "assets": {
         "news": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/news.json"
@@ -53,6 +56,7 @@
       "author": "Mike Messenger",
       "category": "relaxation",
       "practaType": "relaxation",
+      "type": "community",
       "estimatedDuration": 20,
       "assets": {
         "splash": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/splash.png",
@@ -68,6 +72,7 @@
       "author": "Stellarin",
       "category": "learning",
       "practaType": "learning",
+      "type": "community",
       "estimatedDuration": 300,
       "assets": {
         "deck": "https://stellarin-practa-verification.replit.app/assets/practa/major-system-trainer/a3f5f7d0-a4f7-46b0-a61f-480348dfddd9/cards_00_99.json",
@@ -183,27 +188,29 @@
       "author": "Practa",
       "category": "mind",
       "practaType": "mind",
+      "type": "community",
       "estimatedDuration": 90,
       "assets": {
-        "puzzles": "https://stellarin-practa-verification.replit.app/assets/practa/mini-chess-puzzles/609a9860-8c2a-4e2d-93f9-25279f385082/mini_puzzles_all_v2.json",
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/mini-chess-puzzles/609a9860-8c2a-4e2d-93f9-25279f385082/splash.webp"
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/mini-chess-puzzles/609a9860-8c2a-4e2d-93f9-25279f385082/splash.webp",
+        "puzzles": "https://stellarin-practa-verification.replit.app/assets/practa/mini-chess-puzzles/609a9860-8c2a-4e2d-93f9-25279f385082/mini_puzzles_all_v2.json"
       }
     },
     {
       "slug": "six",
-      "version": "1.3.3",
+      "version": "1.4.3",
       "buildId": "d65f36c4-2d03-4357-8c0f-4db5d19562cc",
       "name": "Six",
       "description": "A daily word guessing game - guess the 6-letter word in 6 tries",
       "author": "Your Name",
       "category": "games",
       "practaType": "games",
+      "type": "core",
       "estimatedDuration": 180,
       "assets": {
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/splash.png",
         "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.png",
-        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json",
-        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json"
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/splash.png",
+        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json",
+        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json"
       }
     },
     {
@@ -215,6 +222,7 @@
       "author": "Practa Developer",
       "category": "prioritization",
       "practaType": "prioritization",
+      "type": "community",
       "estimatedDuration": 180,
       "assets": {
         "content": "https://stellarin-practa-verification.replit.app/assets/practa/sort-a-few-things/b0dada3b-f4fb-4391-a164-8687d0d44d55/content.json",

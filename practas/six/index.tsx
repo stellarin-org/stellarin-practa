@@ -185,11 +185,12 @@ interface GhostLetterTileProps {
 function GhostLetterTile({ letter, fadeIn, delay, fadeOutDelay = 0 }: GhostLetterTileProps) {
   const { isDark } = useTheme();
   const sizes = useContext(SizingContext);
-  const letterOpacity = useSharedValue(0);
+  const letterOpacity = useSharedValue(fadeIn ? 0 : 0.4);
   const tileOpacity = useSharedValue(1);
 
   useEffect(() => {
     if (fadeIn && letter) {
+      letterOpacity.value = 0;
       letterOpacity.value = withDelay(
         delay,
         withTiming(0.4, { duration: 1400, easing: Easing.inOut(Easing.ease) })
@@ -198,7 +199,7 @@ function GhostLetterTile({ letter, fadeIn, delay, fadeOutDelay = 0 }: GhostLette
         delay,
         withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) })
       );
-    } else {
+    } else if (letter) {
       letterOpacity.value = withDelay(
         fadeOutDelay,
         withTiming(0, { duration: 800, easing: Easing.out(Easing.ease) })
@@ -586,6 +587,177 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
   const [warningMessage, setWarningMessage] = useState("");
   const [popIndex, setPopIndex] = useState(-1);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [hintWord, setHintWord] = useState<string | null>(null);
+  const [showHint, setShowHint] = useState(false);
+  const [isHintFadingOut, setIsHintFadingOut] = useState(false);
+  const hintTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hintCycleRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+  const HINT_DELAY = 15000;
+  const HINT_CYCLE_DURATION = 6000;
+
+  const findValidHintWord = useCallback((): string | null => {
+    if (guesses.length === 0) return null;
+    
+    const correctPositions: Record<number, string> = {};
+    const presentLetters: Set<string> = new Set();
+    const absentLetters: Set<string> = new Set();
+    const wrongPositions: Record<number, Set<string>> = {};
+    
+    for (let i = 0; i < WORD_LENGTH; i++) {
+      wrongPositions[i] = new Set();
+    }
+    
+    for (const guess of guesses) {
+      const states = evaluateGuess(guess, targetWord);
+      for (let i = 0; i < guess.length; i++) {
+        const letter = guess[i];
+        const state = states[i];
+        
+        if (state === "correct") {
+          correctPositions[i] = letter;
+        } else if (state === "present") {
+          presentLetters.add(letter);
+          wrongPositions[i].add(letter);
+        } else if (state === "absent") {
+          const isLetterElsewhereCorrect = Object.values(correctPositions).includes(letter);
+          const isLetterElsewherePresent = guesses.some((g, gIdx) => {
+            const s = evaluateGuess(g, targetWord);
+            return s.some((st, idx) => g[idx] === letter && (st === "correct" || st === "present"));
+          });
+          if (!isLetterElsewhereCorrect && !isLetterElsewherePresent) {
+            absentLetters.add(letter);
+          }
+        }
+      }
+    }
+    
+    const validHints: string[] = [];
+    const allWords = [...wordlist];
+    
+    for (const word of allWords) {
+      if (word === targetWord) continue;
+      
+      let isValid = true;
+      
+      for (const [pos, letter] of Object.entries(correctPositions)) {
+        if (word[parseInt(pos)] !== letter) {
+          isValid = false;
+          break;
+        }
+      }
+      if (!isValid) continue;
+      
+      for (const letter of presentLetters) {
+        if (!word.includes(letter)) {
+          isValid = false;
+          break;
+        }
+      }
+      if (!isValid) continue;
+      
+      for (const letter of absentLetters) {
+        if (word.includes(letter)) {
+          isValid = false;
+          break;
+        }
+      }
+      if (!isValid) continue;
+      
+      for (const [pos, letters] of Object.entries(wrongPositions)) {
+        const posNum = parseInt(pos);
+        for (const letter of letters) {
+          if (word[posNum] === letter) {
+            isValid = false;
+            break;
+          }
+        }
+        if (!isValid) break;
+      }
+      
+      if (isValid && !guesses.includes(word)) {
+        validHints.push(word);
+      }
+    }
+    
+    if (validHints.length === 0) {
+      return null;
+    }
+    
+    return validHints[Math.floor(Math.random() * validHints.length)];
+  }, [guesses, targetWord, wordlist]);
+
+  const resetHintTimer = useCallback(() => {
+    setShowHint(false);
+    setHintWord(null);
+    setIsHintFadingOut(false);
+    
+    if (hintTimerRef.current) {
+      clearTimeout(hintTimerRef.current);
+      hintTimerRef.current = null;
+    }
+    if (hintCycleRef.current) {
+      clearInterval(hintCycleRef.current);
+      hintCycleRef.current = null;
+    }
+  }, []);
+
+  const startHintTimer = useCallback(() => {
+    if (gameState !== "playing" || guesses.length === 0 || currentGuess.length > 0) {
+      return;
+    }
+    
+    resetHintTimer();
+    
+    hintTimerRef.current = setTimeout(() => {
+      if (gameState === "playing" && guesses.length > 0 && currentGuess.length === 0) {
+        const hint = findValidHintWord();
+        if (hint) {
+          setHintWord(hint);
+          setShowHint(true);
+          setIsHintFadingOut(false);
+          
+          hintCycleRef.current = setInterval(() => {
+            setIsHintFadingOut(true);
+            
+            setTimeout(() => {
+              const newHint = findValidHintWord();
+              if (newHint) {
+                setHintWord(newHint);
+              } else {
+                setHintWord("ILOVEU");
+              }
+              setIsHintFadingOut(false);
+            }, 1200);
+          }, HINT_CYCLE_DURATION);
+        } else {
+          setHintWord("ILOVEU");
+          setShowHint(true);
+        }
+      }
+    }, HINT_DELAY);
+  }, [gameState, guesses.length, currentGuess.length, findValidHintWord, resetHintTimer]);
+
+  useEffect(() => {
+    if (gameState !== "playing") {
+      resetHintTimer();
+      return;
+    }
+    
+    if (currentGuess.length > 0) {
+      resetHintTimer();
+      return;
+    }
+    
+    if (guesses.length > 0 && currentGuess.length === 0) {
+      startHintTimer();
+    }
+    
+    return () => {
+      if (hintTimerRef.current) {
+        clearTimeout(hintTimerRef.current);
+      }
+    };
+  }, [gameState, guesses.length, currentGuess.length, startHintTimer, resetHintTimer]);
 
   useEffect(() => {
     setConfig({
@@ -841,8 +1013,9 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
 
   const handleKeyPressWithReset = useCallback((key: string) => {
     resetInactivityTimer();
+    resetHintTimer();
     handleKeyPress(key);
-  }, [handleKeyPress, resetInactivityTimer]);
+  }, [handleKeyPress, resetInactivityTimer, resetHintTimer]);
 
   const handleComplete = useCallback(() => {
     triggerHaptic("success");
@@ -877,6 +1050,8 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
       const showGhostWord = isGridEmpty && !isHidden && !isFalling;
       const ghostWord = ghostWords[i] || "";
       const isGhostActive = activeGhostRows.has(i);
+      
+      const showHintInRow = isCurrentRow && showHint && hintWord && currentGuess.length === 0;
 
       const cells = [];
       for (let j = 0; j < WORD_LENGTH; j++) {
@@ -895,6 +1070,17 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
               fadeIn={isGhostActive && !isFadingOut}
               delay={j * 100}
               fadeOutDelay={fadeOutDelay}
+            />
+          );
+        } else if (showHintInRow) {
+          const hintFadeOutDelay = isHintFadingOut ? (WORD_LENGTH - 1 - j) * 60 : 0;
+          cells.push(
+            <GhostLetterTile
+              key={`hint-${i}-${j}-${hintWord}-${isHintFadingOut}`}
+              letter={hintWord[j] || ""}
+              fadeIn={!isHintFadingOut}
+              delay={j * 100}
+              fadeOutDelay={hintFadeOutDelay}
             />
           );
         } else {
@@ -942,8 +1128,13 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
             {!sizes.isCompact ? (
               <View style={styles.instructionsContainer}>
                 <ThemedText style={[styles.instructions, { color: theme.textSecondary }]}>
-                  Guess the six letter word. Start by writing a word to find which letters match.
+                  Guess the six letter word. Start by writing a word.{" "}
                 </ThemedText>
+                <Pressable onPress={() => setShowTutorial(true)}>
+                  <ThemedText style={[styles.instructions, { color: theme.primary }]}>
+                    Learn how to play
+                  </ThemedText>
+                </Pressable>
               </View>
             ) : null}
           </View>
