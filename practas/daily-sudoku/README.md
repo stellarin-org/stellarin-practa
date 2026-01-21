@@ -38,4 +38,4 @@ Created by Practa Creator
 
 ## Version
 
-1.1.1
+1.2.7

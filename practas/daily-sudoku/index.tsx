@@ -30,17 +30,25 @@ import { Spacing, BorderRadius } from "@/constants/theme";
 import { Feather } from "@expo/vector-icons";
 import { PractaContext, PractaCompleteHandler } from "@/types/flow";
 import { ImageSourcePropType } from "react-native";
+import { usePractaChrome } from "@/context/PractaChromeContext";
+import { useHeaderHeight } from "@/components/PractaChromeHeader";
 
 interface MyPractaProps {
   context: PractaContext;
   onComplete: PractaCompleteHandler;
   onSkip?: () => void;
+  showSettings?: boolean;
+  onSettings?: () => void;
 }
 
-const GRID_SIZE = 9;
-const BOX_SIZE = 3;
+const GRID_SIZE_CLASSIC = 9;
+const BOX_SIZE_CLASSIC = 3;
+const GRID_SIZE_MINI = 6;
+const BOX_ROWS_MINI = 2;
+const BOX_COLS_MINI = 3;
 
 type Difficulty = "lite" | "easy" | "medium" | "hard";
+type GridType = "classic" | "mini";
 
 interface CellData {
   value: number;
@@ -90,8 +98,8 @@ const generateSudoku = (difficulty: Difficulty): { grid: CellData[][]; solution:
   const cellsToRemove = difficulty === "lite" ? 25 : difficulty === "easy" ? 35 : difficulty === "medium" ? 45 : 55;
   const positions: [number, number][] = [];
 
-  for (let i = 0; i < GRID_SIZE; i++) {
-    for (let j = 0; j < GRID_SIZE; j++) {
+  for (let i = 0; i < GRID_SIZE_CLASSIC; i++) {
+    for (let j = 0; j < GRID_SIZE_CLASSIC; j++) {
       positions.push([i, j]);
     }
   }
@@ -111,6 +119,74 @@ const generateSudoku = (difficulty: Difficulty): { grid: CellData[][]; solution:
   }
 
   return { grid, solution };
+};
+
+const generateMiniSudoku = (difficulty: Difficulty): { grid: CellData[][]; solution: number[][] } => {
+  const base: number[][] = [
+    [1, 2, 3, 4, 5, 6],
+    [4, 5, 6, 1, 2, 3],
+    [2, 3, 1, 5, 6, 4],
+    [5, 6, 4, 2, 3, 1],
+    [3, 1, 2, 6, 4, 5],
+    [6, 4, 5, 3, 1, 2],
+  ];
+
+  const difficultyOffset = difficulty === "lite" ? -1000 : difficulty === "easy" ? 0 : difficulty === "medium" ? 1000 : 2000;
+  const seed = getTodaysSeed() + difficultyOffset + 5000;
+  const random = createSeededRandom(seed);
+
+  const shuffled = shuffleMiniBoard(base, random);
+  const solution = shuffled.map((row) => [...row]);
+  const cellsToRemove = difficulty === "lite" ? 8 : difficulty === "easy" ? 12 : difficulty === "medium" ? 16 : 20;
+  const positions: [number, number][] = [];
+
+  for (let i = 0; i < GRID_SIZE_MINI; i++) {
+    for (let j = 0; j < GRID_SIZE_MINI; j++) {
+      positions.push([i, j]);
+    }
+  }
+
+  for (let i = positions.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [positions[i], positions[j]] = [positions[j], positions[i]];
+  }
+
+  const grid: CellData[][] = shuffled.map((row) =>
+    row.map((value) => ({ value, isOriginal: true, isError: false }))
+  );
+
+  for (let i = 0; i < cellsToRemove; i++) {
+    const [row, col] = positions[i];
+    grid[row][col] = { value: 0, isOriginal: false, isError: false };
+  }
+
+  return { grid, solution };
+};
+
+const shuffleMiniBoard = (board: number[][], random: () => number): number[][] => {
+  const result = board.map((row) => [...row]);
+
+  for (let i = 0; i < 5; i++) {
+    const band = Math.floor(random() * 3);
+    const row1 = band * BOX_ROWS_MINI + Math.floor(random() * BOX_ROWS_MINI);
+    const row2 = band * BOX_ROWS_MINI + Math.floor(random() * BOX_ROWS_MINI);
+    if (row1 !== row2 && row1 < 6 && row2 < 6) {
+      [result[row1], result[row2]] = [result[row2], result[row1]];
+    }
+  }
+
+  for (let i = 0; i < 5; i++) {
+    const stack = Math.floor(random() * 2);
+    const col1 = stack * BOX_COLS_MINI + Math.floor(random() * BOX_COLS_MINI);
+    const col2 = stack * BOX_COLS_MINI + Math.floor(random() * BOX_COLS_MINI);
+    if (col1 !== col2 && col1 < 6 && col2 < 6) {
+      for (let row = 0; row < 6; row++) {
+        [result[row][col1], result[row][col2]] = [result[row][col2], result[row][col1]];
+      }
+    }
+  }
+
+  return result;
 };
 
 const shuffleBoard = (board: number[][], random: () => number): number[][] => {
@@ -143,17 +219,22 @@ const isValidPlacement = (
   grid: CellData[][],
   row: number,
   col: number,
-  num: number
+  num: number,
+  gridType: GridType = "classic"
 ): boolean => {
-  for (let i = 0; i < GRID_SIZE; i++) {
+  const gridSize = gridType === "mini" ? GRID_SIZE_MINI : GRID_SIZE_CLASSIC;
+  const boxRows = gridType === "mini" ? BOX_ROWS_MINI : BOX_SIZE_CLASSIC;
+  const boxCols = gridType === "mini" ? BOX_COLS_MINI : BOX_SIZE_CLASSIC;
+
+  for (let i = 0; i < gridSize; i++) {
     if (i !== col && grid[row][i].value === num) return false;
     if (i !== row && grid[i][col].value === num) return false;
   }
 
-  const boxRow = Math.floor(row / BOX_SIZE) * BOX_SIZE;
-  const boxCol = Math.floor(col / BOX_SIZE) * BOX_SIZE;
-  for (let i = boxRow; i < boxRow + BOX_SIZE; i++) {
-    for (let j = boxCol; j < boxCol + BOX_SIZE; j++) {
+  const boxRow = Math.floor(row / boxRows) * boxRows;
+  const boxCol = Math.floor(col / boxCols) * boxCols;
+  for (let i = boxRow; i < boxRow + boxRows; i++) {
+    for (let j = boxCol; j < boxCol + boxCols; j++) {
       if ((i !== row || j !== col) && grid[i][j].value === num) return false;
     }
   }
@@ -161,9 +242,10 @@ const isValidPlacement = (
   return true;
 };
 
-const checkWin = (grid: CellData[][]): boolean => {
-  for (let row = 0; row < GRID_SIZE; row++) {
-    for (let col = 0; col < GRID_SIZE; col++) {
+const checkWin = (grid: CellData[][], gridType: GridType = "classic"): boolean => {
+  const gridSize = gridType === "mini" ? GRID_SIZE_MINI : GRID_SIZE_CLASSIC;
+  for (let row = 0; row < gridSize; row++) {
+    for (let col = 0; col < gridSize; col++) {
       if (grid[row][col].value === 0) return false;
       if (grid[row][col].isError) return false;
     }
@@ -260,72 +342,86 @@ const GlassCard = ({ children, style, intensity = 40 }: { children: React.ReactN
   );
 };
 
-export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps) {
+export default function MyPracta({ 
+  context, 
+  onComplete, 
+  onSkip,
+  showSettings: propShowSettings,
+  onSettings: propOnSettings 
+}: MyPractaProps) {
   const { theme, isDark } = useTheme();
   const insets = useSafeAreaInsets();
+  const { setConfig } = usePractaChrome();
+  const headerHeight = useHeaderHeight();
+
+  const [gridType, setGridType] = useState<GridType>("mini");
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
-  const [grid, setGrid] = useState<CellData[][]>(() => generateSudoku("easy").grid);
-  const [solution, setSolution] = useState<number[][]>(() => generateSudoku("easy").solution);
+  const [grid, setGrid] = useState<CellData[][]>(() => generateMiniSudoku("easy").grid);
+  const [solution, setSolution] = useState<number[][]>(() => generateMiniSudoku("easy").solution);
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
   const [isComplete, setIsComplete] = useState(false);
   const [mistakes, setMistakes] = useState(0);
   const [timer, setTimer] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
+  const [isRunning, setIsRunning] = useState(true);
   const [iconTaps, setIconTaps] = useState(0);
-  const [showSplash, setShowSplash] = useState(true);
-  const [splashImageLoaded, setSplashImageLoaded] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [pendingGridType, setPendingGridType] = useState<GridType | null>(null);
+  const [pendingDifficulty, setPendingDifficulty] = useState<Difficulty | null>(null);
   const [showTimer, setShowTimer] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const lastTapTime = useRef(0);
   const selectedCellRef = useRef<{ row: number; col: number } | null>(null);
 
+  const currentGridSize = gridType === "mini" ? GRID_SIZE_MINI : GRID_SIZE_CLASSIC;
   const screenWidth = Dimensions.get("window").width;
   const screenHeight = Dimensions.get("window").height;
-  const gridSize = Math.min(screenWidth - Spacing["3xl"] * 2, 360);
-  const cellSize = gridSize / GRID_SIZE;
+  const gridVisualSize = Math.min(screenWidth - Spacing["3xl"] * 2, 360);
+  const cellSize = gridVisualSize / currentGridSize;
 
   const timerScale = useSharedValue(1);
   const headerOpacity = useSharedValue(1);
   const controlsOpacity = useSharedValue(1);
   const congratsOpacity = useSharedValue(0);
   const congratsTranslateY = useSharedValue(20);
-  const splashOpacity = useSharedValue(1);
-  const splashImageOpacity = useSharedValue(0);
-
-  const hideSplash = useCallback(() => {
-    setShowSplash(false);
-    setIsRunning(true);
-  }, []);
-
-  const handleSplashImageLoad = useCallback(() => {
-    setSplashImageLoaded(true);
-  }, []);
-
-  const handleSplashImageError = useCallback(() => {
-    hideSplash();
-  }, [hideSplash]);
+  const idlePulse = useSharedValue(1);
+  const lastActivityTime = useRef(Date.now());
 
   useEffect(() => {
-    if (!splashImageLoaded) return;
-    
-    splashImageOpacity.value = withTiming(1, { duration: 400 });
-    splashOpacity.value = withDelay(2400, withTiming(0, { duration: 400 }));
-    const timeout = setTimeout(() => {
-      hideSplash();
-    }, 2800);
-    return () => clearTimeout(timeout);
-  }, [splashImageLoaded]);
-
-  useEffect(() => {
-    if (!showSplash) return;
-    const timeoutFallback = setTimeout(() => {
-      if (!splashImageLoaded) {
-        hideSplash();
+    const checkIdle = setInterval(() => {
+      const now = Date.now();
+      if (now - lastActivityTime.current > 10000 && !isComplete && isRunning) {
+        idlePulse.value = withSequence(
+          withTiming(1.08, { duration: 1500 }),
+          withTiming(1, { duration: 1500 })
+        );
       }
-    }, 5000);
-    return () => clearTimeout(timeoutFallback);
-  }, [showSplash, splashImageLoaded, hideSplash]);
+    }, 3000);
+    return () => clearInterval(checkIdle);
+  }, [isComplete, isRunning]);
+
+  const idlePulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: idlePulse.value }],
+  }));
+
+  const updateActivity = useCallback(() => {
+    lastActivityTime.current = Date.now();
+    if (idlePulse.value !== 1) {
+      idlePulse.value = withSpring(1);
+    }
+  }, []);
+
+  const openSettings = useCallback(() => {
+    setShowSettings(true);
+  }, []);
+
+  useEffect(() => {
+    setConfig({
+      headerMode: "default",
+      title: "Daily Sudoku",
+      showSettings: propShowSettings ?? true,
+      onSettings: openSettings,
+    });
+  }, [setConfig, propShowSettings, openSettings]);
 
   useEffect(() => {
     context.storage?.get<boolean>("showTimer").then((val) => {
@@ -333,6 +429,19 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
     }).catch(() => {});
     context.storage?.get<boolean>("showErrors").then((val) => {
       if (val === true || val === false) setShowErrors(val);
+    }).catch(() => {});
+    context.storage?.get<GridType>("gridType").then((savedGridType) => {
+      const validGridType = savedGridType === "mini" || savedGridType === "classic" ? savedGridType : "mini";
+      setGridType(validGridType);
+      
+      context.storage?.get<Difficulty>("difficulty").then((val) => {
+        const validDifficulty = val === "lite" || val === "easy" || val === "medium" || val === "hard" ? val : "easy";
+        setDifficulty(validDifficulty);
+        const generator = validGridType === "mini" ? generateMiniSudoku : generateSudoku;
+        const { grid: newGrid, solution: newSolution } = generator(validDifficulty);
+        setGrid(newGrid);
+        setSolution(newSolution);
+      }).catch(() => {});
     }).catch(() => {});
   }, []);
 
@@ -351,14 +460,6 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
       return newVal;
     });
   }, [context.storage]);
-
-  const splashAnimStyle = useAnimatedStyle(() => ({
-    opacity: splashOpacity.value,
-  }));
-
-  const splashImageAnimStyle = useAnimatedStyle(() => ({
-    opacity: splashImageOpacity.value,
-  }));
 
   useEffect(() => {
     if (isComplete) {
@@ -409,12 +510,14 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
   };
 
   const handleCellPress = useCallback((row: number, col: number) => {
+    updateActivity();
     selectedCellRef.current = { row, col };
     setSelectedCell({ row, col });
     triggerHaptic("light");
-  }, []);
+  }, [updateActivity]);
 
   const handleNumberPress = useCallback((num: number) => {
+    updateActivity();
     const cell = selectedCellRef.current || selectedCell;
     if (!cell || isComplete) return;
 
@@ -424,7 +527,7 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
     triggerHaptic("medium");
 
     const newGrid = grid.map((r) => r.map((c) => ({ ...c })));
-    const isValid = num === 0 || isValidPlacement(newGrid, row, col, num);
+    const isValid = num === 0 || isValidPlacement(newGrid, row, col, num, gridType);
 
     newGrid[row][col] = {
       value: num,
@@ -439,16 +542,24 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
 
     setGrid(newGrid);
 
-    if (checkWin(newGrid)) {
+    if (checkWin(newGrid, gridType)) {
       setIsComplete(true);
       setIsRunning(false);
       triggerHaptic("success");
     }
-  }, [selectedCell, grid, isComplete]);
+  }, [selectedCell, grid, isComplete, gridType]);
 
-  const handleNewGame = useCallback((diff: Difficulty) => {
-    const { grid: newGrid, solution: newSolution } = generateSudoku(diff);
+  const handleNewGame = useCallback((diff: Difficulty, newGridType?: GridType) => {
+    updateActivity();
+    const typeToUse = newGridType ?? gridType;
+    const generator = typeToUse === "mini" ? generateMiniSudoku : generateSudoku;
+    const { grid: newGrid, solution: newSolution } = generator(diff);
     setDifficulty(diff);
+    context.storage?.set("difficulty", diff).catch(() => {});
+    if (newGridType) {
+      setGridType(newGridType);
+      context.storage?.set("gridType", newGridType).catch(() => {});
+    }
     setGrid(newGrid);
     setSolution(newSolution);
     selectedCellRef.current = null;
@@ -459,7 +570,7 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
     setIsRunning(true);
     setIconTaps(0);
     triggerHaptic("medium");
-  }, []);
+  }, [context.storage, gridType]);
 
   const handleClear = useCallback(() => {
     if (!selectedCell || isComplete) return;
@@ -467,6 +578,7 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
   }, [selectedCell, isComplete, handleNumberPress]);
 
   const handleIconTap = useCallback(() => {
+    updateActivity();
     const now = Date.now();
     if (now - lastTapTime.current > 500) {
       setIconTaps(1);
@@ -519,14 +631,18 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
     const isSelected = selectedCell?.row === row && selectedCell?.col === col;
     const isSameRow = selectedCell?.row === row;
     const isSameCol = selectedCell?.col === col;
+    
+    const boxRows = gridType === "mini" ? BOX_ROWS_MINI : BOX_SIZE_CLASSIC;
+    const boxCols = gridType === "mini" ? BOX_COLS_MINI : BOX_SIZE_CLASSIC;
+    
     const isSameBox =
       selectedCell &&
-      Math.floor(selectedCell.row / BOX_SIZE) === Math.floor(row / BOX_SIZE) &&
-      Math.floor(selectedCell.col / BOX_SIZE) === Math.floor(col / BOX_SIZE);
+      Math.floor(selectedCell.row / boxRows) === Math.floor(row / boxRows) &&
+      Math.floor(selectedCell.col / boxCols) === Math.floor(col / boxCols);
     const isSameValue = selectedCell && cell.value !== 0 && grid[selectedCell.row][selectedCell.col].value === cell.value;
 
-    const isRightBorder = (col + 1) % BOX_SIZE === 0 && col < GRID_SIZE - 1;
-    const isBottomBorder = (row + 1) % BOX_SIZE === 0 && row < GRID_SIZE - 1;
+    const isRightBorder = (col + 1) % boxCols === 0 && col < currentGridSize - 1;
+    const isBottomBorder = (row + 1) % boxRows === 0 && row < currentGridSize - 1;
 
     let backgroundColor = "transparent";
     if (cell.isError) {
@@ -540,47 +656,48 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
     }
 
     return (
-      <Pressable
-        key={`${row}-${col}`}
-        onPress={() => handleCellPress(row, col)}
-        style={[
-          styles.cell,
-          {
-            width: cellSize,
-            height: cellSize,
-            backgroundColor,
-            borderRightWidth: isRightBorder ? 2 : 0.5,
-            borderBottomWidth: isBottomBorder ? 2 : 0.5,
-            borderRightColor: isRightBorder ? theme.primary + "60" : (isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.12)"),
-            borderBottomColor: isBottomBorder ? theme.primary + "60" : (isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.12)"),
-          },
-        ]}
-      >
-        {cell.value !== 0 ? (
-          <ThemedText
-            style={[
-              styles.cellText,
-              {
-                fontSize: cellSize * 0.5,
-                color: cell.isOriginal
-                  ? theme.text
-                  : cell.isError
-                  ? theme.error
-                  : theme.primary,
-                fontWeight: cell.isOriginal ? "700" : "500",
-              },
-            ]}
-          >
-            {cell.value}
-          </ThemedText>
-        ) : null}
-      </Pressable>
+      <Animated.View key={`${row}-${col}`} style={isSelected ? idlePulseStyle : undefined}>
+        <Pressable
+          onPress={() => handleCellPress(row, col)}
+          style={[
+            styles.cell,
+            {
+              width: cellSize,
+              height: cellSize,
+              backgroundColor,
+              borderRightWidth: isRightBorder ? 2 : 0.5,
+              borderBottomWidth: isBottomBorder ? 2 : 0.5,
+              borderRightColor: isRightBorder ? theme.primary + "60" : (isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.12)"),
+              borderBottomColor: isBottomBorder ? theme.primary + "60" : (isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.12)"),
+            },
+          ]}
+        >
+          {cell.value !== 0 ? (
+            <ThemedText
+              style={[
+                styles.cellText,
+                {
+                  fontSize: cellSize * 0.5,
+                  color: cell.isOriginal
+                    ? theme.text
+                    : cell.isError
+                    ? theme.error
+                    : theme.primary,
+                  fontWeight: cell.isOriginal ? "700" : "500",
+                },
+              ]}
+            >
+              {cell.value}
+            </ThemedText>
+          ) : null}
+        </Pressable>
+      </Animated.View>
     );
   };
 
   const NumberButton = ({ num }: { num: number }) => {
     const count = grid.flat().filter((c) => c.value === num).length;
-    const isDisabled = count >= 9;
+    const isDisabled = count >= currentGridSize;
     const scale = useSharedValue(1);
 
     const animStyle = useAnimatedStyle(() => ({
@@ -635,23 +752,8 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
     <View style={styles.container}>
       <LinearGradient colors={gradientColors} style={StyleSheet.absoluteFill} />
       
-      <View style={[styles.content, { paddingTop: insets.top + Spacing.lg, paddingBottom: insets.bottom + Spacing.lg }]}>
+      <View style={[styles.content, { paddingTop: headerHeight + Spacing.lg, paddingBottom: insets.bottom + Spacing.lg }]}>
         <Animated.View entering={FadeInDown.duration(400)} style={[styles.header, headerAnimStyle]}>
-          <View style={styles.titleRow}>
-            <Pressable onPress={handleIconTap} style={[styles.iconContainer, { backgroundColor: theme.primary }]}>
-              <Feather name="grid" size={20} color="#fff" />
-            </Pressable>
-            <View style={styles.titleTextContainer}>
-              <ThemedText style={styles.title}>Daily Sudoku</ThemedText>
-              <ThemedText style={[styles.dateText, { color: theme.textSecondary }]}>
-                {getTodaysDate()}
-              </ThemedText>
-            </View>
-            <Pressable onPress={() => setShowSettings(true)} style={[styles.settingsButton, { backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)" }]}>
-              <Feather name="settings" size={20} color={theme.textSecondary} />
-            </Pressable>
-          </View>
-
           {showTimer || showErrors ? (
             <GlassCard style={styles.statsCard}>
               <View style={styles.statsRow}>
@@ -681,47 +783,49 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
           ) : null}
         </Animated.View>
 
-        <Animated.View entering={FadeIn.delay(100).duration(400)} style={[styles.difficultyRow, headerAnimStyle]}>
-          {(["lite", "easy", "medium", "hard"] as Difficulty[]).map((diff) => (
-            <Pressable
-              key={diff}
-              onPress={() => handleNewGame(diff)}
-              style={[
-                styles.difficultyButton,
-                {
-                  backgroundColor: difficulty === diff 
-                    ? theme.primary 
-                    : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"),
-                },
-              ]}
-            >
-              <ThemedText
-                style={[
-                  styles.difficultyText,
-                  { color: difficulty === diff ? "#fff" : theme.textSecondary },
-                ]}
-              >
-                {diff.charAt(0).toUpperCase() + diff.slice(1)}
+        <Animated.View entering={FadeIn.delay(100).duration(400)} style={[styles.currentModeRow, headerAnimStyle]}>
+          <Pressable
+            onPress={() => setShowSettings(true)}
+            style={[
+              styles.currentModeButton,
+              { backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)" },
+            ]}
+          >
+            <View style={styles.currentModeInfo}>
+              <Feather 
+                name={gridType === "mini" ? "grid" : "hash"} 
+                size={16} 
+                color={theme.primary} 
+              />
+              <ThemedText style={[styles.currentModeText, { color: theme.text }]}>
+                Playing {gridType === "mini" ? "6x6" : "9x9"} {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
               </ThemedText>
-            </Pressable>
-          ))}
+            </View>
+            <View style={styles.changeModeLink}>
+              <ThemedText style={[styles.changeModeText, { color: theme.primary }]}>
+                Change
+              </ThemedText>
+              <Feather name="chevron-right" size={16} color={theme.primary} />
+            </View>
+          </Pressable>
         </Animated.View>
 
         <Animated.View entering={FadeIn.delay(200).duration(400)}>
-          <GlassCard style={[styles.gridWrapper, { padding: Spacing.sm }, isComplete && { borderColor: theme.success + "30" }]} intensity={60}>
+          <GlassCard style={styles.gridWrapper} intensity={60}>
             <View
               style={[
                 styles.gridContainer,
                 {
-                  width: gridSize,
-                  height: gridSize,
-                  borderColor: isComplete ? theme.success + "40" : theme.primary + "40",
+                  width: gridVisualSize,
+                  height: gridVisualSize,
+                  borderColor: isComplete ? theme.success : theme.primary,
+                  borderWidth: 2,
                 },
               ]}
             >
-              {Array.from({ length: GRID_SIZE }, (_, row) => (
+              {Array.from({ length: currentGridSize }, (_, row) => (
                 <View key={row} style={styles.row}>
-                  {Array.from({ length: GRID_SIZE }, (_, col) => renderCell(row, col))}
+                  {Array.from({ length: currentGridSize }, (_, col) => renderCell(row, col))}
                 </View>
               ))}
             </View>
@@ -757,9 +861,9 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
         <Animated.View entering={FadeIn.delay(300).duration(400)} style={[styles.controls, controlsAnimStyle]}>
             <View style={styles.hintContainer}>
               {selectedCell && grid[selectedCell.row][selectedCell.col].isOriginal ? (
-                <View style={[styles.hintBadge, { backgroundColor: theme.warning + "20" }]}>
-                  <Feather name="lock" size={14} color={theme.warning} />
-                  <ThemedText style={[styles.hintText, { color: theme.warning }]}>
+                <View style={[styles.hintBadge, { backgroundColor: theme.primary + "20" }]}>
+                  <Feather name="lock" size={14} color={theme.primary} />
+                  <ThemedText style={[styles.hintText, { color: theme.primary }]}>
                     Fixed cell
                   </ThemedText>
                 </View>
@@ -774,7 +878,7 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
             </View>
             
             <View style={styles.numberPad}>
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+              {Array.from({ length: currentGridSize }, (_, i) => i + 1).map((num) => (
                 <NumberButton key={num} num={num} />
               ))}
               <Pressable
@@ -799,16 +903,96 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
       </View>
 
       {showSettings ? (
-        <Pressable style={styles.modalOverlay} onPress={() => setShowSettings(false)}>
+        <Pressable style={styles.modalOverlay} onPress={() => {
+          setPendingGridType(null);
+          setPendingDifficulty(null);
+          setShowSettings(false);
+        }}>
           <Pressable style={[styles.settingsModal, { backgroundColor: isDark ? "#2a2a2a" : "#fff" }]} onPress={(e) => e.stopPropagation()}>
             <View style={styles.settingsHeader}>
               <ThemedText style={styles.settingsTitle}>Settings</ThemedText>
-              <Pressable onPress={() => setShowSettings(false)} style={styles.closeButton}>
+              <Pressable onPress={() => {
+                setPendingGridType(null);
+                setPendingDifficulty(null);
+                setShowSettings(false);
+              }} style={styles.closeButton}>
                 <Feather name="x" size={22} color={theme.textSecondary} />
               </Pressable>
             </View>
             
             <View style={styles.settingsContent}>
+              <View style={styles.settingsSection}>
+                <ThemedText style={[styles.settingsSectionTitle, { color: theme.textSecondary }]}>Grid Size</ThemedText>
+                <View style={styles.settingsOptionRow}>
+                  {(["mini", "classic"] as GridType[]).map((type) => {
+                    const isSelected = (pendingGridType ?? gridType) === type;
+                    return (
+                      <Pressable
+                        key={type}
+                        onPress={() => setPendingGridType(type)}
+                        style={[
+                          styles.settingsOptionButton,
+                          {
+                            backgroundColor: isSelected 
+                              ? theme.primary 
+                              : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"),
+                            flex: 1,
+                          },
+                        ]}
+                      >
+                        <Feather 
+                          name={type === "mini" ? "grid" : "hash"} 
+                          size={16} 
+                          color={isSelected ? "#fff" : theme.textSecondary} 
+                        />
+                        <ThemedText
+                          style={[
+                            styles.settingsOptionText,
+                            { color: isSelected ? "#fff" : theme.text },
+                          ]}
+                        >
+                          {type === "mini" ? "6x6 Mini" : "9x9 Classic"}
+                        </ThemedText>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+
+              <View style={styles.settingsSection}>
+                <ThemedText style={[styles.settingsSectionTitle, { color: theme.textSecondary }]}>Difficulty</ThemedText>
+                <View style={styles.settingsOptionRow}>
+                  {(["lite", "easy", "medium", "hard"] as Difficulty[]).map((diff) => {
+                    const isSelected = (pendingDifficulty ?? difficulty) === diff;
+                    return (
+                      <Pressable
+                        key={diff}
+                        onPress={() => setPendingDifficulty(diff)}
+                        style={[
+                          styles.difficultyOptionButton,
+                          {
+                            backgroundColor: isSelected 
+                              ? theme.primary 
+                              : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"),
+                          },
+                        ]}
+                      >
+                        <ThemedText
+                          style={[
+                            styles.settingsOptionText,
+                            { color: isSelected ? "#fff" : theme.text },
+                          ]}
+                        >
+                          {diff.charAt(0).toUpperCase() + diff.slice(1)}
+                        </ThemedText>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+
+              <View style={[styles.settingsDivider, { backgroundColor: theme.border }]} />
+
               <Pressable style={styles.settingRow} onPress={handleToggleTimer}>
                 <View style={styles.settingInfo}>
                   <Feather name="clock" size={20} color={theme.primary} />
@@ -828,24 +1012,27 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
                   <View style={[styles.toggleKnob, { transform: [{ translateX: showErrors ? 18 : 2 }] }]} />
                 </View>
               </Pressable>
+
+              <Pressable
+                onPress={() => {
+                  const newDiff = pendingDifficulty ?? difficulty;
+                  const newType = pendingGridType ?? gridType;
+                  if (pendingDifficulty || pendingGridType) {
+                    handleNewGame(newDiff, newType);
+                  }
+                  setPendingGridType(null);
+                  setPendingDifficulty(null);
+                  setShowSettings(false);
+                }}
+                style={[styles.doneButton, { backgroundColor: theme.primary }]}
+              >
+                <ThemedText style={styles.doneButtonText}>Done</ThemedText>
+              </Pressable>
             </View>
           </Pressable>
         </Pressable>
       ) : null}
 
-      {showSplash ? (
-        <Animated.View style={[styles.splashOverlay, { backgroundColor: "#fff" }, splashAnimStyle]}>
-          {context.assets?.splash ? (
-            <Animated.Image
-              source={context.assets.splash as ImageSourcePropType}
-              style={[styles.splashImage, splashImageAnimStyle]}
-              resizeMode="cover"
-              onLoad={handleSplashImageLoad}
-              onError={handleSplashImageError}
-            />
-          ) : null}
-        </Animated.View>
-      ) : null}
     </View>
   );
 }
@@ -895,8 +1082,8 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   statsCard: {
-    paddingHorizontal: Spacing["2xl"],
-    paddingVertical: Spacing.md,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
   },
   statsRow: {
     flexDirection: "row",
@@ -917,21 +1104,51 @@ const styles = StyleSheet.create({
     width: 1,
     height: 24,
   },
-  difficultyRow: {
-    flexDirection: "row",
-    gap: Spacing.sm,
-    marginBottom: Spacing.lg,
+  currentModeRow: {
+    marginBottom: Spacing.md,
+    width: "100%",
   },
-  difficultyButton: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm + 2,
+  currentModeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm + 4,
+    borderRadius: BorderRadius.lg,
+  },
+  currentModeInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
+  currentModeText: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  changeModeLink: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.xs,
+  },
+  changeModeText: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  modeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.xs,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.full,
   },
-  difficultyText: {
+  modeText: {
     fontSize: 13,
     fontWeight: "600",
   },
   gridWrapper: {
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.lg,
     marginBottom: Spacing.lg,
   },
   gridContainer: {
@@ -1049,16 +1266,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
-  splashOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 100,
-  },
-  splashImage: {
-    width: "100%",
-    height: "100%",
-  },
   titleTextContainer: {
     flex: 1,
   },
@@ -1102,6 +1309,42 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     gap: Spacing.md,
   },
+  settingsSection: {
+    gap: Spacing.sm,
+  },
+  settingsSectionTitle: {
+    fontSize: 12,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: Spacing.xs,
+  },
+  settingsOptionRow: {
+    flexDirection: "row",
+    gap: Spacing.sm,
+  },
+  settingsOptionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm + 4,
+    borderRadius: BorderRadius.md,
+  },
+  difficultyOptionButton: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm + 2,
+    borderRadius: BorderRadius.md,
+  },
+  settingsOptionText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  settingsDivider: {
+    height: 1,
+    marginVertical: Spacing.sm,
+  },
   settingRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -1128,5 +1371,17 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     backgroundColor: "#fff",
+  },
+  doneButton: {
+    marginTop: Spacing.md,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  doneButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

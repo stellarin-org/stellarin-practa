@@ -1,0 +1,20 @@
+{
+  "id": "daily-sudoku",
+  "name": "Daily Sudoku",
+  "version": "1.2.7",
+  "description": "A calming Sudoku puzzle game to exercise your mind and focus",
+  "author": "Practa Creator",
+  "type": "widget",
+  "category": "mindfulness",
+  "tags": [
+    "puzzle",
+    "focus",
+    "brain-training",
+    "sudoku"
+  ],
+  "estimatedDuration": 300,
+  "requiredPermissions": [],
+  "assets": {
+    "splash": "splash.png"
+  }
+}
