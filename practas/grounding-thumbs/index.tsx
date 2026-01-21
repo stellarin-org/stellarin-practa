@@ -7,7 +7,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { View, StyleSheet, Pressable, Platform, Dimensions, ImageBackground, Vibration } from "react-native";
+import { View, StyleSheet, Pressable, Platform, Dimensions, Vibration } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { Feather } from "@expo/vector-icons";
@@ -26,6 +26,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
+import { LinearGradient } from "expo-linear-gradient";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useTheme } from "@/hooks/useTheme";
@@ -71,8 +72,8 @@ export default function SqueezeRelease({ context, onComplete, onSkip }: SqueezeR
   
   const leftScale = useSharedValue(1);
   const rightScale = useSharedValue(1);
-  const leftOpacity = useSharedValue(0.4);
-  const rightOpacity = useSharedValue(0.4);
+  const leftOpacity = useSharedValue(1);
+  const rightOpacity = useSharedValue(1);
   const leftGlow = useSharedValue(0);
   const rightGlow = useSharedValue(0);
   const progress = useSharedValue(0);
@@ -246,8 +247,8 @@ export default function SqueezeRelease({ context, onComplete, onSkip }: SqueezeR
   const animateCirclesGrow = useCallback((targetScale: number, duration: number) => {
     leftScale.value = withTiming(targetScale, { duration, easing: Easing.out(Easing.ease) });
     rightScale.value = withTiming(targetScale, { duration, easing: Easing.out(Easing.ease) });
-    leftOpacity.value = withTiming(0.8, { duration });
-    rightOpacity.value = withTiming(0.8, { duration });
+    leftOpacity.value = withTiming(1, { duration });
+    rightOpacity.value = withTiming(1, { duration });
     leftGlow.value = withTiming(1, { duration });
     rightGlow.value = withTiming(1, { duration });
   }, [leftScale, rightScale, leftOpacity, rightOpacity, leftGlow, rightGlow]);
@@ -255,8 +256,8 @@ export default function SqueezeRelease({ context, onComplete, onSkip }: SqueezeR
   const animateCirclesShrink = useCallback((duration: number) => {
     leftScale.value = withTiming(1, { duration, easing: Easing.inOut(Easing.ease) });
     rightScale.value = withTiming(1, { duration, easing: Easing.inOut(Easing.ease) });
-    leftOpacity.value = withTiming(0.4, { duration });
-    rightOpacity.value = withTiming(0.4, { duration });
+    leftOpacity.value = withTiming(1, { duration });
+    rightOpacity.value = withTiming(1, { duration });
     leftGlow.value = withTiming(0, { duration });
     rightGlow.value = withTiming(0, { duration });
   }, [leftScale, rightScale, leftOpacity, rightOpacity, leftGlow, rightGlow]);
@@ -264,8 +265,8 @@ export default function SqueezeRelease({ context, onComplete, onSkip }: SqueezeR
   const resetCircles = useCallback(() => {
     leftScale.value = withSpring(1);
     rightScale.value = withSpring(1);
-    leftOpacity.value = withTiming(0.4, { duration: 300 });
-    rightOpacity.value = withTiming(0.4, { duration: 300 });
+    leftOpacity.value = withTiming(1, { duration: 300 });
+    rightOpacity.value = withTiming(1, { duration: 300 });
     leftGlow.value = withTiming(0, { duration: 300 });
     rightGlow.value = withTiming(0, { duration: 300 });
   }, [leftScale, rightScale, leftOpacity, rightOpacity, leftGlow, rightGlow]);
@@ -399,20 +400,20 @@ export default function SqueezeRelease({ context, onComplete, onSkip }: SqueezeR
   const updateLeftActive = useCallback((active: boolean) => {
     setLeftActive(active);
     if (active) {
-      leftOpacity.value = withTiming(0.7, { duration: 150 });
+      leftScale.value = withSpring(0.95);
     } else if (phase === "place") {
-      leftOpacity.value = withTiming(0.4, { duration: 150 });
+      leftScale.value = withSpring(1);
     }
-  }, [leftOpacity, phase]);
+  }, [leftScale, phase]);
 
   const updateRightActive = useCallback((active: boolean) => {
     setRightActive(active);
     if (active) {
-      rightOpacity.value = withTiming(0.7, { duration: 150 });
+      rightScale.value = withSpring(0.95);
     } else if (phase === "place") {
-      rightOpacity.value = withTiming(0.4, { duration: 150 });
+      rightScale.value = withSpring(1);
     }
-  }, [rightOpacity, phase]);
+  }, [rightScale, phase]);
 
   const leftGesture = Gesture.Manual()
     .onTouchesDown(() => {
@@ -497,6 +498,39 @@ export default function SqueezeRelease({ context, onComplete, onSkip }: SqueezeR
   const brightnessOverlayStyle = useAnimatedStyle(() => {
     return {
       opacity: intensity.value,
+    };
+  });
+
+  const textColorStyle = useAnimatedStyle(() => {
+    const textColor = interpolateColor(
+      intensity.value,
+      [0, 1],
+      ["#FFFFFF", "#006a9c"]
+    );
+    return {
+      color: textColor,
+    };
+  });
+
+  const subtitleColorStyle = useAnimatedStyle(() => {
+    const textColor = interpolateColor(
+      intensity.value,
+      [0, 1],
+      ["rgba(255,255,255,0.85)", "#0089c9"]
+    );
+    return {
+      color: textColor,
+    };
+  });
+
+  const decorativeLineStyle = useAnimatedStyle(() => {
+    const lineColor = interpolateColor(
+      intensity.value,
+      [0, 1],
+      ["rgba(255,255,255,0.4)", "rgba(0,106,156,0.4)"]
+    );
+    return {
+      backgroundColor: lineColor,
     };
   });
 
@@ -605,37 +639,40 @@ export default function SqueezeRelease({ context, onComplete, onSkip }: SqueezeR
   // Position circles in lower portion of screen (on the ottoman)
   const OTTOMAN_TOP = SCREEN_HEIGHT * 0.55 + 100;
 
-  const splashSource = context.assets?.splash as number | { uri: string } | undefined;
+  useEffect(() => {
+    handleImageLoad();
+  }, [handleImageLoad]);
 
   return (
-    <ImageBackground 
-      source={splashSource} 
+    <LinearGradient 
+      colors={["#0089c9", "#006a9c"]} 
       style={styles.fullscreenContainer}
-      resizeMode="cover"
-      imageStyle={styles.backgroundImage}
-      onLoadEnd={handleImageLoad}
+      start={{ x: 0.5, y: 0 }}
+      end={{ x: 0.5, y: 1 }}
     >
       <Animated.View style={[styles.brightnessOverlay, brightnessOverlayStyle]} pointerEvents="none" />
       
       {/* Main content wrapper */}
       <Animated.View style={[styles.mainContainer, contentAnimatedStyle]}>
         
-        {/* Top section - Title text */}
-        <View style={[styles.topSection, { paddingTop: insets.top + 50 }]}>
-          <View style={styles.topRow}>
-            <View style={styles.textBackground}>
-              <ThemedText style={[styles.title, { color: "white" }]}>{getPhaseText()}</ThemedText>
-              <ThemedText style={[styles.subtitle, { color: "rgba(255,255,255,0.9)" }]}>
-                {getSubtext()}
-              </ThemedText>
-            </View>
-            {onSkip ? (
-              <Pressable onPress={onSkip} style={styles.closeButton}>
-                <View style={styles.closeButtonCircle}>
-                  <Feather name="x-circle" size={28} color="white" />
-                </View>
-              </Pressable>
-            ) : null}
+        {/* Close button - positioned absolutely */}
+        {onSkip ? (
+          <View style={[styles.closeButtonRow, { top: insets.top + 10 }]}>
+            <Pressable onPress={onSkip} style={styles.closeButton}>
+              <Feather name="x" size={24} color="rgba(255,255,255,0.8)" />
+            </Pressable>
+          </View>
+        ) : null}
+        
+        {/* Top section - Title text centered in available space above circles */}
+        <View style={[styles.topSection, { height: OTTOMAN_TOP, paddingTop: insets.top }]}>
+          <View style={styles.headerContent}>
+            <Animated.View style={[styles.decorativeLine, decorativeLineStyle]} />
+            <Animated.Text style={[styles.title, textColorStyle]}>{getPhaseText()}</Animated.Text>
+            <Animated.Text style={[styles.subtitle, subtitleColorStyle]}>
+              {getSubtext()}
+            </Animated.Text>
+            <Animated.View style={[styles.decorativeLine, decorativeLineStyle]} />
           </View>
         </View>
 
@@ -644,52 +681,48 @@ export default function SqueezeRelease({ context, onComplete, onSkip }: SqueezeR
           <View style={[styles.circlesSection, { top: OTTOMAN_TOP }]}>
             <View style={styles.circlesRow}>
               <View style={styles.circleWrapper}>
-                {phase === "place" ? (
-                  <>
-                    <Animated.View style={[styles.attentionRing, attentionRingStyle1]} />
-                    <Animated.View style={[styles.attentionRing, attentionRingStyle2]} />
-                    <Animated.View style={[styles.attentionRing, attentionRingStyle3]} />
-                  </>
-                ) : null}
-                <Animated.View style={[styles.pulseRing, pulseRingStyle]} />
-                <Animated.View style={[styles.circleGlow, leftGlowStyle]} />
-                <GestureDetector gesture={leftGesture}>
-                  <Animated.View style={[styles.circle, circleColorStyle, leftAnimatedStyle]}>
-                    {leftActive ? (
-                      <Feather name="check" size={32} color="white" />
-                    ) : (
-                      <View style={styles.thumbIcon}>
-                        <Feather name="circle" size={24} color="white" />
-                      </View>
-                    )}
-                  </Animated.View>
-                </GestureDetector>
+                <View style={styles.circleContainer}>
+                  {phase === "place" ? (
+                    <>
+                      <Animated.View style={[styles.attentionRing, attentionRingStyle1]} />
+                      <Animated.View style={[styles.attentionRing, attentionRingStyle2]} />
+                      <Animated.View style={[styles.attentionRing, attentionRingStyle3]} />
+                    </>
+                  ) : null}
+                  <Animated.View style={[styles.pulseRing, pulseRingStyle]} />
+                  <Animated.View style={[styles.circleGlow, leftGlowStyle]} />
+                  <GestureDetector gesture={leftGesture}>
+                    <Animated.View style={[styles.circle, styles.orangeCircle, leftAnimatedStyle]}>
+                      {leftActive ? (
+                        <Feather name="check" size={32} color="white" />
+                      ) : null}
+                    </Animated.View>
+                  </GestureDetector>
+                </View>
                 <ThemedText style={[styles.circleLabel, { color: "rgba(255,255,255,0.7)" }]}>
                   Left thumb
                 </ThemedText>
               </View>
 
               <View style={styles.circleWrapper}>
-                {phase === "place" ? (
-                  <>
-                    <Animated.View style={[styles.attentionRing, attentionRingStyle1]} />
-                    <Animated.View style={[styles.attentionRing, attentionRingStyle2]} />
-                    <Animated.View style={[styles.attentionRing, attentionRingStyle3]} />
-                  </>
-                ) : null}
-                <Animated.View style={[styles.pulseRing, pulseRingStyle]} />
-                <Animated.View style={[styles.circleGlow, rightGlowStyle]} />
-                <GestureDetector gesture={rightGesture}>
-                  <Animated.View style={[styles.circle, circleColorStyle, rightAnimatedStyle]}>
-                    {rightActive ? (
-                      <Feather name="check" size={32} color="white" />
-                    ) : (
-                      <View style={styles.thumbIcon}>
-                        <Feather name="circle" size={24} color="white" />
-                      </View>
-                    )}
-                  </Animated.View>
-                </GestureDetector>
+                <View style={styles.circleContainer}>
+                  {phase === "place" ? (
+                    <>
+                      <Animated.View style={[styles.attentionRing, attentionRingStyle1]} />
+                      <Animated.View style={[styles.attentionRing, attentionRingStyle2]} />
+                      <Animated.View style={[styles.attentionRing, attentionRingStyle3]} />
+                    </>
+                  ) : null}
+                  <Animated.View style={[styles.pulseRing, pulseRingStyle]} />
+                  <Animated.View style={[styles.circleGlow, rightGlowStyle]} />
+                  <GestureDetector gesture={rightGesture}>
+                    <Animated.View style={[styles.circle, styles.orangeCircle, rightAnimatedStyle]}>
+                      {rightActive ? (
+                        <Feather name="check" size={32} color="white" />
+                      ) : null}
+                    </Animated.View>
+                  </GestureDetector>
+                </View>
                 <ThemedText style={[styles.circleLabel, { color: "rgba(255,255,255,0.7)" }]}>
                   Right thumb
                 </ThemedText>
@@ -730,7 +763,7 @@ export default function SqueezeRelease({ context, onComplete, onSkip }: SqueezeR
           )}
         </View>
       </Animated.View>
-    </ImageBackground>
+    </LinearGradient>
   );
 }
 
@@ -752,23 +785,11 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   topSection: {
+    justifyContent: "center",
     alignItems: "center",
   },
-  topRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "center",
-    width: "100%",
-    paddingHorizontal: Spacing.md,
-  },
   closeButton: {
-    position: "absolute",
-    right: Spacing.md,
-    top: 0,
-    padding: Spacing.xs,
-  },
-  closeButtonCircle: {
-    opacity: 0.9,
+    padding: Spacing.sm,
   },
   circlesSection: {
     position: "absolute",
@@ -789,28 +810,47 @@ const styles = StyleSheet.create({
     right: 0,
     paddingHorizontal: Spacing.lg,
   },
-  textBackground: {
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    paddingVertical: Spacing.lg,
+  closeButtonRow: {
+    position: "absolute",
+    right: Spacing.lg,
+    zIndex: 10,
+  },
+  headerContent: {
+    alignItems: "center",
     paddingHorizontal: Spacing.xl,
-    borderRadius: BorderRadius.lg,
+  },
+  decorativeLine: {
+    width: 40,
+    height: 2,
+    backgroundColor: "rgba(255,255,255,0.4)",
+    borderRadius: 1,
+    marginVertical: Spacing.md,
   },
   title: {
-    fontSize: 28,
-    fontWeight: "700",
+    fontSize: 32,
+    fontWeight: "300",
     textAlign: "center",
-    marginBottom: Spacing.sm,
+    color: "white",
+    letterSpacing: 1,
+    marginBottom: Spacing.xs,
   },
   subtitle: {
     fontSize: 16,
     textAlign: "center",
     lineHeight: 24,
-    paddingHorizontal: Spacing.lg,
+    color: "rgba(255,255,255,0.85)",
+    fontWeight: "300",
   },
   circleWrapper: {
     alignItems: "center",
     justifyContent: "center",
     minWidth: BASE_CIRCLE_SIZE + 40,
+  },
+  circleContainer: {
+    width: BASE_CIRCLE_SIZE,
+    height: BASE_CIRCLE_SIZE,
+    alignItems: "center",
+    justifyContent: "center",
   },
   circle: {
     width: BASE_CIRCLE_SIZE,
@@ -819,6 +859,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     zIndex: 2,
+  },
+  orangeCircle: {
+    backgroundColor: "#fb9338",
   },
   circleGlow: {
     position: "absolute",
