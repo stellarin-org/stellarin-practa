@@ -1,20 +1,21 @@
 {
-  "registryVersion": "2026-01-21T07:04:34.820Z",
+  "registryVersion": "2026-01-22T02:43:23.173Z",
   "practas": [
     {
       "slug": "chess-puzzles",
-      "version": "1.1.2",
+      "version": "1.4.0",
       "buildId": "f4738c7e-cb32-4e5c-9d88-3bd1d10bd000",
-      "name": "Daily Chess Puzzles",
-      "description": "Train your chess tactics with a new puzzle every day across 5 difficulty levels",
+      "name": "Chess Puzzles",
+      "description": "Train your chess tactics with focused mini-board puzzles or full 8x8 board puzzles across 5 difficulty levels",
       "author": "Practa",
       "category": "mind",
       "practaType": "mind",
-      "type": "community",
-      "estimatedDuration": 120,
+      "type": "core",
+      "estimatedDuration": 90,
       "assets": {
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/splash.png",
-        "puzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/puzzles_all.json"
+        "fullBoardPuzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/full-board-puzzles.json",
+        "miniPuzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/mini-puzzles.json",
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/splash.webp"
       }
     },
     {
@@ -59,8 +60,8 @@
       "type": "core",
       "estimatedDuration": 20,
       "assets": {
-        "content": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/content.json",
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/splash.png"
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/splash.png",
+        "content": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/content.json"
       }
     },
     {

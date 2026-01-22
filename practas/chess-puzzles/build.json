@@ -1,8 +1,9 @@
 {
   "buildId": "f4738c7e-cb32-4e5c-9d88-3bd1d10bd000",
-  "createdAt": "2025-12-29T18:43:29.916Z",
+  "createdAt": "2026-01-22T02:43:21.739Z",
   "assets": {
-    "puzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/puzzles_all.json",
-    "splash": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/splash.png"
+    "fullBoardPuzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/full-board-puzzles.json",
+    "miniPuzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/mini-puzzles.json",
+    "splash": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/splash.webp"
   }
 }

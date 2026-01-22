@@ -1,0 +1,23 @@
+{
+  "id": "chess-puzzles",
+  "name": "Chess Puzzles",
+  "version": "1.4.0",
+  "description": "Train your chess tactics with focused mini-board puzzles or full 8x8 board puzzles across 5 difficulty levels",
+  "author": "Practa",
+  "type": "widget",
+  "category": "mind",
+  "tags": [
+    "chess",
+    "puzzles",
+    "tactics",
+    "brain training",
+    "mini-games"
+  ],
+  "estimatedDuration": 90,
+  "requiredPermissions": [],
+  "assets": {
+    "splash": "splash.webp",
+    "miniPuzzles": "mini-puzzles.json",
+    "fullBoardPuzzles": "full-board-puzzles.json"
+  }
+}

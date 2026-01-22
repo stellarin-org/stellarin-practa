@@ -1,6 +1,6 @@
-# Daily Chess Puzzles
+# Chess Puzzles
 
-Train your chess tactics with a new puzzle every day across 5 difficulty levels
+Train your chess tactics with focused mini-board puzzles or full 8x8 board puzzles across 5 difficulty levels
 
 ## Installation
 
@@ -9,11 +9,11 @@ This Practa component is designed for the Stellarin app.
 ## Usage
 
 ```tsx
-import DailyChessPuzzles from "@stellarin/practa-chess-puzzles";
+import ChessPuzzles from "@stellarin/practa-chess-puzzles";
 
 function MyFlow() {
   return (
-    <DailyChessPuzzles
+    <ChessPuzzles
       context={{ flowId: "my-flow", practaIndex: 0 }}
       onComplete={(output) => console.log("Completed:", output)}
       onSkip={() => console.log("Skipped")}
@@ -38,4 +38,4 @@ Created by Practa
 
 ## Version
 
-1.1.2
+1.4.0
