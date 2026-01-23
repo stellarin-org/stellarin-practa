@@ -589,11 +589,11 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
   const [showTutorial, setShowTutorial] = useState(false);
   const [hintWord, setHintWord] = useState<string | null>(null);
   const [showHint, setShowHint] = useState(false);
-  const [isHintFadingOut, setIsHintFadingOut] = useState(false);
+  const [hintLetterIndex, setHintLetterIndex] = useState(-1);
   const hintTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  const hintCycleRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+  const hintLetterRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const HINT_DELAY = 15000;
-  const HINT_CYCLE_DURATION = 6000;
+  const HINT_LETTER_DURATION = 1200;
 
   const findValidHintWord = useCallback((): string | null => {
     if (guesses.length === 0) return null;
@@ -689,17 +689,35 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
   const resetHintTimer = useCallback(() => {
     setShowHint(false);
     setHintWord(null);
-    setIsHintFadingOut(false);
+    setHintLetterIndex(-1);
     
     if (hintTimerRef.current) {
       clearTimeout(hintTimerRef.current);
       hintTimerRef.current = null;
     }
-    if (hintCycleRef.current) {
-      clearInterval(hintCycleRef.current);
-      hintCycleRef.current = null;
+    if (hintLetterRef.current) {
+      clearTimeout(hintLetterRef.current);
+      hintLetterRef.current = null;
     }
   }, []);
+
+  const showNextHintLetter = useCallback((word: string, index: number) => {
+    if (index >= WORD_LENGTH) {
+      setHintLetterIndex(-1);
+      hintLetterRef.current = setTimeout(() => {
+        const newHint = findValidHintWord();
+        const nextWord = newHint || "ILOVEU";
+        setHintWord(nextWord);
+        showNextHintLetter(nextWord, 0);
+      }, 3000);
+      return;
+    }
+    
+    setHintLetterIndex(index);
+    hintLetterRef.current = setTimeout(() => {
+      showNextHintLetter(word, index + 1);
+    }, HINT_LETTER_DURATION);
+  }, [findValidHintWord]);
 
   const startHintTimer = useCallback(() => {
     if (gameState !== "playing" || guesses.length === 0 || currentGuess.length > 0) {
@@ -711,31 +729,13 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
     hintTimerRef.current = setTimeout(() => {
       if (gameState === "playing" && guesses.length > 0 && currentGuess.length === 0) {
         const hint = findValidHintWord();
-        if (hint) {
-          setHintWord(hint);
-          setShowHint(true);
-          setIsHintFadingOut(false);
-          
-          hintCycleRef.current = setInterval(() => {
-            setIsHintFadingOut(true);
-            
-            setTimeout(() => {
-              const newHint = findValidHintWord();
-              if (newHint) {
-                setHintWord(newHint);
-              } else {
-                setHintWord("ILOVEU");
-              }
-              setIsHintFadingOut(false);
-            }, 1200);
-          }, HINT_CYCLE_DURATION);
-        } else {
-          setHintWord("ILOVEU");
-          setShowHint(true);
-        }
+        const word = hint || "ILOVEU";
+        setHintWord(word);
+        setShowHint(true);
+        showNextHintLetter(word, 0);
       }
     }, HINT_DELAY);
-  }, [gameState, guesses.length, currentGuess.length, findValidHintWord, resetHintTimer]);
+  }, [gameState, guesses.length, currentGuess.length, findValidHintWord, resetHintTimer, showNextHintLetter]);
 
   useEffect(() => {
     if (gameState !== "playing") {
@@ -1073,14 +1073,14 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
             />
           );
         } else if (showHintInRow) {
-          const hintFadeOutDelay = isHintFadingOut ? (WORD_LENGTH - 1 - j) * 60 : 0;
+          const isActiveHintLetter = j === hintLetterIndex;
           cells.push(
             <GhostLetterTile
-              key={`hint-${i}-${j}-${hintWord}-${isHintFadingOut}`}
-              letter={hintWord[j] || ""}
-              fadeIn={!isHintFadingOut}
-              delay={j * 100}
-              fadeOutDelay={hintFadeOutDelay}
+              key={`hint-${i}-${j}-${hintWord}-${hintLetterIndex}`}
+              letter={isActiveHintLetter ? (hintWord?.[j] || "") : ""}
+              fadeIn={isActiveHintLetter}
+              delay={0}
+              fadeOutDelay={0}
             />
           );
         } else {
