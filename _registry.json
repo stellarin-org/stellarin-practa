@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-01-23T06:44:18.810Z",
+  "registryVersion": "2026-01-23T06:45:06.604Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -13,9 +13,9 @@
       "type": "core",
       "estimatedDuration": 90,
       "assets": {
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/splash.webp",
+        "fullBoardPuzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/full-board-puzzles.json",
         "miniPuzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/mini-puzzles.json",
-        "fullBoardPuzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/full-board-puzzles.json"
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/splash.webp"
       }
     },
     {
@@ -192,10 +192,10 @@
       "type": "core",
       "estimatedDuration": 180,
       "assets": {
-        "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.png",
         "splash": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/splash.mp4",
-        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json",
-        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json"
+        "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.png",
+        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json",
+        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json"
       }
     },
     {
