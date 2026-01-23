@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-01-23T06:45:56.921Z",
+  "registryVersion": "2026-01-23T06:48:46.497Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -178,6 +178,22 @@
         "img_60_cheese": "https://stellarin-practa-verification.replit.app/assets/practa/major-system-trainer/a3f5f7d0-a4f7-46b0-a61f-480348dfddd9/60_cheese.webp",
         "img_78_coffee": "https://stellarin-practa-verification.replit.app/assets/practa/major-system-trainer/a3f5f7d0-a4f7-46b0-a61f-480348dfddd9/78_coffee.webp",
         "historical_dates": "https://stellarin-practa-verification.replit.app/assets/practa/major-system-trainer/a3f5f7d0-a4f7-46b0-a61f-480348dfddd9/historical_dates.json"
+      }
+    },
+    {
+      "slug": "practa-habit-tracker",
+      "version": "1.1.8",
+      "buildId": "eede6e96-1813-48fb-8af8-b46374c074c1",
+      "name": "Habit Tracker",
+      "description": "A beautiful daily habit tracker to help you build positive routines",
+      "author": "Mike Messenger",
+      "category": "wellness",
+      "practaType": "wellness",
+      "type": "core",
+      "estimatedDuration": 60,
+      "assets": {
+        "content": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/content.json",
+        "wellness-bg": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/wellness-bg.png"
       }
     },
     {
