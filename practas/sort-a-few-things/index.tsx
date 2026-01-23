@@ -16,6 +16,7 @@ import {
   Platform,
   TextInput,
   Animated,
+  Easing,
   Keyboard,
   ScrollView,
 } from "react-native";
@@ -32,9 +33,10 @@ import { PractaProps } from "@/types/flow";
 import { usePractaChrome } from "@/context/PractaChromeContext";
 import { useHeaderHeight } from "@/components/PractaChromeHeader";
 
-type Screen = "launch" | "entry1" | "entry2" | "entry3" | "entry4" | "grid" | "handoff";
+type Screen = "research" | "launch" | "entry1" | "entry2" | "entry3" | "entry4" | "grid" | "handoff";
 const AUTO_ADVANCE_DELAY = 700;
 const SPRING_CONFIG = { tension: 40, friction: 12, useNativeDriver: true };
+const RESEARCH_REVEAL_DELAY = 2500;
 
 interface QuadrantData {
   q1: string;
@@ -87,7 +89,7 @@ export default function SortAFewThings({
   const { setConfig } = usePractaChrome();
   const headerHeight = useHeaderHeight();
   
-  const [screen, setScreen] = useState<Screen>("launch");
+  const [screen, setScreen] = useState<Screen>("research");
   const [quadrants, setQuadrants] = useState<QuadrantData>({
     q1: "",
     q2: "",
@@ -96,6 +98,7 @@ export default function SortAFewThings({
   });
   const [currentInput, setCurrentInput] = useState("");
   const [selectedTask, setSelectedTask] = useState<keyof QuadrantData | null>(null);
+  const [commitment, setCommitment] = useState<string | null>(null);
   const [startTime] = useState(Date.now());
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -103,6 +106,8 @@ export default function SortAFewThings({
   const progressAnim = useRef(new Animated.Value(0)).current;
   const inputRef = useRef<TextInput>(null);
   const autoAdvanceTimer = useRef<NodeJS.Timeout | null>(null);
+  const celebrationTimer = useRef<NodeJS.Timeout | null>(null);
+  const hasCompleted = useRef(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   
@@ -113,6 +118,30 @@ export default function SortAFewThings({
     new Animated.Value(0),
   ]).current;
   const nextButtonAnim = useRef(new Animated.Value(0)).current;
+  
+  // Research screen animations - staggered text reveal
+  const researchLine1Anim = useRef(new Animated.Value(0)).current;
+  const researchLine2Anim = useRef(new Animated.Value(0)).current;
+  const researchLine3Anim = useRef(new Animated.Value(0)).current;
+  const researchContinueAnim = useRef(new Animated.Value(0)).current;
+  const [researchReady, setResearchReady] = useState(false);
+  
+  // Button animation refs - hoisted to top level to satisfy React hooks rules
+  const launchButtonScale = useRef(new Animated.Value(1)).current;
+  const entryButtonScale = useRef(new Animated.Value(1)).current;
+  const handoffGentleScale = useRef(new Animated.Value(1)).current;
+  const handoffFocusScale = useRef(new Animated.Value(1)).current;
+  const researchButtonScale = useRef(new Animated.Value(1)).current;
+  const handoffSpinAnim = useRef(new Animated.Value(0)).current;
+  const handoffScaleAnim = useRef(new Animated.Value(0.8)).current;
+  const commitmentButtonsAnim = useRef(new Animated.Value(0)).current;
+  const celebrationCheckAnim = useRef(new Animated.Value(0)).current;
+  const buttonsExitAnim = useRef(new Animated.Value(1)).current;
+  
+  const createButtonHandlers = (scale: Animated.Value) => ({
+    onPressIn: () => Animated.spring(scale, { toValue: 0.96, ...SPRING_CONFIG }).start(),
+    onPressOut: () => Animated.spring(scale, { toValue: 1, ...SPRING_CONFIG }).start(),
+  });
 
   useEffect(() => {
     setConfig({
@@ -163,7 +192,141 @@ export default function SortAFewThings({
     }).start();
   }, [currentInput]);
 
+  // Research screen staggered text reveal animation
   useEffect(() => {
+    if (screen === "research") {
+      researchLine1Anim.setValue(0);
+      researchLine2Anim.setValue(0);
+      researchLine3Anim.setValue(0);
+      researchContinueAnim.setValue(0);
+      setResearchReady(false);
+      
+      const staggerDelay = 600;
+      
+      Animated.sequence([
+        Animated.spring(researchLine1Anim, { toValue: 1, ...SPRING_CONFIG }),
+        Animated.delay(staggerDelay),
+        Animated.spring(researchLine2Anim, { toValue: 1, ...SPRING_CONFIG }),
+        Animated.delay(staggerDelay),
+        Animated.spring(researchLine3Anim, { toValue: 1, ...SPRING_CONFIG }),
+        Animated.delay(RESEARCH_REVEAL_DELAY),
+        Animated.spring(researchContinueAnim, { toValue: 1, ...SPRING_CONFIG }),
+      ]).start(() => {
+        setResearchReady(true);
+        // Auto-progress after 7 seconds total or after button reveal
+        autoAdvanceTimer.current = setTimeout(() => {
+          handleNext();
+        }, 7000);
+      });
+    }
+
+    return () => {
+      if (autoAdvanceTimer.current) {
+        clearTimeout(autoAdvanceTimer.current);
+      }
+    };
+  }, [screen]);
+
+  // Launch screen auto-advance timer
+  useEffect(() => {
+    if (screen === "launch") {
+      const timer = setTimeout(() => {
+        handleNext();
+      }, 7000);
+      return () => clearTimeout(timer);
+    }
+  }, [screen]);
+
+  // Handoff screen celebration animation
+  useEffect(() => {
+    if (screen === "handoff") {
+      handoffSpinAnim.setValue(0);
+      handoffScaleAnim.setValue(0.8);
+      commitmentButtonsAnim.setValue(0);
+      celebrationCheckAnim.setValue(0);
+      buttonsExitAnim.setValue(1);
+      
+      Animated.parallel([
+        Animated.spring(handoffScaleAnim, {
+          toValue: 1,
+          tension: 50,
+          friction: 7,
+          useNativeDriver: true,
+        }),
+        Animated.timing(handoffSpinAnim, {
+          toValue: 1,
+          duration: 800,
+          easing: Easing.out(Easing.back(1.2)),
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        Animated.spring(commitmentButtonsAnim, {
+          toValue: 1,
+          ...SPRING_CONFIG,
+          useNativeDriver: true,
+        }).start();
+      });
+    }
+  }, [screen]);
+
+  const completePracta = useCallback(() => {
+    if (hasCompleted.current) return;
+    hasCompleted.current = true;
+    
+    if (celebrationTimer.current) {
+      clearTimeout(celebrationTimer.current);
+      celebrationTimer.current = null;
+    }
+    
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    
+    const selectedTaskText = selectedTask ? quadrants[selectedTask] : "";
+    onComplete?.({
+      content: { type: "text", value: selectedTaskText },
+      metadata: { 
+        source: "user",
+        quadrants,
+        selectedTask,
+        commitment,
+      },
+    });
+  }, [selectedTask, quadrants, commitment, onComplete]);
+
+  const handleCommitment = (choice: string) => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    setCommitment(choice);
+    
+    // Animate: fade out buttons, show celebration
+    Animated.sequence([
+      Animated.timing(buttonsExitAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.spring(celebrationCheckAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 6,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      if (Platform.OS !== "web") {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      // Complete after 6 seconds, or user can tap to finish sooner
+      celebrationTimer.current = setTimeout(() => {
+        completePracta();
+      }, 6000);
+    });
+  };
+
+  useEffect(() => {
+    if (screen === "research") return;
+    
     fadeAnim.setValue(0);
     slideAnim.setValue(30);
     
@@ -213,7 +376,7 @@ export default function SortAFewThings({
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     
-    const screenOrder: Screen[] = ["launch", "entry1", "entry2", "entry3", "entry4", "grid", "handoff"];
+    const screenOrder: Screen[] = ["research", "launch", "entry1", "entry2", "entry3", "entry4", "grid", "handoff"];
     const currentIndex = screenOrder.indexOf(screen);
     if (currentIndex < screenOrder.length - 1) {
       setCurrentInput("");
@@ -242,7 +405,7 @@ export default function SortAFewThings({
       setQuadrants(prev => ({ ...prev, [quadrantKey]: currentInput.trim() }));
     }
     
-    const screenOrder: Screen[] = ["launch", "entry1", "entry2", "entry3", "entry4", "grid", "handoff"];
+    const screenOrder: Screen[] = ["research", "launch", "entry1", "entry2", "entry3", "entry4", "grid", "handoff"];
     const currentIndex = screenOrder.indexOf(screen);
     if (currentIndex < screenOrder.length - 1) {
       setCurrentInput("");
@@ -278,68 +441,124 @@ export default function SortAFewThings({
     inputRef.current?.focus();
   };
 
-  const useButtonAnimation = () => {
-    const scale = useRef(new Animated.Value(1)).current;
+  const renderResearchScreen = () => {
+    const buttonHandlers = createButtonHandlers(researchButtonScale);
     
-    const onPressIn = () => {
-      Animated.spring(scale, { toValue: 0.96, ...SPRING_CONFIG }).start();
-    };
-    
-    const onPressOut = () => {
-      Animated.spring(scale, { toValue: 1, ...SPRING_CONFIG }).start();
-    };
-    
-    return { scale, onPressIn, onPressOut };
-  };
-
-  const renderLaunchScreen = () => {
-    const buttonAnim = useButtonAnimation();
+    const createLineStyle = (anim: Animated.Value) => ({
+      opacity: anim,
+      transform: [{
+        translateY: anim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [20, 0],
+        }),
+      }],
+    });
     
     return (
-      <Animated.View
-        style={[
-          styles.screenContainer,
-          {
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }],
-          },
-        ]}
-      >
-        <View style={styles.launchContent}>
-          <View style={[styles.iconCircle, { backgroundColor: theme.primary + "15" }]}>
-            <Feather name="layers" size={40} color={theme.primary} />
-          </View>
-          <ThemedText style={styles.launchTitle}>
-            Let's sort a few things.
-          </ThemedText>
-          <ThemedText style={[styles.launchSubtitle, { color: theme.textSecondary }]}>
-            There's no right answer—just what's true for you right now.
-          </ThemedText>
+      <Pressable style={styles.researchContainer} onPress={handleNext}>
+        <View style={styles.researchContent}>
+          <Animated.View style={createLineStyle(researchLine1Anim)}>
+            <ThemedText style={[styles.researchText, { color: theme.text }]}>
+              Time management isn't just productivity—
+            </ThemedText>
+          </Animated.View>
+          
+          <Animated.View style={createLineStyle(researchLine2Anim)}>
+            <ThemedText style={[styles.researchText, { color: theme.text }]}>
+              it's linked to happiness.
+            </ThemedText>
+          </Animated.View>
+          
+          <Animated.View style={[createLineStyle(researchLine3Anim), { marginTop: Spacing.xl }]}>
+            <ThemedText style={[styles.researchStat, { color: theme.textSecondary }]}>
+              18% of life satisfaction differences were linked across 53,957 in multiple independent studies.
+            </ThemedText>
+          </Animated.View>
         </View>
         
-        <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.lg }]}>
+        <Animated.View 
+          pointerEvents={researchReady ? "auto" : "none"}
+          style={[
+            styles.footer, 
+            { 
+              paddingBottom: insets.bottom + Spacing.lg,
+              opacity: researchContinueAnim,
+              transform: [{
+                translateY: researchContinueAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [40, 0],
+                }),
+              }],
+            },
+          ]}
+        >
           <AnimatedPressable
             onPress={handleNext}
-            onPressIn={buttonAnim.onPressIn}
-            onPressOut={buttonAnim.onPressOut}
+            onPressIn={buttonHandlers.onPressIn}
+            onPressOut={buttonHandlers.onPressOut}
             style={[
               styles.primaryButton,
               { 
                 backgroundColor: theme.primary,
-                transform: [{ scale: buttonAnim.scale }],
+                transform: [{ scale: researchButtonScale }],
               },
             ]}
           >
-            <ThemedText style={styles.buttonText}>Begin</ThemedText>
+            <ThemedText style={styles.buttonText}>Continue</ThemedText>
           </AnimatedPressable>
           
-          <Pressable onPress={onSkip} style={styles.skipButton}>
-            <ThemedText style={[styles.skipText, { color: theme.textSecondary }]}>
-              Not right now
+          <ThemedText style={[styles.researchCitation, { color: theme.textSecondary }]}>
+            PLOS ONE, 2021
+          </ThemedText>
+        </Animated.View>
+      </Pressable>
+    );
+  };
+
+  const renderLaunchScreen = () => {
+    const buttonHandlers = createButtonHandlers(launchButtonScale);
+    
+    return (
+      <Pressable onPress={handleNext} style={{ flex: 1 }}>
+        <Animated.View
+          style={[
+            styles.screenContainer,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          <View style={styles.launchContent}>
+            <View style={[styles.iconCircle, { backgroundColor: theme.primary + "15" }]}>
+              <Feather name="layers" size={40} color={theme.primary} />
+            </View>
+            <ThemedText style={styles.launchTitle}>
+              Let's sort a few things.
             </ThemedText>
-          </Pressable>
-        </View>
-      </Animated.View>
+            <ThemedText style={[styles.launchSubtitle, { color: theme.textSecondary }]}>
+              There's no right answer—just what's true for you right now.
+            </ThemedText>
+          </View>
+          
+          <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.lg }]}>
+            <AnimatedPressable
+              onPress={handleNext}
+              onPressIn={buttonHandlers.onPressIn}
+              onPressOut={buttonHandlers.onPressOut}
+              style={[
+                styles.primaryButton,
+                { 
+                  backgroundColor: theme.primary,
+                  transform: [{ scale: launchButtonScale }],
+                },
+              ]}
+            >
+              <ThemedText style={styles.buttonText}>Begin</ThemedText>
+            </AnimatedPressable>
+          </View>
+        </Animated.View>
+      </Pressable>
     );
   };
 
@@ -376,7 +595,7 @@ export default function SortAFewThings({
     const prompt = PROMPTS[screenKey];
     const quickStarts = QUICK_STARTS[screenKey];
     const isValid = currentInput.trim().length >= 3;
-    const buttonAnim = useButtonAnimation();
+    const buttonHandlers = createButtonHandlers(entryButtonScale);
 
     return (
       <Animated.View
@@ -479,15 +698,15 @@ export default function SortAFewThings({
         >
           <AnimatedPressable
             onPress={handleNext}
-            onPressIn={buttonAnim.onPressIn}
-            onPressOut={buttonAnim.onPressOut}
+            onPressIn={buttonHandlers.onPressIn}
+            onPressOut={buttonHandlers.onPressOut}
             disabled={!isValid}
             style={[
               styles.primaryButton,
               { 
                 backgroundColor: isValid ? theme.primary : theme.border,
                 opacity: isValid ? 1 : 0.5,
-                transform: [{ scale: buttonAnim.scale }],
+                transform: [{ scale: entryButtonScale }],
               },
             ]}
           >
@@ -499,11 +718,14 @@ export default function SortAFewThings({
   };
 
   const renderGridScreen = () => {
+    // Grid layout: Row 1 = Urgent, Column 2 = Important
+    // q2 (Urgent, Not Important) | q4 (Urgent, Important)
+    // q1 (Not Urgent, Not Imp)   | q3 (Not Urgent, Important)
     const gridItems: { key: keyof QuadrantData; label: string }[] = [
-      { key: "q3", label: quadrants.q3 },
+      { key: "q2", label: quadrants.q2 },
       { key: "q4", label: quadrants.q4 },
       { key: "q1", label: quadrants.q1 },
-      { key: "q2", label: quadrants.q2 },
+      { key: "q3", label: quadrants.q3 },
     ];
 
     return (
@@ -588,75 +810,168 @@ export default function SortAFewThings({
 
   const renderHandoffScreen = () => {
     const selectedTaskText = selectedTask ? quadrants[selectedTask] : "";
-    const gentleButton = useButtonAnimation();
-    const focusButton = useButtonAnimation();
+    const commitmentLabels: Record<string, string> = {
+      hour: "in the next hour",
+      today: "today",
+      tomorrow: "tomorrow",
+      someday: "someday",
+    };
     
     return (
-      <Animated.View
-        style={[
-          styles.screenContainer,
-          {
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }],
-          },
-        ]}
+      <Pressable 
+        onPress={commitment ? completePracta : undefined}
+        style={{ flex: 1 }}
+        disabled={!commitment}
       >
-        <View style={styles.handoffContent}>
-          <View style={[styles.iconCircle, { backgroundColor: theme.success + "15", marginBottom: Spacing.lg }]}>
-            <Feather name="check-circle" size={36} color={theme.success} />
-          </View>
-          
-          <View style={[styles.handoffCard, { backgroundColor: theme.backgroundSecondary }]}>
+        <Animated.View
+          style={[
+            styles.screenContainer,
+            styles.handoffCentered,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          {/* Celebration checkmark - appears after commitment */}
+          <Animated.View 
+            style={[
+              styles.iconCircle, 
+              { 
+                backgroundColor: theme.success + "15", 
+                marginBottom: Spacing.lg,
+                opacity: celebrationCheckAnim,
+                transform: [{
+                  scale: celebrationCheckAnim.interpolate({
+                    inputRange: [0, 0.5, 1],
+                    outputRange: [0.3, 1.2, 1],
+                  }),
+                }],
+              }
+            ]}
+        >
+          <Feather name="check-circle" size={36} color={theme.success} />
+        </Animated.View>
+        
+        {/* Before commitment: spinning task card */}
+        {!commitment && (
+          <Animated.View 
+            style={[
+              styles.handoffCard, 
+              { 
+                backgroundColor: theme.backgroundSecondary,
+                transform: [
+                  { scale: handoffScaleAnim },
+                  { 
+                    rotateY: handoffSpinAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['0deg', '360deg'],
+                    }) 
+                  },
+                ],
+              }
+            ]}
+          >
             <ThemedText style={styles.handoffTaskText}>
               {selectedTaskText}
             </ThemedText>
-          </View>
-          
-          <ThemedText style={[styles.handoffSubtitle, { color: theme.textSecondary }]}>
-            Let's take a small step.
-          </ThemedText>
-        </View>
+          </Animated.View>
+        )}
         
-        <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.lg }]}>
-          <AnimatedPressable
-            onPress={() => handleHandoff("gentle")}
-            onPressIn={gentleButton.onPressIn}
-            onPressOut={gentleButton.onPressOut}
+        {/* After commitment: plan summary */}
+        {commitment && (
+          <Animated.View 
             style={[
-              styles.primaryButton, 
-              { 
-                backgroundColor: theme.primary,
-                transform: [{ scale: gentleButton.scale }],
-              },
+              styles.planSummary,
+              {
+                opacity: celebrationCheckAnim,
+                transform: [{
+                  translateY: celebrationCheckAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [20, 0],
+                  }),
+                }],
+              }
             ]}
           >
-            <Feather name="play" size={18} color="white" style={{ marginRight: Spacing.sm }} />
-            <ThemedText style={styles.buttonText}>Start gently (2 min)</ThemedText>
-          </AnimatedPressable>
-          
-          <AnimatedPressable
-            onPress={() => handleHandoff("focus")}
-            onPressIn={focusButton.onPressIn}
-            onPressOut={focusButton.onPressOut}
-            style={[
-              styles.secondaryButton, 
-              { 
-                borderColor: theme.primary,
-                transform: [{ scale: focusButton.scale }],
-              },
-            ]}
-          >
-            <ThemedText style={[styles.secondaryButtonText, { color: theme.primary }]}>
-              Focus for a bit
+            <View style={[styles.planCard, { backgroundColor: theme.backgroundSecondary }]}>
+              <ThemedText style={styles.planTaskText}>
+                {selectedTaskText}
+              </ThemedText>
+            </View>
+            <ThemedText style={[styles.planConnector, { color: theme.primary }]}>
+              +
             </ThemedText>
-          </AnimatedPressable>
-        </View>
-      </Animated.View>
+            <View style={[styles.planCard, { backgroundColor: theme.primary + "12" }]}>
+              <ThemedText style={[styles.planCommitmentText, { color: theme.primary }]}>
+                {commitmentLabels[commitment]}
+              </ThemedText>
+            </View>
+          </Animated.View>
+        )}
+        
+        {/* Subtitle - changes based on state */}
+        <Animated.Text 
+          style={[
+            styles.handoffSubtitle, 
+            { 
+              color: theme.textSecondary, 
+              marginTop: Spacing.lg,
+              opacity: commitment ? celebrationCheckAnim : handoffSpinAnim,
+            }
+          ]}
+        >
+          {commitment ? "You've got a plan." : "A good place to begin."}
+        </Animated.Text>
+        
+        {/* Commitment buttons - fade out when selected */}
+        <Animated.View 
+          pointerEvents={commitment ? "none" : "auto"}
+          style={[
+            styles.commitmentContainer,
+            {
+              opacity: Animated.multiply(commitmentButtonsAnim, buttonsExitAnim),
+              transform: [{
+                translateY: commitmentButtonsAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [20, 0],
+                }),
+              }],
+            }
+          ]}
+        >
+          {[
+            { key: "hour", label: "I'll do this in the next hour" },
+            { key: "today", label: "I'll do this today" },
+            { key: "tomorrow", label: "I'll do this tomorrow" },
+            { key: "someday", label: "I'll do this someday" },
+          ].map((option) => (
+            <Pressable
+              key={option.key}
+              onPress={() => handleCommitment(option.key)}
+              style={({ pressed }) => [
+                styles.commitmentButton,
+                {
+                  backgroundColor: pressed ? theme.primary + "15" : theme.backgroundSecondary,
+                  borderColor: theme.border,
+                  transform: [{ scale: pressed ? 0.98 : 1 }],
+                },
+              ]}
+            >
+              <ThemedText style={styles.commitmentButtonText}>
+                {option.label}
+              </ThemedText>
+            </Pressable>
+          ))}
+        </Animated.View>
+        </Animated.View>
+      </Pressable>
     );
   };
 
   return (
     <ThemedView style={[styles.container, { paddingTop: headerHeight + Spacing.lg }]}>
+      {screen === "research" && renderResearchScreen()}
       {screen === "launch" && renderLaunchScreen()}
       {screen === "entry1" && renderEntryScreen("entry1")}
       {screen === "entry2" && renderEntryScreen("entry2")}
@@ -671,6 +986,30 @@ export default function SortAFewThings({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  researchContainer: {
+    flex: 1,
+    justifyContent: "space-between",
+  },
+  researchContent: {
+    flex: 1,
+    justifyContent: "center",
+    paddingHorizontal: Spacing["2xl"],
+  },
+  researchText: {
+    fontSize: 26,
+    fontWeight: "600",
+    lineHeight: 34,
+    letterSpacing: -0.5,
+  },
+  researchStat: {
+    fontSize: 17,
+    lineHeight: 26,
+  },
+  researchCitation: {
+    fontSize: 13,
+    textAlign: "center",
+    marginTop: Spacing.md,
   },
   screenContainer: {
     flex: 1,
@@ -882,6 +1221,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: Spacing.xl,
   },
+  handoffCentered: {
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: Spacing.xl,
+  },
   handoffCard: {
     width: "100%",
     padding: Spacing["2xl"],
@@ -897,6 +1241,52 @@ const styles = StyleSheet.create({
   },
   handoffSubtitle: {
     fontSize: 16,
+    textAlign: "center",
+  },
+  commitmentContainer: {
+    width: "100%",
+    marginTop: Spacing.xl,
+    gap: Spacing.sm,
+  },
+  commitmentButton: {
+    width: "100%",
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+  },
+  commitmentButtonText: {
+    fontSize: 16,
+    textAlign: "center",
+    fontWeight: "500",
+  },
+  planSummary: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: Spacing.md,
+    flexWrap: "wrap",
+  },
+  planCard: {
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.lg,
+    maxWidth: "45%",
+  },
+  planTaskText: {
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center",
+    lineHeight: 22,
+  },
+  planConnector: {
+    fontSize: 24,
+    fontWeight: "600",
+  },
+  planCommitmentText: {
+    fontSize: 16,
+    fontWeight: "600",
     textAlign: "center",
   },
 });

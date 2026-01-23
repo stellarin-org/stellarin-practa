@@ -1,0 +1,21 @@
+{
+  "id": "sort-a-few-things",
+  "name": "Sort a Few Things",
+  "version": "1.3.1",
+  "description": "A gentle exercise to surface priorities and choose one place to begin",
+  "author": "Practa Developer",
+  "type": "widget",
+  "category": "prioritization",
+  "tags": [
+    "prioritization",
+    "decision-making",
+    "task-initiation",
+    "planning",
+    "overwhelm"
+  ],
+  "estimatedDuration": 180,
+  "requiredPermissions": [],
+  "assets": {
+    "splash": "splash.webp"
+  }
+}
