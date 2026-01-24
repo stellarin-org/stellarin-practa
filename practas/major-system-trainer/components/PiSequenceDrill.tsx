@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { View, StyleSheet, Pressable, useWindowDimensions, LayoutRectangle } from "react-native";
 import { Image } from "expo-image";
 import Animated, {
@@ -111,7 +111,7 @@ export function PiSequenceDrill({
   const [slots, setSlots] = useState<(number | null)[]>(
     Array(drill.sequence.length).fill(null)
   );
-  const [shuffledOrder] = useState(() => {
+  const [shuffledOrder, setShuffledOrder] = useState(() => {
     const indices = drill.sequence.map((_, i) => i);
     for (let i = indices.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -122,6 +122,18 @@ export function PiSequenceDrill({
   const slotRefs = useRef<(View | null)[]>([]);
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
+
+  useEffect(() => {
+    setSlots(Array(drill.sequence.length).fill(null));
+    const indices = drill.sequence.map((_, i) => i);
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    setShuffledOrder(indices);
+    setShowResult(false);
+    setIsCorrect(false);
+  }, [drill.id]);
 
   const slotWidth = Math.min(100, (screenWidth - Spacing.lg * 2 - Spacing.md * (drill.sequence.length - 1)) / drill.sequence.length);
 

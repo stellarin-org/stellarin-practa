@@ -222,6 +222,30 @@ export function IntroTutorial({ onComplete, headerHeight }: IntroTutorialProps) 
             </ThemedText>
           </View>
         </View>
+
+        <View style={styles.drillTypeItem}>
+          <View style={[styles.drillIcon, { backgroundColor: theme.jadeMuted }]}>
+            <Feather name="layers" size={20} color={theme.jade} />
+          </View>
+          <View style={styles.drillTypeText}>
+            <ThemedText style={styles.drillTypeName}>Pi Sequence</ThemedText>
+            <ThemedText style={[styles.drillTypeDesc, { color: theme.textSecondary }]}>
+              Drag and drop images to complete the sequence of Pi digits
+            </ThemedText>
+          </View>
+        </View>
+
+        <View style={styles.drillTypeItem}>
+          <View style={[styles.drillIcon, { backgroundColor: theme.amberMuted }]}>
+            <Feather name="calendar" size={20} color={theme.amber} />
+          </View>
+          <View style={styles.drillTypeText}>
+            <ThemedText style={styles.drillTypeName}>Historical Dates</ThemedText>
+            <ThemedText style={[styles.drillTypeDesc, { color: theme.textSecondary }]}>
+              Memorize important dates using mnemonic images and text entry
+            </ThemedText>
+          </View>
+        </View>
       </View>
       
       <ThemedText style={[styles.stepDescription, { color: theme.textSecondary }]}>
