@@ -1,0 +1,18 @@
+{
+  "id": "running-span",
+  "name": "Running Span",
+  "version": "1.0.5",
+  "description": "A scientifically-validated working memory assessment. Watch an unpredictable sequence and recall the last N items in order.",
+  "author": "Your Name",
+  "type": "widget",
+  "category": "cognitive",
+  "tags": [
+    "working-memory",
+    "cognitive-assessment",
+    "attention",
+    "memory-span"
+  ],
+  "estimatedDuration": 180,
+  "requiredPermissions": [],
+  "assets": {}
+}

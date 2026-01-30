@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-01-30T07:29:00.986Z",
+  "registryVersion": "2026-01-30T08:15:00.766Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -45,8 +45,8 @@
       "type": "community",
       "estimatedDuration": 120,
       "assets": {
-        "content": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/content.json",
         "splash": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/splash.mp4",
+        "content": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/content.json",
         "wellness-bg": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/wellness-bg.png"
       }
     },
@@ -211,6 +211,23 @@
       "assets": {
         "content": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/content.json",
         "wellness-bg": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/wellness-bg.png"
+      }
+    },
+    {
+      "slug": "running-span",
+      "version": "1.0.5",
+      "buildId": "6031ceb8-2054-45ef-8445-e41766b6e1a2",
+      "name": "Running Span",
+      "description": "A scientifically-validated working memory assessment. Watch an unpredictable sequence and recall the last N items in order.",
+      "author": "Your Name",
+      "category": "cognitive",
+      "practaType": "cognitive",
+      "type": "community",
+      "estimatedDuration": 180,
+      "assets": {
+        "content": "https://stellarin-practa-verification.replit.app/assets/practa/running-span/6031ceb8-2054-45ef-8445-e41766b6e1a2/content.json",
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/running-span/6031ceb8-2054-45ef-8445-e41766b6e1a2/splash.mp4",
+        "wellness-bg": "https://stellarin-practa-verification.replit.app/assets/practa/running-span/6031ceb8-2054-45ef-8445-e41766b6e1a2/wellness-bg.png"
       }
     },
     {
