@@ -1,0 +1,18 @@
+{
+  "id": "dual-nback",
+  "name": "Dual N-Back",
+  "version": "1.0.2",
+  "description": "Train your working memory with the classic dual-N-back cognitive exercise",
+  "author": "Practa",
+  "type": "widget",
+  "category": "cognitive",
+  "tags": [
+    "memory",
+    "brain-training",
+    "focus",
+    "cognitive"
+  ],
+  "estimatedDuration": 120,
+  "requiredPermissions": [],
+  "assets": {}
+}
