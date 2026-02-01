@@ -46,10 +46,10 @@ interface QuadrantData {
 }
 
 const QUICK_STARTS = {
-  entry1: ["Cleaning my desk", "Replying to that email", "Organizing photos"],
-  entry2: ["That meeting invite", "A deadline soon", "Returning a call"],
-  entry3: ["Learning something new", "A creative project", "A long-term goal"],
-  entry4: ["A health check-in", "A conversation I've postponed", "Something I'm avoiding"],
+  entry1: ["Perfect Social Post", "Optimize Desk Setup", "Inbox zero"],
+  entry2: ["Doomscroll News", "Comments On Social", "Deal FOMO"],
+  entry3: ["Schedule Checkup", "Overdue Apology", "Start Emergency Fund"],
+  entry4: ["Call loved one", "Something I'm avoiding", "Complete bosses assignment"],
 };
 
 const PROMPTS = {
@@ -123,6 +123,7 @@ export default function SortAFewThings({
   const researchLine1Anim = useRef(new Animated.Value(0)).current;
   const researchLine2Anim = useRef(new Animated.Value(0)).current;
   const researchLine3Anim = useRef(new Animated.Value(0)).current;
+  const researchLine4Anim = useRef(new Animated.Value(0)).current;
   const researchContinueAnim = useRef(new Animated.Value(0)).current;
   const [researchReady, setResearchReady] = useState(false);
   
@@ -192,31 +193,41 @@ export default function SortAFewThings({
     }).start();
   }, [currentInput]);
 
-  // Research screen staggered text reveal animation
+  // Research screen animation with fade transitions
   useEffect(() => {
     if (screen === "research") {
       researchLine1Anim.setValue(0);
       researchLine2Anim.setValue(0);
       researchLine3Anim.setValue(0);
+      researchLine4Anim.setValue(0);
       researchContinueAnim.setValue(0);
       setResearchReady(false);
       
-      const staggerDelay = 600;
-      
       Animated.sequence([
-        Animated.spring(researchLine1Anim, { toValue: 1, ...SPRING_CONFIG }),
-        Animated.delay(staggerDelay),
-        Animated.spring(researchLine2Anim, { toValue: 1, ...SPRING_CONFIG }),
-        Animated.delay(staggerDelay),
+        // Phase 1: Fade in headline (lines 1+2) together
+        Animated.parallel([
+          Animated.spring(researchLine1Anim, { toValue: 1, ...SPRING_CONFIG }),
+          Animated.spring(researchLine2Anim, { toValue: 1, ...SPRING_CONFIG }),
+        ]),
+        // Hold for 2 seconds
+        Animated.delay(2000),
+        // Phase 2: Fade in stat
         Animated.spring(researchLine3Anim, { toValue: 1, ...SPRING_CONFIG }),
-        Animated.delay(RESEARCH_REVEAL_DELAY),
-        Animated.spring(researchContinueAnim, { toValue: 1, ...SPRING_CONFIG }),
+        // Hold for 2 seconds
+        Animated.delay(2000),
+        // Phase 3: Fade out all (1 second)
+        Animated.parallel([
+          Animated.timing(researchLine1Anim, { toValue: 0, duration: 1000, useNativeDriver: true }),
+          Animated.timing(researchLine2Anim, { toValue: 0, duration: 1000, useNativeDriver: true }),
+          Animated.timing(researchLine3Anim, { toValue: 0, duration: 1000, useNativeDriver: true }),
+        ]),
+        // Phase 4: Fade in title + subtitle
+        Animated.spring(researchLine4Anim, { toValue: 1, ...SPRING_CONFIG }),
+        // Hold for 2 seconds then auto-advance
+        Animated.delay(2000),
       ]).start(() => {
         setResearchReady(true);
-        // Auto-progress after 7 seconds total or after button reveal
-        autoAdvanceTimer.current = setTimeout(() => {
-          handleNext();
-        }, 7000);
+        handleNext();
       });
     }
 
@@ -225,16 +236,6 @@ export default function SortAFewThings({
         clearTimeout(autoAdvanceTimer.current);
       }
     };
-  }, [screen]);
-
-  // Launch screen auto-advance timer
-  useEffect(() => {
-    if (screen === "launch") {
-      const timer = setTimeout(() => {
-        handleNext();
-      }, 7000);
-      return () => clearTimeout(timer);
-    }
   }, [screen]);
 
   // Handoff screen celebration animation
@@ -376,7 +377,7 @@ export default function SortAFewThings({
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     
-    const screenOrder: Screen[] = ["research", "launch", "entry1", "entry2", "entry3", "entry4", "grid", "handoff"];
+    const screenOrder: Screen[] = ["research", "entry1", "entry2", "entry3", "entry4", "grid", "handoff"];
     const currentIndex = screenOrder.indexOf(screen);
     if (currentIndex < screenOrder.length - 1) {
       setCurrentInput("");
@@ -405,7 +406,7 @@ export default function SortAFewThings({
       setQuadrants(prev => ({ ...prev, [quadrantKey]: currentInput.trim() }));
     }
     
-    const screenOrder: Screen[] = ["research", "launch", "entry1", "entry2", "entry3", "entry4", "grid", "handoff"];
+    const screenOrder: Screen[] = ["research", "entry1", "entry2", "entry3", "entry4", "grid", "handoff"];
     const currentIndex = screenOrder.indexOf(screen);
     if (currentIndex < screenOrder.length - 1) {
       setCurrentInput("");
@@ -442,8 +443,6 @@ export default function SortAFewThings({
   };
 
   const renderResearchScreen = () => {
-    const buttonHandlers = createButtonHandlers(researchButtonScale);
-    
     const createLineStyle = (anim: Animated.Value) => ({
       opacity: anim,
       transform: [{
@@ -456,107 +455,32 @@ export default function SortAFewThings({
     
     return (
       <Pressable style={styles.researchContainer} onPress={handleNext}>
-        <View style={styles.researchContent}>
-          <Animated.View style={createLineStyle(researchLine1Anim)}>
-            <ThemedText style={[styles.researchText, { color: theme.text }]}>
-              Time management isn't just productivity—
-            </ThemedText>
-          </Animated.View>
-          
-          <Animated.View style={createLineStyle(researchLine2Anim)}>
-            <ThemedText style={[styles.researchText, { color: theme.text }]}>
-              it's linked to happiness.
-            </ThemedText>
-          </Animated.View>
-          
-          <Animated.View style={[createLineStyle(researchLine3Anim), { marginTop: Spacing.xl }]}>
+        {/* Phase 1 & 2: Research content - absolutely positioned */}
+        <Animated.View style={[styles.researchCentered, { opacity: researchLine1Anim }]}>
+          <ThemedText style={[styles.researchText, { color: theme.text }]}>
+            Time management isn't just productivity—
+          </ThemedText>
+          <ThemedText style={[styles.researchText, { color: theme.text }]}>
+            it's linked to happiness.
+          </ThemedText>
+          <Animated.View style={{ opacity: researchLine3Anim, marginTop: Spacing.xl }}>
             <ThemedText style={[styles.researchStat, { color: theme.textSecondary }]}>
               18% of life satisfaction differences were linked across 53,957 in multiple independent studies.
             </ThemedText>
           </Animated.View>
-        </View>
-        
-        <Animated.View 
-          pointerEvents={researchReady ? "auto" : "none"}
-          style={[
-            styles.footer, 
-            { 
-              paddingBottom: insets.bottom + Spacing.lg,
-              opacity: researchContinueAnim,
-              transform: [{
-                translateY: researchContinueAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [40, 0],
-                }),
-              }],
-            },
-          ]}
-        >
-          <AnimatedPressable
-            onPress={handleNext}
-            onPressIn={buttonHandlers.onPressIn}
-            onPressOut={buttonHandlers.onPressOut}
-            style={[
-              styles.primaryButton,
-              { 
-                backgroundColor: theme.primary,
-                transform: [{ scale: researchButtonScale }],
-              },
-            ]}
-          >
-            <ThemedText style={styles.buttonText}>Continue</ThemedText>
-          </AnimatedPressable>
-          
-          <ThemedText style={[styles.researchCitation, { color: theme.textSecondary }]}>
-            PLOS ONE, 2021
-          </ThemedText>
         </Animated.View>
-      </Pressable>
-    );
-  };
-
-  const renderLaunchScreen = () => {
-    const buttonHandlers = createButtonHandlers(launchButtonScale);
-    
-    return (
-      <Pressable onPress={handleNext} style={{ flex: 1 }}>
-        <Animated.View
-          style={[
-            styles.screenContainer,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
-          <View style={styles.launchContent}>
-            <View style={[styles.iconCircle, { backgroundColor: theme.primary + "15" }]}>
-              <Feather name="layers" size={40} color={theme.primary} />
-            </View>
-            <ThemedText style={styles.launchTitle}>
-              Let's sort a few things.
-            </ThemedText>
-            <ThemedText style={[styles.launchSubtitle, { color: theme.textSecondary }]}>
-              There's no right answer—just what's true for you right now.
-            </ThemedText>
+        
+        {/* Phase 3: Launch content - absolutely positioned, same center */}
+        <Animated.View style={[styles.researchCentered, { opacity: researchLine4Anim }]}>
+          <View style={[styles.iconCircle, { backgroundColor: theme.primary + "15" }]}>
+            <Feather name="layers" size={40} color={theme.primary} />
           </View>
-          
-          <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.lg }]}>
-            <AnimatedPressable
-              onPress={handleNext}
-              onPressIn={buttonHandlers.onPressIn}
-              onPressOut={buttonHandlers.onPressOut}
-              style={[
-                styles.primaryButton,
-                { 
-                  backgroundColor: theme.primary,
-                  transform: [{ scale: launchButtonScale }],
-                },
-              ]}
-            >
-              <ThemedText style={styles.buttonText}>Begin</ThemedText>
-            </AnimatedPressable>
-          </View>
+          <ThemedText style={styles.launchTitle}>
+            Let's sort some things.
+          </ThemedText>
+          <ThemedText style={[styles.launchSubtitle, { color: theme.textSecondary }]}>
+            There's no right answer—just what's true for you right now.
+          </ThemedText>
         </Animated.View>
       </Pressable>
     );
@@ -972,8 +896,7 @@ export default function SortAFewThings({
   return (
     <ThemedView style={[styles.container, { paddingTop: headerHeight + Spacing.lg }]}>
       {screen === "research" && renderResearchScreen()}
-      {screen === "launch" && renderLaunchScreen()}
-      {screen === "entry1" && renderEntryScreen("entry1")}
+            {screen === "entry1" && renderEntryScreen("entry1")}
       {screen === "entry2" && renderEntryScreen("entry2")}
       {screen === "entry3" && renderEntryScreen("entry3")}
       {screen === "entry4" && renderEntryScreen("entry4")}
@@ -989,11 +912,17 @@ const styles = StyleSheet.create({
   },
   researchContainer: {
     flex: 1,
-    justifyContent: "space-between",
-  },
-  researchContent: {
-    flex: 1,
     justifyContent: "center",
+    alignItems: "center",
+  },
+  researchCentered: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: Spacing["2xl"],
   },
   researchText: {
@@ -1001,10 +930,19 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     lineHeight: 34,
     letterSpacing: -0.5,
+    textAlign: "center" as const,
+  },
+  researchTitle: {
+    fontSize: 28,
+    fontWeight: "700",
+    lineHeight: 36,
+    letterSpacing: -0.5,
+    textAlign: "center" as const,
   },
   researchStat: {
     fontSize: 17,
     lineHeight: 26,
+    textAlign: "center" as const,
   },
   researchCitation: {
     fontSize: 13,
