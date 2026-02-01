@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-01-30T08:15:00.766Z",
+  "registryVersion": "2026-02-01T06:36:58.532Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -80,6 +80,19 @@
         "splash": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/splash.png",
         "content": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/content.json"
       }
+    },
+    {
+      "slug": "letter-to-future-self",
+      "version": "1.0.0",
+      "buildId": "bf7b025f-2596-4332-9956-f6dc0253ca5a",
+      "name": "Letter to Future Self",
+      "description": "Write heartfelt letters to your future self, delivered when the time is right",
+      "author": "Woodenfox",
+      "category": "wellness",
+      "practaType": "wellness",
+      "type": "community",
+      "estimatedDuration": 120,
+      "assets": {}
     },
     {
       "slug": "major-system-trainer",
@@ -225,8 +238,8 @@
       "type": "community",
       "estimatedDuration": 180,
       "assets": {
-        "content": "https://stellarin-practa-verification.replit.app/assets/practa/running-span/6031ceb8-2054-45ef-8445-e41766b6e1a2/content.json",
         "splash": "https://stellarin-practa-verification.replit.app/assets/practa/running-span/6031ceb8-2054-45ef-8445-e41766b6e1a2/splash.mp4",
+        "content": "https://stellarin-practa-verification.replit.app/assets/practa/running-span/6031ceb8-2054-45ef-8445-e41766b6e1a2/content.json",
         "wellness-bg": "https://stellarin-practa-verification.replit.app/assets/practa/running-span/6031ceb8-2054-45ef-8445-e41766b6e1a2/wellness-bg.png"
       }
     },
