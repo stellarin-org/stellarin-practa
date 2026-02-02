@@ -1,7 +1,7 @@
 {
   "id": "sort-some-things",
   "name": "Sort Some Things",
-  "version": "1.4.0",
+  "version": "1.4.2",
   "description": "A gentle exercise to surface priorities and choose one place to begin",
   "author": "Practa Developer",
   "type": "widget",
