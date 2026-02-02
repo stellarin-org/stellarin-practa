@@ -1,8 +1,8 @@
 {
   "id": "dates-to-remember",
   "name": "Dates to Remember",
-  "version": "1.7.8",
-  "description": "Never forget an important date",
+  "version": "1.7.9",
+  "description": "Never forget an important date.",
   "author": "Mike Messenger",
   "type": "widget",
   "category": "memory",
