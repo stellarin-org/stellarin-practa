@@ -46,7 +46,7 @@ interface QuadrantData {
 }
 
 const QUICK_STARTS = {
-  entry1: ["Perfect Social Post", "Optimize Desk Setup", "Inbox zero"],
+  entry1: ["Perfect social post", "Optimize desk setup", "Inbox zero"],
   entry2: ["Doomscroll News", "Comments On Social", "Deal FOMO"],
   entry3: ["Schedule Checkup", "Overdue Apology", "Start Emergency Fund"],
   entry4: ["Call loved one", "Something I'm avoiding", "Complete bosses assignment"],

@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-02T05:22:57.921Z",
+  "registryVersion": "2026-02-02T06:28:10.615Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -263,7 +263,7 @@
     },
     {
       "slug": "sort-some-things",
-      "version": "1.4.2",
+      "version": "1.4.4",
       "buildId": "016e7159-34ec-4e62-89c0-21cc2c66a5a9",
       "name": "Sort Some Things",
       "description": "A gentle exercise to surface priorities and choose one place to begin",
