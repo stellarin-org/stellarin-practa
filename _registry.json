@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-02T06:28:10.615Z",
+  "registryVersion": "2026-02-02T07:26:30.691Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -208,6 +208,22 @@
         "img_60_cheese": "https://stellarin-practa-verification.replit.app/assets/practa/major-system-trainer/a3f5f7d0-a4f7-46b0-a61f-480348dfddd9/60_cheese.webp",
         "img_78_coffee": "https://stellarin-practa-verification.replit.app/assets/practa/major-system-trainer/a3f5f7d0-a4f7-46b0-a61f-480348dfddd9/78_coffee.webp",
         "historical_dates": "https://stellarin-practa-verification.replit.app/assets/practa/major-system-trainer/a3f5f7d0-a4f7-46b0-a61f-480348dfddd9/historical_dates.json"
+      }
+    },
+    {
+      "slug": "my-practa",
+      "version": "1.7.6",
+      "buildId": "c50981b9-d43b-4092-9ee3-6a8fe6a9116c",
+      "name": "My Practa",
+      "description": "A starter template for your custom wellbeing experience",
+      "author": "Your Name",
+      "category": "wellness",
+      "practaType": "wellness",
+      "type": "core",
+      "estimatedDuration": 30,
+      "assets": {
+        "content": "https://stellarin-practa-verification.replit.app/assets/practa/my-practa/c50981b9-d43b-4092-9ee3-6a8fe6a9116c/content.json",
+        "wellnessBg": "https://stellarin-practa-verification.replit.app/assets/practa/my-practa/c50981b9-d43b-4092-9ee3-6a8fe6a9116c/wellness-bg.png"
       }
     },
     {
