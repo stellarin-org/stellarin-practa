@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-02T08:13:12.026Z",
+  "registryVersion": "2026-02-02T08:27:45.613Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -35,7 +35,7 @@
     },
     {
       "slug": "dates-to-remember",
-      "version": "1.7.9",
+      "version": "1.8.1",
       "buildId": "fb676e7d-2c4f-4b3e-a0c7-581162c8198d",
       "name": "Dates to Remember",
       "description": "Never forget an important date.",
@@ -47,7 +47,10 @@
       "assets": {
         "content": "https://stellarin-practa-verification.replit.app/assets/practa/dates-to-remember/fb676e7d-2c4f-4b3e-a0c7-581162c8198d/content.json",
         "wellness-bg": "https://stellarin-practa-verification.replit.app/assets/practa/dates-to-remember/fb676e7d-2c4f-4b3e-a0c7-581162c8198d/wellness-bg.png"
-      }
+      },
+      "dependencies": [
+        "expo-contacts"
+      ]
     },
     {
       "slug": "dual-nback",

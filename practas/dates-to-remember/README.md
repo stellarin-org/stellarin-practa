@@ -38,4 +38,4 @@ Created by Mike Messenger
 
 ## Version
 
-1.7.9
+1.8.1

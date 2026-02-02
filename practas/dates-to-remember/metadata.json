@@ -1,7 +1,7 @@
 {
   "id": "dates-to-remember",
   "name": "Dates to Remember",
-  "version": "1.7.9",
+  "version": "1.8.1",
   "description": "Never forget an important date.",
   "author": "Mike Messenger",
   "type": "widget",
@@ -12,5 +12,8 @@
   ],
   "estimatedDuration": 30,
   "requiredPermissions": [],
-  "assets": {}
+  "assets": {},
+  "dependencies": [
+    "expo-contacts"
+  ]
 }
