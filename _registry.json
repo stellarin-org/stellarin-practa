@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-03T16:52:45.144Z",
+  "registryVersion": "2026-02-03T16:56:39.914Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -264,7 +264,7 @@
     },
     {
       "slug": "six",
-      "version": "1.6.7",
+      "version": "1.6.8",
       "buildId": "d65f36c4-2d03-4357-8c0f-4db5d19562cc",
       "name": "Six",
       "description": "A daily word guessing game - guess the 6-letter word in 6 tries",
@@ -281,7 +281,12 @@
         "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json"
       },
       "dependencies": [
+        "@expo/vector-icons",
+        "expo-blur",
+        "expo-haptics",
         "expo-sharing",
+        "react-native-reanimated",
+        "react-native-safe-area-context",
         "react-native-view-shot"
       ]
     },
