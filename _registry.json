@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-03T07:03:27.066Z",
+  "registryVersion": "2026-02-03T07:18:10.103Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -35,7 +35,7 @@
     },
     {
       "slug": "dates-to-remember",
-      "version": "1.8.1",
+      "version": "1.9.4",
       "buildId": "fb676e7d-2c4f-4b3e-a0c7-581162c8198d",
       "name": "Dates to Remember",
       "description": "Never forget an important date.",

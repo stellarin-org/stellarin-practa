@@ -63,16 +63,23 @@ const MONTH_NAMES = [
 ];
 
 const DATE_TYPES = [
-  { value: "birthday", label: "Birthday", icon: "gift" },
-  { value: "anniversary", label: "Anniversary", icon: "heart" },
-  { value: "custom", label: "Custom", icon: "calendar" },
+  { value: "birthday", label: "Birthday", icon: "gift", color: "#5B8DEF", bgColor: "#5B8DEF20" },
+  { value: "anniversary", label: "Anniversary", icon: "heart", color: "#E85D75", bgColor: "#E85D7520" },
+  { value: "custom", label: "Custom", icon: "calendar", color: "#6B7280", bgColor: "#6B728020" },
 ] as const;
+
+function getTypeColors(type: string): { color: string; bgColor: string } {
+  const typeConfig = DATE_TYPES.find(t => t.value === type);
+  return typeConfig ? { color: typeConfig.color, bgColor: typeConfig.bgColor } : { color: "#6B7280", bgColor: "#6B728020" };
+}
 
 function getNextDate(month: number, day: number): Date {
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const currentYear = today.getFullYear();
   
   let dateThisYear = new Date(currentYear, month - 1, day);
+  dateThisYear.setHours(0, 0, 0, 0);
   
   if (dateThisYear < today) {
     dateThisYear = new Date(currentYear + 1, month - 1, day);
@@ -89,7 +96,7 @@ function getDateCategory(nextDate: Date): string {
   date.setHours(0, 0, 0, 0);
   
   const diffTime = date.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   
   if (diffDays === 0) {
     return "Today";
@@ -166,6 +173,8 @@ export default function MyPracta({ context, onComplete, onSkip, onSettings, show
   const dayInputRef = useRef<TextInput>(null);
   const yearInputRef = useRef<TextInput>(null);
 
+  const [editingDateId, setEditingDateId] = useState<string | null>(null);
+
   useEffect(() => {
     setConfig({
       headerMode: "default",
@@ -179,11 +188,43 @@ export default function MyPracta({ context, onComplete, onSkip, onSettings, show
     loadSavedDates();
   }, []);
 
+  const generateDevSampleDates = (): SavedDate[] => {
+    const today = new Date();
+    const samples: SavedDate[] = [];
+    
+    const addDate = (daysOffset: number, name: string, type: SavedDate["type"]) => {
+      const date = new Date(today);
+      date.setDate(date.getDate() + daysOffset);
+      samples.push({
+        id: `sample-${daysOffset}-${name}`,
+        name,
+        month: date.getMonth() + 1,
+        day: date.getDate(),
+        type,
+      });
+    };
+    
+    addDate(0, "Mom's Birthday", "birthday");
+    addDate(1, "Wedding Anniversary", "anniversary");
+    addDate(3, "Best Friend's Birthday", "birthday");
+    addDate(8, "Parent's Anniversary", "anniversary");
+    addDate(18, "Sister's Birthday", "birthday");
+    addDate(40, "College Reunion", "custom");
+    addDate(75, "Nephew's Birthday", "birthday");
+    addDate(120, "Work Anniversary", "anniversary");
+    
+    return samples;
+  };
+
   const loadSavedDates = async () => {
     try {
       const stored = await context.storage?.get<SavedDate[]>("savedDates");
-      if (stored) {
+      if (stored && stored.length > 0) {
         setSavedDates(stored);
+      } else if (__DEV__) {
+        const sampleDates = generateDevSampleDates();
+        setSavedDates(sampleDates);
+        await context.storage?.set("savedDates", sampleDates);
       }
     } catch (error) {
       console.error("Error loading saved dates:", error);
@@ -344,24 +385,26 @@ export default function MyPracta({ context, onComplete, onSkip, onSettings, show
       return;
     }
     
-    const newDate: SavedDate = {
-      id: `${Date.now()}-${Math.random()}`,
-      name: newDateName.trim(),
-      month: newDateMonth,
-      day,
-      year,
-      type: newDateType,
-    };
+    if (editingDateId) {
+      const updatedDates = savedDates.map(d => 
+        d.id === editingDateId 
+          ? { ...d, name: newDateName.trim(), month: newDateMonth, day, year, type: newDateType }
+          : d
+      );
+      saveDates(updatedDates);
+    } else {
+      const newDate: SavedDate = {
+        id: `${Date.now()}-${Math.random()}`,
+        name: newDateName.trim(),
+        month: newDateMonth,
+        day,
+        year,
+        type: newDateType,
+      };
+      saveDates([...savedDates, newDate]);
+    }
     
-    saveDates([...savedDates, newDate]);
-    
-    setNewDateName("");
-    setNewDateMonth(null);
-    setNewDateDay("");
-    setNewDateYear("");
-    setNewDateType("birthday");
-    setShowMonthPicker(false);
-    setViewMode("list");
+    resetForm();
   };
 
   const resetForm = () => {
@@ -371,7 +414,19 @@ export default function MyPracta({ context, onComplete, onSkip, onSettings, show
     setNewDateYear("");
     setNewDateType("birthday");
     setShowMonthPicker(false);
+    setEditingDateId(null);
     setViewMode("list");
+  };
+
+  const handleEditDate = (date: SavedDate) => {
+    triggerHaptic();
+    setEditingDateId(date.id);
+    setNewDateName(date.name);
+    setNewDateMonth(date.month);
+    setNewDateDay(date.day.toString());
+    setNewDateYear(date.year?.toString() || "");
+    setNewDateType(date.type);
+    setViewMode("add");
   };
 
   const handleDayChange = (text: string) => {
@@ -408,40 +463,35 @@ export default function MyPracta({ context, onComplete, onSkip, onSettings, show
     );
   };
 
-  const renderDateItem = ({ item }: { item: SavedDate }) => (
-    <View style={[styles.dateCard, { backgroundColor: theme.backgroundSecondary }]}>
-      <View style={[styles.avatarContainer, { backgroundColor: theme.primary + "20" }]}>
-        <Feather name={getIconForType(item.type) as any} size={24} color={theme.primary} />
-      </View>
-      <View style={styles.dateInfo}>
-        <ThemedText style={styles.dateName}>{item.name}</ThemedText>
-        <View style={styles.infoRow}>
-          <Feather name="calendar" size={14} color={theme.textSecondary} />
-          <ThemedText style={[styles.infoText, { color: theme.textSecondary }]}>
-            {formatDateDisplay(item.month, item.day, item.year)}
-          </ThemedText>
-        </View>
-      </View>
-      <Pressable
-        onPress={() => handleDeleteDate(item.id)}
-        style={styles.deleteButton}
-        hitSlop={8}
+  const renderDateItem = ({ item }: { item: SavedDate }) => {
+    const typeColors = getTypeColors(item.type);
+    return (
+      <Pressable 
+        style={[styles.dateCard, { backgroundColor: theme.backgroundSecondary }]}
+        onPress={() => handleEditDate(item)}
       >
-        <Feather name="x" size={20} color={theme.textSecondary} />
+        <View style={[styles.avatarContainer, { backgroundColor: typeColors.bgColor }]}>
+          <Feather name={getIconForType(item.type) as any} size={22} color={typeColors.color} />
+        </View>
+        <View style={styles.dateInfo}>
+          <ThemedText style={styles.dateName}>{item.name}</ThemedText>
+          <View style={styles.infoRow}>
+            <Feather name="calendar" size={14} color={theme.textSecondary} />
+            <ThemedText style={[styles.infoText, { color: theme.textSecondary }]}>
+              {formatDateDisplay(item.month, item.day, item.year)}
+            </ThemedText>
+          </View>
+        </View>
+        <Feather name="chevron-right" size={20} color={theme.textSecondary} />
       </Pressable>
-    </View>
-  );
+    );
+  };
 
   const renderSectionHeader = ({ section }: { section: DateSection }) => (
     <View style={[styles.sectionHeader, { backgroundColor: theme.backgroundDefault }]}>
-      <ThemedText style={[styles.sectionTitle, { color: theme.primary }]}>
+      <ThemedText style={[styles.sectionTitle, { color: theme.text }]}>
         {section.title}
       </ThemedText>
-      <View style={[styles.badge, { backgroundColor: theme.primary + "20" }]}>
-        <ThemedText style={[styles.badgeText, { color: theme.primary }]}>
-          {section.data.length}
-        </ThemedText>
-      </View>
     </View>
   );
 
@@ -507,8 +557,8 @@ export default function MyPracta({ context, onComplete, onSkip, onSettings, show
       return (
         <ThemedView style={[styles.container, { paddingTop: headerHeight + Spacing.lg }]}>
           <View style={styles.centerContent}>
-            <View style={[styles.iconContainer, { backgroundColor: theme.primary + "20" }]}>
-              <Feather name="users" size={48} color={theme.primary} />
+            <View style={[styles.iconContainer, { backgroundColor: theme.border }]}>
+              <Feather name="users" size={48} color={theme.text} />
             </View>
             
             <ThemedText style={styles.title}>
@@ -563,8 +613,8 @@ export default function MyPracta({ context, onComplete, onSkip, onSettings, show
           </View>
         ) : contacts.length === 0 ? (
           <View style={styles.centerContent}>
-            <View style={[styles.iconContainer, { backgroundColor: theme.primary + "20" }]}>
-              <Feather name="users" size={48} color={theme.primary} />
+            <View style={[styles.iconContainer, { backgroundColor: theme.border }]}>
+              <Feather name="users" size={48} color={theme.text} />
             </View>
             <ThemedText style={styles.title}>No Birthdays Found</ThemedText>
             <ThemedText style={[styles.subtitle, { color: theme.textSecondary }]}>
@@ -616,9 +666,13 @@ export default function MyPracta({ context, onComplete, onSkip, onSettings, show
             >
               <Feather name="arrow-left" size={24} color={theme.text} />
             </Pressable>
-            <ThemedText style={styles.formTitle}>Add New Date</ThemedText>
+            <ThemedText style={styles.formTitle}>{editingDateId ? "Edit Date" : "Add New Date"}</ThemedText>
             <View style={styles.backButton} />
           </View>
+          
+          <ThemedText style={[styles.label, { color: theme.textSecondary, marginBottom: Spacing.md }]}>
+            {editingDateId ? "Edit date details" : "Add a new important date"}
+          </ThemedText>
           
           <View style={styles.formSection}>
             <TextInput
@@ -646,7 +700,7 @@ export default function MyPracta({ context, onComplete, onSkip, onSettings, show
                   style={[
                     styles.typeButton,
                     { backgroundColor: theme.backgroundSecondary, borderColor: theme.border },
-                    newDateType === type.value && { backgroundColor: theme.primary + "20", borderColor: theme.primary }
+                    newDateType === type.value && { backgroundColor: type.bgColor, borderColor: type.color }
                   ]}
                   accessibilityLabel={`${type.label} type`}
                   accessibilityRole="button"
@@ -655,12 +709,12 @@ export default function MyPracta({ context, onComplete, onSkip, onSettings, show
                   <Feather 
                     name={type.icon as any} 
                     size={24} 
-                    color={newDateType === type.value ? theme.primary : theme.textSecondary} 
+                    color={newDateType === type.value ? type.color : theme.textSecondary} 
                   />
                   <ThemedText 
                     style={[
                       styles.typeLabel,
-                      { color: newDateType === type.value ? theme.primary : theme.textSecondary }
+                      { color: newDateType === type.value ? type.color : theme.textSecondary }
                     ]}
                   >
                     {type.label}
@@ -706,8 +760,8 @@ export default function MyPracta({ context, onComplete, onSkip, onSettings, show
                   accessibilityLabel="Change month"
                   accessibilityRole="button"
                 >
-                  <Feather name="calendar" size={18} color={theme.primary} />
-                  <ThemedText style={[styles.selectedMonthText, { color: theme.primary }]}>
+                  <Feather name="calendar" size={18} color={theme.text} />
+                  <ThemedText style={[styles.selectedMonthText, { color: theme.text }]}>
                     {MONTH_NAMES[newDateMonth - 1]}
                   </ThemedText>
                   <ThemedText style={[styles.changeMonthText, { color: theme.textSecondary }]}>
@@ -765,19 +819,22 @@ export default function MyPracta({ context, onComplete, onSkip, onSettings, show
             </View>
           ) : null}
           
-          {newDateName && newDateMonth && newDateDay ? (
-            <View style={[styles.previewCard, { backgroundColor: theme.primary + "10", borderColor: theme.primary + "30" }]}>
-              <View style={[styles.previewIcon, { backgroundColor: theme.primary + "20" }]}>
-                <Feather name={getIconForType(newDateType) as any} size={24} color={theme.primary} />
+          {newDateName && newDateMonth && newDateDay ? (() => {
+            const previewColors = getTypeColors(newDateType);
+            return (
+              <View style={[styles.previewCard, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border }]}>
+                <View style={[styles.previewIcon, { backgroundColor: previewColors.bgColor }]}>
+                  <Feather name={getIconForType(newDateType) as any} size={24} color={previewColors.color} />
+                </View>
+                <View style={styles.previewInfo}>
+                  <ThemedText style={styles.previewName}>{newDateName}</ThemedText>
+                  <ThemedText style={[styles.previewDate, { color: theme.textSecondary }]}>
+                    {formatDateDisplay(newDateMonth, parseInt(newDateDay, 10) || 1, newDateYear ? parseInt(newDateYear, 10) : undefined)}
+                  </ThemedText>
+                </View>
               </View>
-              <View style={styles.previewInfo}>
-                <ThemedText style={styles.previewName}>{newDateName}</ThemedText>
-                <ThemedText style={[styles.previewDate, { color: theme.textSecondary }]}>
-                  {formatDateDisplay(newDateMonth, parseInt(newDateDay, 10) || 1, newDateYear ? parseInt(newDateYear, 10) : undefined)}
-                </ThemedText>
-              </View>
-            </View>
-          ) : null}
+            );
+          })() : null}
         </KeyboardAwareScrollViewCompat>
 
         <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.lg }]}>
@@ -794,9 +851,26 @@ export default function MyPracta({ context, onComplete, onSkip, onSettings, show
           >
             <Feather name="check" size={18} color={isFormValid ? "white" : theme.textSecondary} style={{ marginRight: Spacing.sm }} />
             <ThemedText style={[styles.buttonText, { color: isFormValid ? "white" : theme.textSecondary }]}>
-              Save Date
+              {editingDateId ? "Save Changes" : "Save Date"}
             </ThemedText>
           </Pressable>
+          
+          {editingDateId ? (
+            <Pressable
+              onPress={() => {
+                handleDeleteDate(editingDateId);
+                resetForm();
+              }}
+              style={[styles.deleteButtonFooter, { borderColor: theme.error || "#FF3B30" }]}
+              accessibilityLabel="Delete date"
+              accessibilityRole="button"
+            >
+              <Feather name="trash-2" size={18} color={theme.error || "#FF3B30"} style={{ marginRight: Spacing.sm }} />
+              <ThemedText style={[styles.buttonText, { color: theme.error || "#FF3B30" }]}>
+                Delete Date
+              </ThemedText>
+            </Pressable>
+          ) : null}
         </View>
       </ThemedView>
     );
@@ -806,10 +880,10 @@ export default function MyPracta({ context, onComplete, onSkip, onSettings, show
     <ThemedView style={[styles.container, { paddingTop: headerHeight + Spacing.lg }]}>
       {savedDates.length === 0 ? (
         <View style={styles.centerContent}>
-          <View style={[styles.iconContainer, { backgroundColor: theme.primary + "20" }]}>
-            <Feather name="calendar" size={48} color={theme.primary} />
+          <View style={[styles.iconContainer, { backgroundColor: theme.border }]}>
+            <Feather name="calendar" size={48} color={theme.text} />
           </View>
-          <ThemedText style={styles.title}>No Dates Yet</ThemedText>
+          <ThemedText style={styles.title}>Remember important dates</ThemedText>
           <ThemedText style={[styles.subtitle, { color: theme.textSecondary }]}>
             Add important dates you want to remember.
           </ThemedText>
@@ -1027,6 +1101,15 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     padding: Spacing.sm,
+  },
+  deleteButtonFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    marginTop: Spacing.md,
   },
   contactCard: {
     flexDirection: "row",
