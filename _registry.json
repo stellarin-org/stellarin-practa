@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-03T06:13:36.283Z",
+  "registryVersion": "2026-02-03T07:03:27.066Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -231,7 +231,7 @@
     },
     {
       "slug": "practa-habit-tracker",
-      "version": "1.1.8",
+      "version": "1.6.1",
       "buildId": "eede6e96-1813-48fb-8af8-b46374c074c1",
       "name": "Habit Tracker",
       "description": "A beautiful daily habit tracker to help you build positive routines",
@@ -275,10 +275,10 @@
       "estimatedDuration": 180,
       "assets": {
         "hints": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/hints.json",
-        "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.png",
         "splash": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/splash.mp4",
-        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json",
-        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json"
+        "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.png",
+        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json",
+        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json"
       },
       "dependencies": [
         "expo-sharing",
