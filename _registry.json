@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-02T08:27:45.613Z",
+  "registryVersion": "2026-02-03T06:13:36.283Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -264,7 +264,7 @@
     },
     {
       "slug": "six",
-      "version": "1.4.8",
+      "version": "1.6.7",
       "buildId": "d65f36c4-2d03-4357-8c0f-4db5d19562cc",
       "name": "Six",
       "description": "A daily word guessing game - guess the 6-letter word in 6 tries",
@@ -274,11 +274,16 @@
       "type": "core",
       "estimatedDuration": 180,
       "assets": {
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/splash.mp4",
+        "hints": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/hints.json",
         "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.png",
-        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json",
-        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json"
-      }
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/splash.mp4",
+        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json",
+        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json"
+      },
+      "dependencies": [
+        "expo-sharing",
+        "react-native-view-shot"
+      ]
     },
     {
       "slug": "sort-some-things",

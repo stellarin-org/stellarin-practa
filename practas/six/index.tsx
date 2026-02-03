@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo, createContext, useContext } from "react";
+import React, { useState, useEffect, useCallback, useMemo, createContext, useContext, useRef } from "react";
 import { View, StyleSheet, Pressable, Platform, Image, useWindowDimensions, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
+import * as Sharing from "expo-sharing";
 import { Feather } from "@expo/vector-icons";
+import { captureRef } from "react-native-view-shot";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -245,6 +247,78 @@ function GhostLetterTile({ letter, fadeIn, delay, fadeOutDelay = 0 }: GhostLette
         {letter}
       </Animated.Text>
     </Animated.View>
+  );
+}
+
+interface HintLetterTileProps {
+  letter: string;
+  index: number;
+  revealedIndex: number;
+  isFadingOut: boolean;
+}
+
+function HintLetterTile({ letter, index, revealedIndex, isFadingOut }: HintLetterTileProps) {
+  const { isDark } = useTheme();
+  const sizes = useContext(SizingContext);
+  const letterOpacity = useSharedValue(0);
+  const letterScale = useSharedValue(0.85);
+  
+  const isRevealed = index <= revealedIndex;
+  const waveDelay = index * 50;
+  const fadeOutDelay = (5 - index) * 40;
+
+  useEffect(() => {
+    if (isFadingOut) {
+      letterOpacity.value = withDelay(
+        fadeOutDelay,
+        withTiming(0, { duration: 300, easing: Easing.out(Easing.cubic) })
+      );
+      letterScale.value = withDelay(
+        fadeOutDelay,
+        withTiming(0.85, { duration: 300, easing: Easing.out(Easing.cubic) })
+      );
+    } else if (isRevealed && letter) {
+      letterOpacity.value = withDelay(
+        waveDelay,
+        withTiming(0.5, { duration: 350, easing: Easing.out(Easing.cubic) })
+      );
+      letterScale.value = withDelay(
+        waveDelay,
+        withSpring(1, { damping: 15, stiffness: 180 })
+      );
+    }
+  }, [isRevealed, letter, waveDelay, isFadingOut, fadeOutDelay]);
+
+  const letterStyle = useAnimatedStyle(() => ({
+    opacity: letterOpacity.value,
+    transform: [{ scale: letterScale.value }],
+  }));
+
+  return (
+    <View
+      style={[
+        styles.tile,
+        {
+          width: sizes.tileSize,
+          height: sizes.tileSize,
+          backgroundColor: isDark ? COLORS.tile.dark : COLORS.tile.light,
+          borderColor: isDark ? COLORS.tileBorder.dark : COLORS.tileBorder.light,
+        },
+      ]}
+    >
+      <Animated.Text
+        style={[
+          styles.tileLetter,
+          { 
+            fontSize: sizes.tileFontSize,
+            color: isDark ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.55)",
+          },
+          letterStyle,
+        ]}
+      >
+        {letter}
+      </Animated.Text>
+    </View>
   );
 }
 
@@ -551,16 +625,16 @@ function KeyboardKey({ letter, state, onPress, shimmerProgress = -1, keyIndex = 
 interface MyPractaProps {
   context: PractaContext;
   onComplete: PractaCompleteHandler;
-  onSkip?: () => void;
 }
 
 type GameState = "playing" | "won" | "lost";
 
-export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps) {
+export default function MyPracta({ context, onComplete }: MyPractaProps) {
   const { theme, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const sizes = useResponsiveSizes();
   const { setConfig, resetConfig } = usePractaChrome();
+  const shareRef = useRef<View>(null);
 
 
   const wordlist = useMemo(() => {
@@ -577,6 +651,10 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
     return getDailyWord(wordlist);
   }, [wordlist]);
 
+  const hints = useMemo(() => {
+    return (context.assets?.hints as Record<string, string>) || {};
+  }, [context.assets]);
+
   const [guesses, setGuesses] = useState<string[]>([]);
   const [currentGuess, setCurrentGuess] = useState("");
   const [gameState, setGameState] = useState<GameState>("playing");
@@ -590,21 +668,23 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
   const [hintWord, setHintWord] = useState<string | null>(null);
   const [showHint, setShowHint] = useState(false);
   const [hintLetterIndex, setHintLetterIndex] = useState(-1);
+  const [hintFadingOut, setHintFadingOut] = useState(false);
+  const [shownHintWords, setShownHintWords] = useState<Set<string>>(new Set());
   const hintTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const hintLetterRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const HINT_DELAY = 15000;
-  const HINT_LETTER_DURATION = 1200;
+  const HINT_LETTER_DURATION = 800;
 
-  const findValidHintWord = useCallback((): string | null => {
-    if (guesses.length === 0) return null;
+  const findMatchingValidWord = useCallback((): string | null => {
+    if (guesses.length === 0 || !targetWord) return null;
     
-    const correctPositions: Record<number, string> = {};
+    const correctPositions: (string | null)[] = new Array(WORD_LENGTH).fill(null);
     const presentLetters: Set<string> = new Set();
     const absentLetters: Set<string> = new Set();
-    const wrongPositions: Record<number, Set<string>> = {};
+    const notInPosition: Map<number, Set<string>> = new Map();
     
     for (let i = 0; i < WORD_LENGTH; i++) {
-      wrongPositions[i] = new Set();
+      notInPosition.set(i, new Set());
     }
     
     for (const guess of guesses) {
@@ -617,79 +697,78 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
           correctPositions[i] = letter;
         } else if (state === "present") {
           presentLetters.add(letter);
-          wrongPositions[i].add(letter);
+          notInPosition.get(i)?.add(letter);
         } else if (state === "absent") {
-          const isLetterElsewhereCorrect = Object.values(correctPositions).includes(letter);
-          const isLetterElsewherePresent = guesses.some((g, gIdx) => {
-            const s = evaluateGuess(g, targetWord);
-            return s.some((st, idx) => g[idx] === letter && (st === "correct" || st === "present"));
-          });
-          if (!isLetterElsewhereCorrect && !isLetterElsewherePresent) {
+          if (!correctPositions.includes(letter) && !presentLetters.has(letter)) {
             absentLetters.add(letter);
           }
         }
       }
     }
     
-    const validHints: string[] = [];
-    const allWords = [...wordlist];
-    
-    for (const word of allWords) {
+    const validWordsArray = Array.from(validWords);
+    for (const word of validWordsArray) {
       if (word === targetWord) continue;
+      if (shownHintWords.has(word)) continue;
+      if (word.length !== WORD_LENGTH) continue;
       
-      let isValid = true;
+      let matches = true;
       
-      for (const [pos, letter] of Object.entries(correctPositions)) {
-        if (word[parseInt(pos)] !== letter) {
-          isValid = false;
+      for (let i = 0; i < WORD_LENGTH; i++) {
+        if (correctPositions[i] && word[i] !== correctPositions[i]) {
+          matches = false;
+          break;
+        }
+        if (notInPosition.get(i)?.has(word[i])) {
+          matches = false;
+          break;
+        }
+        if (absentLetters.has(word[i]) && !correctPositions.includes(word[i]) && !presentLetters.has(word[i])) {
+          matches = false;
           break;
         }
       }
-      if (!isValid) continue;
       
-      for (const letter of presentLetters) {
-        if (!word.includes(letter)) {
-          isValid = false;
-          break;
-        }
-      }
-      if (!isValid) continue;
-      
-      for (const letter of absentLetters) {
-        if (word.includes(letter)) {
-          isValid = false;
-          break;
-        }
-      }
-      if (!isValid) continue;
-      
-      for (const [pos, letters] of Object.entries(wrongPositions)) {
-        const posNum = parseInt(pos);
-        for (const letter of letters) {
-          if (word[posNum] === letter) {
-            isValid = false;
+      if (matches) {
+        for (const letter of presentLetters) {
+          if (!word.includes(letter)) {
+            matches = false;
             break;
           }
         }
-        if (!isValid) break;
       }
       
-      if (isValid && !guesses.includes(word)) {
-        validHints.push(word);
+      if (matches) {
+        return word;
       }
     }
     
-    if (validHints.length === 0) {
-      return null;
+    return null;
+  }, [guesses, targetWord, validWords, shownHintWords]);
+
+  const getHintFileWord = useCallback((): string | null => {
+    const hint = hints[targetWord];
+    if (hint && hint.length === 6 && !shownHintWords.has(hint)) {
+      return hint;
     }
+    return null;
+  }, [hints, targetWord, shownHintWords]);
+
+  const getNextHintWord = useCallback((): string => {
+    const matchingWord = findMatchingValidWord();
+    if (matchingWord) return matchingWord;
     
-    return validHints[Math.floor(Math.random() * validHints.length)];
-  }, [guesses, targetWord, wordlist]);
+    const hintFileWord = getHintFileWord();
+    if (hintFileWord) return hintFileWord;
+    
+    return "ILOVEU";
+  }, [findMatchingValidWord, getHintFileWord]);
 
   const resetHintTimer = useCallback(() => {
     setShowHint(false);
     setHintWord(null);
     setHintLetterIndex(-1);
+    setHintFadingOut(false);
     
     if (hintTimerRef.current) {
       clearTimeout(hintTimerRef.current);
@@ -703,13 +782,17 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
 
   const showNextHintLetter = useCallback((word: string, index: number) => {
     if (index >= WORD_LENGTH) {
-      setHintLetterIndex(-1);
+      setShownHintWords(prev => new Set(prev).add(word));
       hintLetterRef.current = setTimeout(() => {
-        const newHint = findValidHintWord();
-        const nextWord = newHint || "ILOVEU";
-        setHintWord(nextWord);
-        showNextHintLetter(nextWord, 0);
-      }, 3000);
+        setHintFadingOut(true);
+        hintLetterRef.current = setTimeout(() => {
+          setHintFadingOut(false);
+          const nextWord = getNextHintWord();
+          setHintWord(nextWord);
+          setHintLetterIndex(-1);
+          showNextHintLetter(nextWord, 0);
+        }, 500);
+      }, 2000);
       return;
     }
     
@@ -717,7 +800,7 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
     hintLetterRef.current = setTimeout(() => {
       showNextHintLetter(word, index + 1);
     }, HINT_LETTER_DURATION);
-  }, [findValidHintWord]);
+  }, [getNextHintWord]);
 
   const startHintTimer = useCallback(() => {
     if (gameState !== "playing" || guesses.length === 0 || currentGuess.length > 0) {
@@ -728,14 +811,13 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
     
     hintTimerRef.current = setTimeout(() => {
       if (gameState === "playing" && guesses.length > 0 && currentGuess.length === 0) {
-        const hint = findValidHintWord();
-        const word = hint || "ILOVEU";
+        const word = getNextHintWord();
         setHintWord(word);
         setShowHint(true);
         showNextHintLetter(word, 0);
       }
     }, HINT_DELAY);
-  }, [gameState, guesses.length, currentGuess.length, findValidHintWord, resetHintTimer, showNextHintLetter]);
+  }, [gameState, guesses.length, currentGuess.length, getNextHintWord, resetHintTimer, showNextHintLetter]);
 
   useEffect(() => {
     if (gameState !== "playing") {
@@ -1035,6 +1117,28 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
     });
   }, [gameState, guesses.length, targetWord, onComplete, triggerHaptic]);
 
+  const handleShare = useCallback(async () => {
+    if (!shareRef.current) return;
+    
+    try {
+      triggerHaptic("light");
+      const uri = await captureRef(shareRef, {
+        format: "png",
+        quality: 1,
+      });
+      
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
+        await Sharing.shareAsync(uri, {
+          mimeType: "image/png",
+          dialogTitle: "Share your Six result",
+        });
+      }
+    } catch (error) {
+      console.warn("Share failed:", error);
+    }
+  }, [triggerHaptic]);
+
   const renderGrid = () => {
     const rows = [];
     for (let i = 0; i < INITIAL_ROWS; i++) {
@@ -1073,14 +1177,13 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
             />
           );
         } else if (showHintInRow) {
-          const isActiveHintLetter = j === hintLetterIndex;
           cells.push(
-            <GhostLetterTile
-              key={`hint-${i}-${j}-${hintWord}-${hintLetterIndex}`}
-              letter={isActiveHintLetter ? (hintWord?.[j] || "") : ""}
-              fadeIn={isActiveHintLetter}
-              delay={0}
-              fadeOutDelay={0}
+            <HintLetterTile
+              key={`hint-${i}-${j}-${hintWord}`}
+              letter={hintWord?.[j] || ""}
+              index={j}
+              revealedIndex={hintLetterIndex}
+              isFadingOut={hintFadingOut}
             />
           );
         } else {
@@ -1167,46 +1270,87 @@ export default function MyPracta({ context, onComplete, onSkip }: MyPractaProps)
             </View>
         ) : (
           <View style={[styles.resultContainer, { paddingBottom: insets.bottom + Spacing.xl }]}>
-            <View style={[
-              styles.resultCard, 
-              { backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)" }
-            ]}>
-              <ThemedText style={styles.resultEmoji}>
-                {gameState === "won" ? "✓" : ""}
-              </ThemedText>
-              <ThemedText style={styles.resultTitle}>
-                {gameState === "won" ? "Well done!" : "Nice try!"}
-              </ThemedText>
-              <ThemedText style={[styles.resultSubtitle, { color: theme.textSecondary }]}>
-                {gameState === "won"
-                  ? `You got it in ${guesses.length}`
-                  : "The word was"}
-              </ThemedText>
-              <ThemedText style={styles.resultText}>
-                {gameState === "won"
-                  ? `${guesses.length} / ${INITIAL_ROWS}`
-                  : targetWord}
-              </ThemedText>
-            </View>
-            <Pressable
-              onPress={handleComplete}
-              style={({ pressed }) => [
-                styles.completeButton, 
-                { 
-                  backgroundColor: theme.primary,
-                  opacity: pressed ? 0.9 : 1,
-                }
+            <View 
+              ref={shareRef}
+              style={[
+                styles.shareableContent,
+                { backgroundColor: isDark ? "#1a1a1b" : "#ffffff" }
               ]}
             >
-              <ThemedText style={styles.completeButtonText}>Continue</ThemedText>
-            </Pressable>
-            {onSkip ? (
-              <Pressable onPress={onSkip} style={styles.skipButton}>
-                <ThemedText style={[styles.skipText, { color: theme.textSecondary }]}>
-                  Skip
+              <View style={[
+                styles.resultCard, 
+                { backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)" }
+              ]}>
+                <ThemedText style={styles.resultEmoji}>
+                  {gameState === "won" ? "✓" : ""}
                 </ThemedText>
+                <ThemedText style={styles.resultTitle}>
+                  {gameState === "won" ? "Well done!" : "Nice try!"}
+                </ThemedText>
+                <ThemedText style={[styles.resultSubtitle, { color: theme.textSecondary }]}>
+                  {gameState === "won"
+                    ? `You got it in ${guesses.length}`
+                    : "The word was"}
+                </ThemedText>
+                <ThemedText style={styles.resultText}>
+                  {gameState === "won"
+                    ? `${guesses.length} / ${INITIAL_ROWS}`
+                    : targetWord}
+                </ThemedText>
+              </View>
+              <View style={styles.shareGrid}>
+                {guesses.map((guess, rowIdx) => {
+                  const states = evaluateGuess(guess, targetWord);
+                  return (
+                    <View key={rowIdx} style={styles.shareRow}>
+                      {guess.split("").map((letter, colIdx) => {
+                        const state = states[colIdx];
+                        const bgColor = state === "correct" 
+                          ? COLORS.correct 
+                          : state === "present" 
+                            ? COLORS.present 
+                            : isDark ? COLORS.absent.dark : COLORS.absent.light;
+                        return (
+                          <View 
+                            key={colIdx} 
+                            style={[styles.shareTile, { backgroundColor: bgColor }]}
+                          >
+                            <ThemedText style={styles.shareTileLetter}>{letter}</ThemedText>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+            <View style={styles.buttonRow}>
+              <Pressable
+                onPress={handleShare}
+                style={({ pressed }) => [
+                  styles.shareButton, 
+                  { 
+                    backgroundColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.06)",
+                    opacity: pressed ? 0.9 : 1,
+                  }
+                ]}
+              >
+                <Feather name="share" size={18} color={theme.text} style={{ marginRight: 8 }} />
+                <ThemedText style={styles.shareButtonText}>Share</ThemedText>
               </Pressable>
-            ) : null}
+              <Pressable
+                onPress={handleComplete}
+                style={({ pressed }) => [
+                  styles.completeButton, 
+                  { 
+                    backgroundColor: theme.primary,
+                    opacity: pressed ? 0.9 : 1,
+                  }
+                ]}
+              >
+                <ThemedText style={styles.completeButtonText}>Continue</ThemedText>
+              </Pressable>
+            </View>
           </View>
         )}
         </View>
@@ -1415,8 +1559,9 @@ const styles = StyleSheet.create({
     letterSpacing: 3,
   },
   completeButton: {
+    flex: 1,
     paddingVertical: Spacing.md + 2,
-    paddingHorizontal: Spacing.xl,
+    paddingHorizontal: Spacing.lg,
     borderRadius: BorderRadius.md,
     alignItems: "center",
   },
@@ -1425,13 +1570,46 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 16,
   },
-  skipButton: {
-    padding: Spacing.md,
+  shareableContent: {
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
     alignItems: "center",
-    marginTop: Spacing.xs,
+    marginBottom: Spacing.lg,
   },
-  skipText: {
-    fontSize: 14,
-    fontWeight: "500",
+  shareGrid: {
+    marginTop: Spacing.md,
+    gap: 4,
+  },
+  shareRow: {
+    flexDirection: "row",
+    gap: 4,
+  },
+  shareTile: {
+    width: 36,
+    height: 36,
+    borderRadius: 4,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  shareTileLetter: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  buttonRow: {
+    flexDirection: "row",
+    gap: Spacing.sm,
+  },
+  shareButton: {
+    flexDirection: "row",
+    paddingVertical: Spacing.md + 2,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  shareButtonText: {
+    fontWeight: "600",
+    fontSize: 16,
   },
 });

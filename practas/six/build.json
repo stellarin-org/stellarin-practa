@@ -1,7 +1,8 @@
 {
   "buildId": "d65f36c4-2d03-4357-8c0f-4db5d19562cc",
-  "createdAt": "2026-01-23T06:44:17.587Z",
+  "createdAt": "2026-02-03T06:13:34.193Z",
   "assets": {
+    "hints": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/hints.json",
     "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.png",
     "splash": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/splash.mp4",
     "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json",
