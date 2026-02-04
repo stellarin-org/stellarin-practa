@@ -1,7 +1,7 @@
 {
   "id": "practa-habit-tracker",
   "name": "Habit Tracker",
-  "version": "1.6.1",
+  "version": "1.6.3",
   "description": "A beautiful daily habit tracker to help you build positive routines",
   "author": "Mike Messenger",
   "type": "widget",
@@ -15,5 +15,7 @@
   ],
   "estimatedDuration": 60,
   "requiredPermissions": [],
-  "assets": {}
+  "assets": {
+    "icon": "habbit_tracker_icon.png"
+  }
 }
