@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-04T06:43:28.915Z",
+  "registryVersion": "2026-02-04T07:00:50.354Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -35,7 +35,7 @@
     },
     {
       "slug": "dates-to-remember",
-      "version": "1.9.4",
+      "version": "1.9.8",
       "buildId": "fb676e7d-2c4f-4b3e-a0c7-581162c8198d",
       "name": "Dates to Remember",
       "description": "Never forget an important date.",
@@ -45,8 +45,10 @@
       "type": "core",
       "estimatedDuration": 30,
       "assets": {
-        "content": "https://stellarin-practa-verification.replit.app/assets/practa/dates-to-remember/fb676e7d-2c4f-4b3e-a0c7-581162c8198d/content.json",
-        "wellness-bg": "https://stellarin-practa-verification.replit.app/assets/practa/dates-to-remember/fb676e7d-2c4f-4b3e-a0c7-581162c8198d/wellness-bg.png"
+        "icon": "https://stellarin-practa-verification.replit.app/assets/practa/dates-to-remember/fb676e7d-2c4f-4b3e-a0c7-581162c8198d/remember-date.webp",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/dates-to-remember/fb676e7d-2c4f-4b3e-a0c7-581162c8198d/icon120.webp",
+        "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/dates-to-remember/fb676e7d-2c4f-4b3e-a0c7-581162c8198d/icon80.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/dates-to-remember/fb676e7d-2c4f-4b3e-a0c7-581162c8198d/icon40.webp"
       },
       "dependencies": [
         "expo-contacts"
@@ -242,9 +244,9 @@
       "estimatedDuration": 60,
       "assets": {
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/habbit_tracker_icon.webp",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon120.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon40.webp",
         "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon80.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon40.webp"
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon120.webp"
       }
     },
     {
