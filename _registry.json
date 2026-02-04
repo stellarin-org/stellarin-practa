@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-04T06:18:59.648Z",
+  "registryVersion": "2026-02-04T06:43:28.915Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -231,7 +231,7 @@
     },
     {
       "slug": "practa-habit-tracker",
-      "version": "1.6.3",
+      "version": "1.6.4",
       "buildId": "eede6e96-1813-48fb-8af8-b46374c074c1",
       "name": "Habit Tracker",
       "description": "A beautiful daily habit tracker to help you build positive routines",
