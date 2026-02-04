@@ -15,6 +15,7 @@
   "requiredPermissions": [],
   "assets": {
     "splash": "splash.mp4",
+    "icon": "six_icon.png",
     "sixLogo": "six_logo.png",
     "validWords": "valid-words.json",
     "wordlist": "wordlist.json",
