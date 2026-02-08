@@ -1,26 +1,9 @@
 {
-  "id": "six",
   "name": "Six",
-  "version": "1.6.8",
+  "version": "1.7.6",
   "description": "A daily word guessing game - guess the 6-letter word in 6 tries",
-  "author": "Your Name",
-  "type": "widget",
-  "category": "games",
-  "tags": [
-    "word",
-    "puzzle",
-    "daily"
-  ],
+  "author": "Woodenfox",
   "estimatedDuration": 180,
-  "requiredPermissions": [],
-  "assets": {
-    "splash": "splash.mp4",
-    "icon": "six_icon.png",
-    "sixLogo": "six_logo.png",
-    "validWords": "valid-words.json",
-    "wordlist": "wordlist.json",
-    "hints": "hints.json"
-  },
   "dependencies": [
     "@expo/vector-icons",
     "expo-blur",
@@ -29,5 +12,33 @@
     "react-native-reanimated",
     "react-native-safe-area-context",
     "react-native-view-shot"
-  ]
+  ],
+  "requiresAI": false,
+  "configSchema": {
+    "fields": {
+      "aiEnabled": {
+        "type": "boolean",
+        "label": "AI Features",
+        "description": "Enable AI-powered hints and suggestions",
+        "default": true
+      }
+    }
+  },
+  "id": "six",
+  "type": "widget",
+  "category": "games",
+  "tags": [
+    "word",
+    "puzzle",
+    "daily"
+  ],
+  "requiredPermissions": [],
+  "assets": {
+    "splash": "splash.mp4",
+    "icon": "six_icon.png",
+    "sixLogo": "six_logo.png",
+    "validWords": "valid-words.json",
+    "wordlist": "wordlist.json",
+    "hints": "hints.json"
+  }
 }

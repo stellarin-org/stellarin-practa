@@ -34,8 +34,8 @@ This component accepts the standard Practa props:
 
 ## Author
 
-Created by Your Name
+Created by Woodenfox
 
 ## Version
 
-1.6.8
+1.7.6

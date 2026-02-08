@@ -622,14 +622,15 @@ function KeyboardKey({ letter, state, onPress, shimmerProgress = -1, keyIndex = 
   );
 }
 
-interface MyPractaProps {
-  context: PractaContext;
-  onComplete: PractaCompleteHandler;
-}
-
 type GameState = "playing" | "won" | "lost";
 
-export default function MyPracta({ context, onComplete }: MyPractaProps) {
+export default function MyPracta({ context, onComplete, showSettings, onSettings }: {
+  context: PractaContext;
+  onComplete: PractaCompleteHandler;
+  onSkip?: () => void;
+  showSettings?: boolean;
+  onSettings?: () => void;
+}) {
   const { theme, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const sizes = useResponsiveSizes();
@@ -845,6 +846,8 @@ export default function MyPracta({ context, onComplete }: MyPractaProps) {
     setConfig({
       headerMode: "minimal",
       showProgressDots: false,
+      showSettings,
+      onSettings,
       rightAction: (
         <Pressable 
           onPress={() => setShowTutorial(true)}
@@ -868,7 +871,7 @@ export default function MyPracta({ context, onComplete }: MyPractaProps) {
     return () => {
       resetConfig();
     };
-  }, [setConfig, resetConfig]);
+  }, [setConfig, resetConfig, showSettings, onSettings]);
   
   const [ghostWords, setGhostWords] = useState<string[]>(() => {
     const shuffled = [...EXAMPLE_WORDS].sort(() => Math.random() - 0.5);
@@ -877,8 +880,8 @@ export default function MyPracta({ context, onComplete }: MyPractaProps) {
   const [activeGhostRows, setActiveGhostRows] = useState<Set<number>>(new Set());
   const [isFadingOut, setIsFadingOut] = useState(false);
   
-  const ghostTimersRef = React.useRef<NodeJS.Timeout[]>([]);
-  const ghostCycleRef = React.useRef<NodeJS.Timeout | null>(null);
+  const ghostTimersRef = React.useRef<ReturnType<typeof setTimeout>[]>([]);
+  const ghostCycleRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
   
   const isGridEmpty = guesses.length === 0 && currentGuess.length === 0;
   
@@ -949,8 +952,8 @@ export default function MyPracta({ context, onComplete }: MyPractaProps) {
   }, [isGridEmpty, clearGhostTimers]);
 
   const [shimmerProgress, setShimmerProgress] = useState(-1);
-  const shimmerTimerRef = React.useRef<NodeJS.Timeout | null>(null);
-  const shimmerIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
+  const shimmerTimerRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+  const shimmerIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
   const lastActivityRef = React.useRef<number>(Date.now());
   
   const TOTAL_KEYS = 26;
