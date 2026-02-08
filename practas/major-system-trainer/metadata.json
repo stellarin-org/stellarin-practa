@@ -1,9 +1,35 @@
 {
-  "id": "major-system-trainer",
   "name": "Major System Trainer",
-  "version": "1.6.4",
+  "version": "1.8.2",
   "description": "Learn the Major System 00-99 with images and spaced repetition",
   "author": "Stellarin",
+  "requiresAI": false,
+  "estimatedDuration": 300,
+  "dependencies": [
+    "expo-haptics",
+    "expo-image",
+    "react-native-safe-area-context"
+  ],
+  "configSchema": {
+    "fields": {
+      "sessionLength": {
+        "type": "number",
+        "label": "Questions Per Session",
+        "description": "Number of drill questions in each practice session",
+        "default": 10,
+        "min": 5,
+        "max": 30
+      },
+      "aiEnabled": {
+        "type": "boolean",
+        "label": "Enable AI Features",
+        "description": "Allow this Practa to use AI-powered enhancements when available",
+        "default": true
+      }
+    },
+    "requiredConfig": false
+  },
+  "id": "major-system-trainer",
   "type": "widget",
   "category": "learning",
   "tags": [
@@ -12,7 +38,6 @@
     "spaced-repetition",
     "training"
   ],
-  "estimatedDuration": 300,
   "requiredPermissions": [],
   "assets": {
     "deck": "cards_00_99.json",

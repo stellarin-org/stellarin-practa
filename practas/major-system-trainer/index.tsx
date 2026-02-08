@@ -12,6 +12,7 @@ import { PractaProps } from "@/types/flow";
 import { usePractaChrome } from "@/context/PractaChromeContext";
 import { useHeaderHeight } from "@/components/PractaChromeHeader";
 
+import { createNoopStorage } from "@/lib/practa-storage";
 import { Deck, Drill, DrillResult, SessionSummary, isStandardDrill, isPiSequenceDrill, isHistoricalDateDrill, StandardDrill, HistoricalDateEntry } from "./lib/types";
 import { loadAndValidateDeck } from "./lib/deck-validator";
 import { SRSManager } from "./lib/srs-manager";
@@ -52,6 +53,7 @@ export default function MajorSystemTrainer({
   const [error, setError] = useState<string | null>(null);
 
   const drillStartTimeRef = useRef<number>(0);
+  const handleContinueRef = useRef<() => Promise<void>>(() => Promise.resolve());
 
   useEffect(() => {
     setConfig({
@@ -91,13 +93,7 @@ export default function MajorSystemTrainer({
             setPhase("ready");
           }
         } else {
-          const noopStorage = {
-            get: async () => null,
-            set: async () => {},
-            remove: async () => {},
-            clear: async () => {},
-          };
-          manager = new SRSManager(noopStorage, validatedDeck);
+          manager = new SRSManager(createNoopStorage(), validatedDeck);
           setSRSManager(manager);
           setPhase("tutorial");
         }
@@ -178,16 +174,16 @@ export default function MajorSystemTrainer({
   }, [phase, currentIndex, drills, resolveImageAsset]);
 
   const handleTutorialComplete = useCallback(async () => {
-    if (context.storage) {
-      await context.storage.set(TUTORIAL_COMPLETED_KEY, "true");
-    }
+    context.storage?.set(TUTORIAL_COMPLETED_KEY, "true").catch(() => {});
     setPhase("ready");
   }, [context.storage]);
+
+  const sessionLength = (context.config?.sessionLength as number) ?? undefined;
 
   const startSession = useCallback(() => {
     if (!deck || !srsManager) return;
 
-    const sessionDrills = generateSession(srsManager, deck, historicalDates);
+    const sessionDrills = generateSession(srsManager, deck, historicalDates, sessionLength);
     setDrills(sessionDrills);
     setCurrentIndex(0);
     setResults([]);
@@ -197,7 +193,33 @@ export default function MajorSystemTrainer({
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-  }, [deck, srsManager, historicalDates]);
+  }, [deck, srsManager, historicalDates, sessionLength]);
+
+  const triggerResultHaptic = useCallback((isCorrect: boolean) => {
+    if (Platform.OS !== "web") {
+      Haptics.notificationAsync(
+        isCorrect
+          ? Haptics.NotificationFeedbackType.Success
+          : Haptics.NotificationFeedbackType.Error
+      );
+    }
+  }, []);
+
+  const recordDrillResult = useCallback(
+    (drill: Drill, isCorrect: boolean, selectedIdx: number, responseMs: number) => {
+      const result: DrillResult = {
+        drill,
+        selectedIndex: selectedIdx,
+        isCorrect,
+        responseMs,
+      };
+      setCurrentResult(result);
+      setResults((prev) => [...prev, result]);
+      triggerResultHaptic(isCorrect);
+      return result;
+    },
+    [triggerResultHaptic]
+  );
 
   const handleAnswer = useCallback(
     (index: number) => {
@@ -210,35 +232,18 @@ export default function MajorSystemTrainer({
       const isCorrect = index === drill.correctIndex;
 
       setSelectedIndex(index);
-
-      const result: DrillResult = {
-        drill,
-        selectedIndex: index,
-        isCorrect,
-        responseMs,
-      };
-
-      setCurrentResult(result);
-      setResults((prev) => [...prev, result]);
+      recordDrillResult(drill, isCorrect, index, responseMs);
 
       if (srsManager) {
         const chosenNumber = drill.choices[index].number;
         srsManager.recordAnswer(drill.targetNumber, isCorrect, chosenNumber);
       }
 
-      if (Platform.OS !== "web") {
-        if (isCorrect) {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        } else {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        }
-      }
-
       setTimeout(() => {
         setPhase("feedback");
       }, 300);
     },
-    [drills, currentIndex, selectedIndex, srsManager]
+    [drills, currentIndex, selectedIndex, srsManager, recordDrillResult]
   );
 
   const handleContinue = useCallback(async () => {
@@ -250,71 +255,42 @@ export default function MajorSystemTrainer({
       setPhase("drilling");
       drillStartTimeRef.current = Date.now();
     } else {
-      if (srsManager) {
-        await srsManager.save();
+      try {
+        if (srsManager) {
+          await srsManager.save();
+        }
+      } catch (err) {
+        console.warn("Failed to save SRS state:", err);
       }
       setPhase("summary");
     }
   }, [currentIndex, drills.length, srsManager]);
 
-  const handlePiSequenceComplete = useCallback(
-    (isCorrect: boolean) => {
+  useEffect(() => {
+    handleContinueRef.current = handleContinue;
+  }, [handleContinue]);
+
+  const handleSpecialDrillComplete = useCallback(
+    (isCorrect: boolean, delayMs: number) => {
       const drill = drills[currentIndex];
       const responseMs = Date.now() - drillStartTimeRef.current;
-
-      const result: DrillResult = {
-        drill,
-        selectedIndex: isCorrect ? 0 : -1,
-        isCorrect,
-        responseMs,
-      };
-
-      setCurrentResult(result);
-      setResults((prev) => [...prev, result]);
-
-      if (Platform.OS !== "web") {
-        if (isCorrect) {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        } else {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        }
-      }
+      recordDrillResult(drill, isCorrect, isCorrect ? 0 : -1, responseMs);
 
       setTimeout(() => {
-        handleContinue();
-      }, 1200);
+        handleContinueRef.current();
+      }, delayMs);
     },
-    [drills, currentIndex, handleContinue]
+    [drills, currentIndex, recordDrillResult]
+  );
+
+  const handlePiSequenceComplete = useCallback(
+    (isCorrect: boolean) => handleSpecialDrillComplete(isCorrect, 1200),
+    [handleSpecialDrillComplete]
   );
 
   const handleHistoricalDateComplete = useCallback(
-    (isCorrect: boolean, enteredAnswer: string) => {
-      const drill = drills[currentIndex];
-      const responseMs = Date.now() - drillStartTimeRef.current;
-
-      const result: DrillResult = {
-        drill,
-        selectedIndex: isCorrect ? 0 : -1,
-        isCorrect,
-        responseMs,
-      };
-
-      setCurrentResult(result);
-      setResults((prev) => [...prev, result]);
-
-      if (Platform.OS !== "web") {
-        if (isCorrect) {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        } else {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        }
-      }
-
-      setTimeout(() => {
-        handleContinue();
-      }, 1800);
-    },
-    [drills, currentIndex, handleContinue]
+    (isCorrect: boolean, _enteredAnswer: string) => handleSpecialDrillComplete(isCorrect, 1800),
+    [handleSpecialDrillComplete]
   );
 
   const getSummary = useCallback((): SessionSummary => {

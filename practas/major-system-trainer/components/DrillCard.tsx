@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, StyleSheet, Pressable, useWindowDimensions, ActivityIndicator } from "react-native";
+import React from "react";
+import { View, StyleSheet, Pressable, useWindowDimensions } from "react-native";
 import { Image } from "expo-image";
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";

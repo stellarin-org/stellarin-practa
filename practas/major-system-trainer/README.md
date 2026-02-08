@@ -38,4 +38,4 @@ Created by Stellarin
 
 ## Version
 
-1.6.4
+1.8.2

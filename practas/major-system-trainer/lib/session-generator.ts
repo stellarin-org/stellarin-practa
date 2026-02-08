@@ -1,7 +1,7 @@
 import { Deck, Card, CardVariant, Drill, StandardDrill, PiSequenceDrill, HistoricalDateDrill, HistoricalDateEntry, DrillChoice, DrillType } from "./types";
 import { SRSManager } from "./srs-manager";
 
-const SESSION_SIZE = 10;
+const DEFAULT_SESSION_SIZE = 10;
 const NEW_CARD_RATIO = 0.3;
 const PI_SEQUENCE_CHANCE = 0.15;
 const HISTORICAL_DATE_CHANCE = 0.12;
@@ -64,34 +64,35 @@ export function selectNewCardsForSession(
 
 export function generateSessionCards(
   srsManager: SRSManager,
-  deck: Deck
+  deck: Deck,
+  sessionSize: number = DEFAULT_SESSION_SIZE
 ): string[] {
   const dueCards = shuffle(srsManager.getDueCards());
-  const targetNewCount = Math.floor(SESSION_SIZE * NEW_CARD_RATIO);
+  const targetNewCount = Math.floor(sessionSize * NEW_CARD_RATIO);
   
   let sessionCards: string[] = [];
 
-  const dueToUse = dueCards.slice(0, SESSION_SIZE - targetNewCount);
+  const dueToUse = dueCards.slice(0, sessionSize - targetNewCount);
   sessionCards = [...dueToUse];
 
-  const neededNewCards = SESSION_SIZE - sessionCards.length;
+  const neededNewCards = sessionSize - sessionCards.length;
   const newCards = selectNewCardsForSession(srsManager, deck, neededNewCards);
   sessionCards.push(...newCards);
 
-  if (sessionCards.length < SESSION_SIZE) {
+  if (sessionCards.length < sessionSize) {
     const recentlyWrong = srsManager.getRecentlyWrong()
       .filter(n => !sessionCards.includes(n));
-    sessionCards.push(...recentlyWrong.slice(0, SESSION_SIZE - sessionCards.length));
+    sessionCards.push(...recentlyWrong.slice(0, sessionSize - sessionCards.length));
   }
 
-  if (sessionCards.length < SESSION_SIZE && dueCards.length > dueToUse.length) {
-    sessionCards.push(...dueCards.slice(dueToUse.length, SESSION_SIZE));
+  if (sessionCards.length < sessionSize && dueCards.length > dueToUse.length) {
+    sessionCards.push(...dueCards.slice(dueToUse.length, sessionSize));
   }
 
-  if (sessionCards.length < SESSION_SIZE) {
-    const additionalNew = selectNewCardsForSession(srsManager, deck, SESSION_SIZE)
+  if (sessionCards.length < sessionSize) {
+    const additionalNew = selectNewCardsForSession(srsManager, deck, sessionSize)
       .filter(n => !sessionCards.includes(n));
-    sessionCards.push(...additionalNew.slice(0, SESSION_SIZE - sessionCards.length));
+    sessionCards.push(...additionalNew.slice(0, sessionSize - sessionCards.length));
   }
 
   return shuffle(sessionCards);
@@ -293,9 +294,10 @@ export function generateHistoricalDateDrill(
 export function generateSession(
   srsManager: SRSManager,
   deck: Deck,
-  historicalDates?: HistoricalDateEntry[]
+  historicalDates?: HistoricalDateEntry[],
+  sessionSize?: number
 ): Drill[] {
-  const cardNumbers = generateSessionCards(srsManager, deck);
+  const cardNumbers = generateSessionCards(srsManager, deck, sessionSize);
   
   for (const num of cardNumbers) {
     if (!srsManager.isIntroduced(num)) {

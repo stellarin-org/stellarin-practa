@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { View, StyleSheet, TextInput, Pressable, useWindowDimensions, ScrollView, Platform } from "react-native";
+import { View, StyleSheet, TextInput, Pressable, useWindowDimensions } from "react-native";
 import { Image } from "expo-image";
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";

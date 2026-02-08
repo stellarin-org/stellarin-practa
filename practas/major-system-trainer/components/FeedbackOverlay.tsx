@@ -5,7 +5,7 @@ import { Feather } from "@expo/vector-icons";
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
-import { DrillResult, formatPhonemeBreakdown, isStandardDrill, StandardDrill } from "../lib/types";
+import { DrillResult, formatPhonemeBreakdown, isStandardDrill } from "../lib/types";
 import { PhonemeBreakdown } from "./PhonemeBreakdown";
 
 interface FeedbackOverlayProps {
@@ -26,11 +26,10 @@ export function FeedbackOverlay({
     return null;
   }
 
-  const standardDrill = drill as StandardDrill;
-  const correctChoice = standardDrill.choices[standardDrill.correctIndex];
+  const correctChoice = drill.choices[drill.correctIndex];
   const breakdown = formatPhonemeBreakdown(
-    [parseInt(standardDrill.targetNumber[0]), parseInt(standardDrill.targetNumber[1])] as [number, number],
-    standardDrill.targetVariant.phonemes
+    [parseInt(drill.targetNumber[0]), parseInt(drill.targetNumber[1])] as [number, number],
+    drill.targetVariant.phonemes
   );
 
   if (!isCorrect) {
@@ -54,9 +53,9 @@ export function FeedbackOverlay({
           </View>
 
           <PhonemeBreakdown
-            number={standardDrill.targetNumber}
+            number={drill.targetNumber}
             word={correctChoice.variant.word}
-            phonemes={standardDrill.targetVariant.phonemes}
+            phonemes={drill.targetVariant.phonemes}
           />
 
           <ThemedText style={[styles.explanationText, { color: theme.textSecondary }]}>
@@ -92,7 +91,7 @@ export function FeedbackOverlay({
 
         <View style={[styles.cardInfo, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border }]}>
           <View style={styles.cardHeader}>
-            <ThemedText style={styles.cardNumber}>{standardDrill.targetNumber}</ThemedText>
+            <ThemedText style={styles.cardNumber}>{drill.targetNumber}</ThemedText>
             <View style={styles.cardDetails}>
               <Image
                 source={resolveImageAsset(correctChoice.variant.image)}

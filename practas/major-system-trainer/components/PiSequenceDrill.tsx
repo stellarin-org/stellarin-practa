@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { View, StyleSheet, Pressable, useWindowDimensions, LayoutRectangle } from "react-native";
+import { View, StyleSheet, Pressable, useWindowDimensions } from "react-native";
 import { Image } from "expo-image";
 import Animated, {
   useSharedValue,
