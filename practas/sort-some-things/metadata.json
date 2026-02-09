@@ -1,9 +1,27 @@
 {
-  "id": "sort-some-things",
   "name": "Sort Some Things",
-  "version": "1.4.4",
+  "version": "1.5.4",
   "description": "A gentle exercise to surface priorities and choose one place to begin",
   "author": "Practa Developer",
+  "requiresAI": false,
+  "estimatedDuration": 180,
+  "configSchema": {
+    "fields": {
+      "aiEnabled": {
+        "type": "boolean",
+        "label": "Enable AI Features",
+        "description": "Allow this Practa to use AI-powered enhancements when available",
+        "default": true
+      }
+    },
+    "requiredConfig": false
+  },
+  "dependencies": [
+    "@expo/vector-icons",
+    "expo-haptics",
+    "react-native-safe-area-context"
+  ],
+  "id": "sort-some-things",
   "type": "widget",
   "category": "prioritization",
   "tags": [
@@ -13,7 +31,6 @@
     "planning",
     "overwhelm"
   ],
-  "estimatedDuration": 180,
   "requiredPermissions": [],
   "assets": {
     "splash": "splash.mp4"

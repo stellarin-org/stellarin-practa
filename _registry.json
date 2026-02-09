@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-09T01:53:14.269Z",
+  "registryVersion": "2026-02-09T06:46:54.846Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -14,9 +14,9 @@
       "requiresAI": false,
       "estimatedDuration": 90,
       "assets": {
-        "fullBoardPuzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/full-board-puzzles.json",
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/splash.webp",
         "miniPuzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/mini-puzzles.json",
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/splash.webp"
+        "fullBoardPuzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/full-board-puzzles.json"
       },
       "configSchema": {
         "fields": {
@@ -413,7 +413,7 @@
     },
     {
       "slug": "sort-some-things",
-      "version": "1.4.4",
+      "version": "1.5.4",
       "buildId": "016e7159-34ec-4e62-89c0-21cc2c66a5a9",
       "name": "Sort Some Things",
       "description": "A gentle exercise to surface priorities and choose one place to begin",
@@ -425,7 +425,23 @@
       "estimatedDuration": 180,
       "assets": {
         "splash": "https://stellarin-practa-verification.replit.app/assets/practa/sort-some-things/016e7159-34ec-4e62-89c0-21cc2c66a5a9/splash.mp4"
-      }
+      },
+      "configSchema": {
+        "fields": {
+          "aiEnabled": {
+            "type": "boolean",
+            "label": "Enable AI Features",
+            "default": true,
+            "description": "Allow this Practa to use AI-powered enhancements when available"
+          }
+        },
+        "requiredConfig": false
+      },
+      "dependencies": [
+        "@expo/vector-icons",
+        "expo-haptics",
+        "react-native-safe-area-context"
+      ]
     }
   ]
 }

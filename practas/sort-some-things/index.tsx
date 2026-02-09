@@ -80,7 +80,6 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 export default function SortAFewThings({ 
   context, 
   onComplete, 
-  onSkip, 
   onSettings, 
   showSettings 
 }: PractaProps) {
