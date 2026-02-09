@@ -1,21 +1,36 @@
 {
-  "id": "dates-to-remember",
   "name": "Dates to Remember",
-  "version": "1.9.8",
+  "version": "2.0.5",
   "description": "Never forget an important date.",
   "author": "Mike Messenger",
+  "requiresAI": false,
+  "estimatedDuration": 30,
+  "dependencies": [
+    "@expo/vector-icons",
+    "expo-contacts",
+    "expo-haptics",
+    "react-native-safe-area-context"
+  ],
+  "configSchema": {
+    "fields": {
+      "aiEnabled": {
+        "type": "boolean",
+        "label": "Enable AI Features",
+        "description": "Allow this Practa to use AI-powered enhancements when available",
+        "default": true
+      }
+    },
+    "requiredConfig": false
+  },
+  "id": "dates-to-remember",
   "type": "widget",
   "category": "memory",
   "tags": [
     "starter",
     "template"
   ],
-  "estimatedDuration": 30,
   "requiredPermissions": [],
   "assets": {
     "icon": "remember-date.png"
-  },
-  "dependencies": [
-    "expo-contacts"
-  ]
+  }
 }

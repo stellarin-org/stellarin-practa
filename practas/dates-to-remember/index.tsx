@@ -151,7 +151,7 @@ function getDaysInMonth(month: number): number {
   return 31;
 }
 
-export default function MyPracta({ context, onComplete, onSkip, onSettings, showSettings }: PractaProps) {
+export default function MyPracta({ context, onComplete, onSettings, showSettings }: PractaProps) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const { setConfig } = usePractaChrome();
@@ -949,13 +949,6 @@ export default function MyPracta({ context, onComplete, onSkip, onSettings, show
           <ThemedText style={styles.buttonText}>Complete</ThemedText>
         </Pressable>
 
-        {onSkip ? (
-          <Pressable onPress={onSkip} style={styles.skipButton}>
-            <ThemedText style={[styles.skipText, { color: theme.textSecondary }]}>
-              Skip
-            </ThemedText>
-          </Pressable>
-        ) : null}
       </View>
     </ThemedView>
   );
