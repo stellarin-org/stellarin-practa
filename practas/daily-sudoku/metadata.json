@@ -1,9 +1,29 @@
 {
-  "id": "daily-sudoku",
   "name": "Daily Sudoku",
-  "version": "1.2.7",
+  "version": "1.3.2",
   "description": "A calming Sudoku puzzle game to exercise your mind and focus",
   "author": "Practa Creator",
+  "requiresAI": false,
+  "estimatedDuration": 300,
+  "configSchema": {
+    "fields": {
+      "aiEnabled": {
+        "type": "boolean",
+        "label": "AI Features",
+        "description": "Enable AI-powered hints and suggestions",
+        "default": true
+      }
+    }
+  },
+  "dependencies": [
+    "@expo/vector-icons",
+    "expo-blur",
+    "expo-haptics",
+    "expo-linear-gradient",
+    "react-native-reanimated",
+    "react-native-safe-area-context"
+  ],
+  "id": "daily-sudoku",
   "type": "widget",
   "category": "mindfulness",
   "tags": [
@@ -12,7 +32,6 @@
     "brain-training",
     "sudoku"
   ],
-  "estimatedDuration": 300,
   "requiredPermissions": [],
   "assets": {
     "splash": "splash.png"

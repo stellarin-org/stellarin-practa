@@ -36,7 +36,6 @@ import { useHeaderHeight } from "@/components/PractaChromeHeader";
 interface MyPractaProps {
   context: PractaContext;
   onComplete: PractaCompleteHandler;
-  onSkip?: () => void;
   showSettings?: boolean;
   onSettings?: () => void;
 }
@@ -345,7 +344,6 @@ const GlassCard = ({ children, style, intensity = 40 }: { children: React.ReactN
 export default function MyPracta({ 
   context, 
   onComplete, 
-  onSkip,
   showSettings: propShowSettings,
   onSettings: propOnSettings 
 }: MyPractaProps) {
@@ -893,13 +891,6 @@ export default function MyPracta({
             </View>
           </Animated.View>
 
-        {onSkip && !isComplete ? (
-          <Pressable onPress={onSkip} style={styles.skipButton}>
-            <ThemedText style={[styles.skipText, { color: theme.textSecondary }]}>
-              Skip
-            </ThemedText>
-          </Pressable>
-        ) : null}
       </View>
 
       {showSettings ? (
@@ -1257,14 +1248,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
-  },
-  skipButton: {
-    padding: Spacing.md,
-    marginTop: Spacing.sm,
-  },
-  skipText: {
-    fontSize: 14,
-    fontWeight: "500",
   },
   titleTextContainer: {
     flex: 1,
