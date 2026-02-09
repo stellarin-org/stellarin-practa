@@ -1,9 +1,9 @@
 {
-  "registryVersion": "2026-02-09T01:13:58.803Z",
+  "registryVersion": "2026-02-09T01:53:14.269Z",
   "practas": [
     {
       "slug": "chess-puzzles",
-      "version": "1.4.0",
+      "version": "1.4.3",
       "buildId": "f4738c7e-cb32-4e5c-9d88-3bd1d10bd000",
       "name": "Chess Puzzles",
       "description": "Train your chess tactics with focused mini-board puzzles or full 8x8 board puzzles across 5 difficulty levels",
@@ -14,10 +14,27 @@
       "requiresAI": false,
       "estimatedDuration": 90,
       "assets": {
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/splash.webp",
+        "fullBoardPuzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/full-board-puzzles.json",
         "miniPuzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/mini-puzzles.json",
-        "fullBoardPuzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/full-board-puzzles.json"
-      }
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/splash.webp"
+      },
+      "configSchema": {
+        "fields": {
+          "aiEnabled": {
+            "type": "boolean",
+            "label": "AI Features",
+            "default": true,
+            "description": "Enable AI-powered features"
+          }
+        }
+      },
+      "dependencies": [
+        "@expo/vector-icons",
+        "expo-haptics",
+        "react-native-gesture-handler",
+        "react-native-reanimated",
+        "react-native-safe-area-context"
+      ]
     },
     {
       "slug": "daily-sudoku",
@@ -309,9 +326,9 @@
       "estimatedDuration": 60,
       "assets": {
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/habbit_tracker_icon.webp",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon120.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon40.webp",
         "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon80.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon40.webp"
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon120.webp"
       },
       "configSchema": {
         "fields": {

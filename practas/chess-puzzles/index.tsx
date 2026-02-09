@@ -2,7 +2,6 @@ import React, { useState, useCallback, useEffect, useMemo, useRef } from "react"
 import { View, StyleSheet, Pressable, Platform, Dimensions, Modal, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
-import * as Clipboard from "expo-clipboard";
 import { Feather } from "@expo/vector-icons";
 import Animated, {
   useSharedValue,
@@ -27,7 +26,6 @@ import { PractaContext, PractaCompleteHandler } from "@/types/flow";
 interface MyPractaProps {
   context: PractaContext;
   onComplete: PractaCompleteHandler;
-  onSkip?: () => void;
   showSettings?: boolean;
   onSettings?: () => void;
 }
@@ -850,7 +848,7 @@ const ChessBoard = ({
 const DEFAULT_DIFFICULTY: Difficulty = "casual";
 const DEFAULT_MODE: PuzzleMode = "full";
 
-export default function MyPracta({ context, onComplete, onSkip, showSettings, onSettings }: MyPractaProps) {
+export default function MyPracta({ context, onComplete, showSettings, onSettings }: MyPractaProps) {
   const { theme } = useTheme();
   const { setConfig } = usePractaChrome();
   const headerHeight = useHeaderHeight();
@@ -1051,13 +1049,6 @@ export default function MyPracta({ context, onComplete, onSkip, showSettings, on
     }, 100);
   }, [puzzleMode, selectedDifficulty, loadPuzzle, resetPuzzleState]);
 
-  const copyPuzzleIdToClipboard = useCallback(async () => {
-    if (currentPuzzle?.id) {
-      await Clipboard.setStringAsync(currentPuzzle.id);
-      triggerHaptic("light");
-    }
-  }, [currentPuzzle?.id]);
-
   useEffect(() => {
     const difficultyLabel = DIFFICULTIES.find(d => d.key === selectedDifficulty)?.label || "Casual";
     const titleText = currentPuzzle 
@@ -1069,9 +1060,8 @@ export default function MyPracta({ context, onComplete, onSkip, showSettings, on
       title: titleText,
       showSettings: showSettings ?? true,
       onSettings: onSettings ?? openSettingsModal,
-      onTitlePress: currentPuzzle ? copyPuzzleIdToClipboard : undefined,
     });
-  }, [currentPuzzle, selectedDifficulty, setConfig, showSettings, onSettings, openSettingsModal, copyPuzzleIdToClipboard]);
+  }, [currentPuzzle, selectedDifficulty, setConfig, showSettings, onSettings, openSettingsModal]);
 
   const getValidMovesForSquare = useCallback((square: string): string[] => {
     if (!isPlayerTurn || puzzleSolved || moveIndex >= moves.length) return [];

@@ -1,9 +1,28 @@
 {
-  "id": "chess-puzzles",
   "name": "Chess Puzzles",
-  "version": "1.4.0",
+  "version": "1.4.3",
   "description": "Train your chess tactics with focused mini-board puzzles or full 8x8 board puzzles across 5 difficulty levels",
   "author": "Practa",
+  "requiresAI": false,
+  "estimatedDuration": 90,
+  "configSchema": {
+    "fields": {
+      "aiEnabled": {
+        "type": "boolean",
+        "label": "AI Features",
+        "description": "Enable AI-powered features",
+        "default": true
+      }
+    }
+  },
+  "dependencies": [
+    "@expo/vector-icons",
+    "expo-haptics",
+    "react-native-gesture-handler",
+    "react-native-reanimated",
+    "react-native-safe-area-context"
+  ],
+  "id": "chess-puzzles",
   "type": "widget",
   "category": "mind",
   "tags": [
@@ -13,7 +32,6 @@
     "brain training",
     "mini-games"
   ],
-  "estimatedDuration": 90,
   "requiredPermissions": [],
   "assets": {
     "splash": "splash.webp",
