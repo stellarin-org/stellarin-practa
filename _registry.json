@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-09T01:08:17.909Z",
+  "registryVersion": "2026-02-09T01:13:58.803Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -297,7 +297,7 @@
     },
     {
       "slug": "practa-habit-tracker",
-      "version": "1.6.4",
+      "version": "1.6.7",
       "buildId": "eede6e96-1813-48fb-8af8-b46374c074c1",
       "name": "Habit Tracker",
       "description": "A beautiful daily habit tracker to help you build positive routines",
@@ -309,10 +309,29 @@
       "estimatedDuration": 60,
       "assets": {
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/habbit_tracker_icon.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon40.webp",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon120.webp",
         "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon80.webp",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon120.webp"
-      }
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon40.webp"
+      },
+      "configSchema": {
+        "fields": {
+          "aiEnabled": {
+            "type": "boolean",
+            "label": "Enable AI Features",
+            "default": true,
+            "description": "Allow this Practa to use AI-powered enhancements when available"
+          }
+        },
+        "requiredConfig": false
+      },
+      "dependencies": [
+        "@expo/vector-icons",
+        "expo-haptics",
+        "expo-linear-gradient",
+        "react-native-gesture-handler",
+        "react-native-reanimated",
+        "react-native-safe-area-context"
+      ]
     },
     {
       "slug": "running-span",

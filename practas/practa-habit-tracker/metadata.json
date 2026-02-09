@@ -1,9 +1,31 @@
 {
-  "id": "practa-habit-tracker",
   "name": "Habit Tracker",
-  "version": "1.6.4",
+  "version": "1.6.7",
   "description": "A beautiful daily habit tracker to help you build positive routines",
   "author": "Mike Messenger",
+  "requiresAI": false,
+  "estimatedDuration": 60,
+  "icon": "check-circle",
+  "dependencies": [
+    "@expo/vector-icons",
+    "expo-haptics",
+    "expo-linear-gradient",
+    "react-native-gesture-handler",
+    "react-native-reanimated",
+    "react-native-safe-area-context"
+  ],
+  "configSchema": {
+    "fields": {
+      "aiEnabled": {
+        "type": "boolean",
+        "label": "Enable AI Features",
+        "description": "Allow this Practa to use AI-powered enhancements when available",
+        "default": true
+      }
+    },
+    "requiredConfig": false
+  },
+  "id": "practa-habit-tracker",
   "type": "widget",
   "category": "wellness",
   "tags": [
@@ -13,7 +35,6 @@
     "wellness",
     "productivity"
   ],
-  "estimatedDuration": 60,
   "requiredPermissions": [],
   "assets": {
     "icon": "habbit_tracker_icon.png"

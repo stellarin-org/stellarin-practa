@@ -113,7 +113,7 @@ function pruneOldHistory(history: HabitHistory): HabitHistory {
   return pruned;
 }
 
-export default function HabitTracker({ context, onComplete, onSkip, onSettings, showSettings }: PractaProps) {
+export default function HabitTracker({ context, onComplete, onSettings, showSettings }: PractaProps) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const { setConfig } = usePractaChrome();
