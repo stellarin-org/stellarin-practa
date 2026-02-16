@@ -4,7 +4,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import * as Sharing from "expo-sharing";
 import { Feather } from "@expo/vector-icons";
-import { captureRef } from "react-native-view-shot";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -330,13 +329,16 @@ interface LetterTileProps {
   falling?: boolean;
   fallDelay?: number;
   hidden?: boolean;
+  celebrating?: boolean;
+  celebrateDelay?: number;
 }
 
-function LetterTile({ letter, state, immediate = false, pop = false, falling = false, fallDelay = 0, hidden = false }: LetterTileProps) {
+function LetterTile({ letter, state, immediate = false, pop = false, falling = false, fallDelay = 0, hidden = false, celebrating = false, celebrateDelay = 0 }: LetterTileProps) {
   const { isDark } = useTheme();
   const sizes = useContext(SizingContext);
   const scale = useSharedValue(1);
   const translateY = useSharedValue(0);
+  const rotateZ = useSharedValue(0);
   const opacity = useSharedValue(hidden ? 0 : 1);
 
   useEffect(() => {
@@ -360,6 +362,33 @@ function LetterTile({ letter, state, immediate = false, pop = false, falling = f
       );
     }
   }, [letter, pop]);
+
+  useEffect(() => {
+    if (celebrating) {
+      translateY.value = withDelay(
+        celebrateDelay,
+        withSequence(
+          withTiming(-18, { duration: 200, easing: Easing.out(Easing.cubic) }),
+          withSpring(0, { damping: 8, stiffness: 200 })
+        )
+      );
+      rotateZ.value = withDelay(
+        celebrateDelay,
+        withSequence(
+          withTiming(-4, { duration: 120, easing: Easing.out(Easing.quad) }),
+          withTiming(4, { duration: 120, easing: Easing.inOut(Easing.quad) }),
+          withSpring(0, { damping: 10, stiffness: 250 })
+        )
+      );
+      scale.value = withDelay(
+        celebrateDelay,
+        withSequence(
+          withTiming(1.15, { duration: 180, easing: Easing.out(Easing.cubic) }),
+          withSpring(1, { damping: 8, stiffness: 200 })
+        )
+      );
+    }
+  }, [celebrating, celebrateDelay]);
 
   const getBackgroundColor = () => {
     if (!immediate && state !== "correct" && state !== "present" && state !== "absent") {
@@ -390,7 +419,11 @@ function LetterTile({ letter, state, immediate = false, pop = false, falling = f
   const isRevealed = state === "correct" || state === "present" || state === "absent";
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }, { translateY: translateY.value }],
+    transform: [
+      { scale: scale.value },
+      { translateY: translateY.value },
+      { rotate: `${rotateZ.value}deg` },
+    ],
     opacity: opacity.value,
   }));
 
@@ -635,8 +668,6 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
   const insets = useSafeAreaInsets();
   const sizes = useResponsiveSizes();
   const { setConfig, resetConfig } = usePractaChrome();
-  const shareRef = useRef<View>(null);
-
 
   const wordlist = useMemo(() => {
     return (context.assets?.wordlist as string[]) || [];
@@ -1121,26 +1152,40 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
   }, [gameState, guesses.length, targetWord, onComplete, triggerHaptic]);
 
   const handleShare = useCallback(async () => {
-    if (!shareRef.current) return;
+    triggerHaptic("light");
+    
+    const lines = guesses.map((guess) => {
+      const states = evaluateGuess(guess, targetWord);
+      return states.map((s) => 
+        s === "correct" ? "🟩" : s === "present" ? "🟨" : "⬛"
+      ).join("");
+    });
+    
+    const text = `Six  ${guesses.length}/${INITIAL_ROWS}\n\n${lines.join("\n")}`;
     
     try {
-      triggerHaptic("light");
-      const uri = await captureRef(shareRef, {
-        format: "png",
-        quality: 1,
-      });
-      
-      const isAvailable = await Sharing.isAvailableAsync();
-      if (isAvailable) {
-        await Sharing.shareAsync(uri, {
-          mimeType: "image/png",
-          dialogTitle: "Share your Six result",
-        });
+      if (Platform.OS === "web") {
+        if (navigator.share) {
+          await navigator.share({ text });
+        } else if (navigator.clipboard) {
+          await navigator.clipboard.writeText(text);
+        }
+      } else {
+        const isAvailable = await Sharing.isAvailableAsync();
+        if (isAvailable) {
+          const { Paths, File: FSFile } = await import("expo-file-system");
+          const file = new FSFile(Paths.cache, "six-result.txt");
+          file.text = text;
+          await Sharing.shareAsync(file.uri, {
+            mimeType: "text/plain",
+            dialogTitle: "Share your Six result",
+          });
+        }
       }
     } catch (error) {
       console.warn("Share failed:", error);
     }
-  }, [triggerHaptic]);
+  }, [triggerHaptic, guesses, targetWord]);
 
   const renderGrid = () => {
     const rows = [];
@@ -1190,6 +1235,7 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
             />
           );
         } else {
+          const isWinningRow = gameState === "won" && i === guesses.length - 1;
           cells.push(
             <LetterTile
               key={`${i}-${j}-${isFalling}`}
@@ -1200,6 +1246,8 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
               falling={isFalling}
               fallDelay={j * 100}
               hidden={isHidden}
+              celebrating={isWinningRow}
+              celebrateDelay={j * 100 + 300}
             />
           );
         }
@@ -1251,111 +1299,76 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
           
           <TutorialOverlay visible={showTutorial} onDismiss={() => setShowTutorial(false)} />
 
-          {gameState === "playing" ? (
-            <View style={[styles.keyboard, { paddingBottom: insets.bottom + Spacing.md }]}>
-              {KEYBOARD_ROWS.map((row, rowIndex) => {
-                const rowStartIndex = rowIndex === 0 ? 0 : rowIndex === 1 ? 10 : 19;
-                return (
-                  <View key={rowIndex} style={[styles.keyboardRow, { gap: sizes.keyGap, marginBottom: sizes.keyRowGap }]}>
-                    {row.map((key, keyIdx) => (
-                      <KeyboardKey
-                        key={key}
-                        letter={key}
-                        state={letterStates[key]}
-                        onPress={handleKeyPressWithReset}
-                        shimmerProgress={shimmerProgress}
-                        keyIndex={rowStartIndex + keyIdx}
-                      />
-                    ))}
-                  </View>
-                );
-              })}
-            </View>
-        ) : (
-          <View style={[styles.resultContainer, { paddingBottom: insets.bottom + Spacing.xl }]}>
+          <View style={styles.bottomArea}>
             <View 
-              ref={shareRef}
-              style={[
-                styles.shareableContent,
-                { backgroundColor: isDark ? "#1a1a1b" : "#ffffff" }
-              ]}
+              style={[styles.keyboard, { paddingBottom: insets.bottom + Spacing.md }]}
+              pointerEvents={gameState === "playing" ? "auto" : "none"}
             >
-              <View style={[
-                styles.resultCard, 
-                { backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)" }
-              ]}>
-                <ThemedText style={styles.resultEmoji}>
-                  {gameState === "won" ? "✓" : ""}
+              <Animated.View style={{ opacity: gameState === "playing" ? 1 : 0 }}>
+                {KEYBOARD_ROWS.map((row, rowIndex) => {
+                  const rowStartIndex = rowIndex === 0 ? 0 : rowIndex === 1 ? 10 : 19;
+                  return (
+                    <View key={rowIndex} style={[styles.keyboardRow, { gap: sizes.keyGap, marginBottom: sizes.keyRowGap }]}>
+                      {row.map((key, keyIdx) => (
+                        <KeyboardKey
+                          key={key}
+                          letter={key}
+                          state={letterStates[key]}
+                          onPress={handleKeyPressWithReset}
+                          shimmerProgress={shimmerProgress}
+                          keyIndex={rowStartIndex + keyIdx}
+                        />
+                      ))}
+                    </View>
+                  );
+                })}
+              </Animated.View>
+            </View>
+
+            {gameState !== "playing" ? (
+              <Animated.View
+                entering={FadeIn.delay(500).duration(400)}
+                style={[styles.resultOverlay, { paddingBottom: insets.bottom + Spacing.md }]}
+              >
+                <ThemedText style={styles.resultHeadline}>
+                  {gameState === "won" ? "Good job!" : "Try again tomorrow!"}
                 </ThemedText>
-                <ThemedText style={styles.resultTitle}>
-                  {gameState === "won" ? "Well done!" : "Nice try!"}
-                </ThemedText>
-                <ThemedText style={[styles.resultSubtitle, { color: theme.textSecondary }]}>
-                  {gameState === "won"
-                    ? `You got it in ${guesses.length}`
-                    : "The word was"}
-                </ThemedText>
-                <ThemedText style={styles.resultText}>
+                <ThemedText style={[styles.resultLine, { color: theme.textSecondary }]}>
                   {gameState === "won"
                     ? `${guesses.length} / ${INITIAL_ROWS}`
                     : targetWord}
                 </ThemedText>
-              </View>
-              <View style={styles.shareGrid}>
-                {guesses.map((guess, rowIdx) => {
-                  const states = evaluateGuess(guess, targetWord);
-                  return (
-                    <View key={rowIdx} style={styles.shareRow}>
-                      {guess.split("").map((letter, colIdx) => {
-                        const state = states[colIdx];
-                        const bgColor = state === "correct" 
-                          ? COLORS.correct 
-                          : state === "present" 
-                            ? COLORS.present 
-                            : isDark ? COLORS.absent.dark : COLORS.absent.light;
-                        return (
-                          <View 
-                            key={colIdx} 
-                            style={[styles.shareTile, { backgroundColor: bgColor }]}
-                          >
-                            <ThemedText style={styles.shareTileLetter}>{letter}</ThemedText>
-                          </View>
-                        );
-                      })}
-                    </View>
-                  );
-                })}
-              </View>
-            </View>
-            <View style={styles.buttonRow}>
-              <Pressable
-                onPress={handleShare}
-                style={({ pressed }) => [
-                  styles.shareButton, 
-                  { 
-                    backgroundColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.06)",
-                    opacity: pressed ? 0.9 : 1,
-                  }
-                ]}
-              >
-                <Feather name="share" size={18} color={theme.text} style={{ marginRight: 8 }} />
-                <ThemedText style={styles.shareButtonText}>Share</ThemedText>
-              </Pressable>
-              <Pressable
-                onPress={handleComplete}
-                style={({ pressed }) => [
-                  styles.completeButton, 
-                  { 
-                    backgroundColor: theme.primary,
-                    opacity: pressed ? 0.9 : 1,
-                  }
-                ]}
-              >
-                <ThemedText style={styles.completeButtonText}>Continue</ThemedText>
-              </Pressable>
-            </View>
+                <View style={styles.buttonRow}>
+                  <Pressable
+                    onPress={handleShare}
+                    style={({ pressed }) => [
+                      styles.shareButton, 
+                      { 
+                        backgroundColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.06)",
+                        opacity: pressed ? 0.9 : 1,
+                      }
+                    ]}
+                  >
+                    <Feather name="share" size={18} color={theme.text} style={{ marginRight: 8 }} />
+                    <ThemedText style={styles.shareButtonText}>Share</ThemedText>
+                  </Pressable>
+                  <Pressable
+                    onPress={handleComplete}
+                    style={({ pressed }) => [
+                      styles.completeButton, 
+                      { 
+                        backgroundColor: theme.primary,
+                        opacity: pressed ? 0.9 : 1,
+                      }
+                    ]}
+                  >
+                    <ThemedText style={styles.completeButtonText}>Continue</ThemedText>
+                  </Pressable>
+                </View>
+              </Animated.View>
+            ) : null}
           </View>
-        )}
+
         </View>
       </ThemedView>
     </SizingContext.Provider>
@@ -1531,35 +1544,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
   },
-  resultContainer: {
-    paddingHorizontal: Spacing.xl,
+  bottomArea: {
+    position: "relative",
   },
-  resultCard: {
-    paddingVertical: Spacing.xl,
-    paddingHorizontal: Spacing.lg,
-    borderRadius: BorderRadius.lg,
+  resultOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
     alignItems: "center",
-    marginBottom: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
+    gap: Spacing.lg,
   },
-  resultEmoji: {
-    fontSize: 36,
+  resultHeadline: {
+    fontSize: 22,
     fontWeight: "700",
-    marginBottom: Spacing.sm,
   },
-  resultTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    marginBottom: Spacing.xs,
-  },
-  resultSubtitle: {
-    fontSize: 15,
-    fontWeight: "500",
-    marginBottom: Spacing.xs,
-  },
-  resultText: {
-    fontSize: 20,
+  resultLine: {
+    fontSize: 18,
     fontWeight: "600",
-    letterSpacing: 3,
+    letterSpacing: 2,
   },
   completeButton: {
     flex: 1,
@@ -1572,32 +1578,6 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "600",
     fontSize: 16,
-  },
-  shareableContent: {
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    alignItems: "center",
-    marginBottom: Spacing.lg,
-  },
-  shareGrid: {
-    marginTop: Spacing.md,
-    gap: 4,
-  },
-  shareRow: {
-    flexDirection: "row",
-    gap: 4,
-  },
-  shareTile: {
-    width: 36,
-    height: 36,
-    borderRadius: 4,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  shareTileLetter: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "700",
   },
   buttonRow: {
     flexDirection: "row",

@@ -1,6 +1,6 @@
 {
   "name": "Six",
-  "version": "1.7.6",
+  "version": "1.7.7",
   "description": "A daily word guessing game - guess the 6-letter word in 6 tries",
   "author": "Woodenfox",
   "estimatedDuration": 180,
@@ -10,8 +10,7 @@
     "expo-haptics",
     "expo-sharing",
     "react-native-reanimated",
-    "react-native-safe-area-context",
-    "react-native-view-shot"
+    "react-native-safe-area-context"
   ],
   "requiresAI": false,
   "configSchema": {
