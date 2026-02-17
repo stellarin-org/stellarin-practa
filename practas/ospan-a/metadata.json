@@ -1,0 +1,35 @@
+{
+  "name": "Math & Memory (OSPAN)",
+  "version": "1.0.12",
+  "description": "Adaptive Operation Span training for working memory and executive control",
+  "author": "Practa",
+  "estimatedDuration": 420,
+  "requiresAI": false,
+  "configSchema": {
+    "fields": {
+      "aiEnabled": {
+        "type": "boolean",
+        "default": true,
+        "label": "AI Features",
+        "description": "Enable AI-powered features and enhancements"
+      }
+    }
+  },
+  "dependencies": [
+    "@expo/vector-icons",
+    "expo-haptics",
+    "react-native-reanimated",
+    "react-native-safe-area-context"
+  ],
+  "id": "ospan-a",
+  "type": "widget",
+  "category": "cognitive",
+  "tags": [
+    "working-memory",
+    "executive-control",
+    "adhd",
+    "attention"
+  ],
+  "requiredPermissions": [],
+  "assets": {}
+}

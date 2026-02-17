@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-17T07:30:11.604Z",
+  "registryVersion": "2026-02-17T07:54:34.872Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -193,10 +193,10 @@
       "estimatedDuration": 120,
       "assets": {
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon.webp",
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/splash.webp",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon120.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon40.webp",
         "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon80.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon40.webp"
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/splash.webp",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon120.webp"
       },
       "configSchema": {
         "fields": {
@@ -357,6 +357,40 @@
       "dependencies": [
         "expo-haptics",
         "expo-image",
+        "react-native-safe-area-context"
+      ]
+    },
+    {
+      "slug": "ospan-a",
+      "version": "1.0.12",
+      "buildId": "788de9d5-2cdf-436f-9a8c-3c62f8784424",
+      "name": "Math & Memory (OSPAN)",
+      "description": "Adaptive Operation Span training for working memory and executive control",
+      "author": "Practa",
+      "category": "cognitive",
+      "practaType": "cognitive",
+      "type": "community",
+      "requiresAI": false,
+      "estimatedDuration": 420,
+      "assets": {
+        "content": "https://stellarin-practa-verification.replit.app/assets/practa/ospan-a/788de9d5-2cdf-436f-9a8c-3c62f8784424/content.json",
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/ospan-a/788de9d5-2cdf-436f-9a8c-3c62f8784424/splash.mp4",
+        "wellness-bg": "https://stellarin-practa-verification.replit.app/assets/practa/ospan-a/788de9d5-2cdf-436f-9a8c-3c62f8784424/wellness-bg.webp"
+      },
+      "configSchema": {
+        "fields": {
+          "aiEnabled": {
+            "type": "boolean",
+            "label": "AI Features",
+            "default": true,
+            "description": "Enable AI-powered features and enhancements"
+          }
+        }
+      },
+      "dependencies": [
+        "@expo/vector-icons",
+        "expo-haptics",
+        "react-native-reanimated",
         "react-native-safe-area-context"
       ]
     },
