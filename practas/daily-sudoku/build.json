@@ -1,7 +1,11 @@
 {
   "buildId": "439e4888-caf7-4145-9a3f-8f046453a57e",
-  "createdAt": "2026-02-09T01:08:16.502Z",
+  "createdAt": "2026-02-17T06:54:33.254Z",
   "assets": {
-    "splash": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/splash.webp"
+    "icon": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/icon.webp",
+    "splash": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/splash.webp",
+    "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/icon120.webp",
+    "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/icon80.webp",
+    "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/icon40.webp"
   }
 }

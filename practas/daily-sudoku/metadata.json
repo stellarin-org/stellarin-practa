@@ -1,6 +1,6 @@
 {
   "name": "Daily Sudoku",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "A calming Sudoku puzzle game to exercise your mind and focus",
   "author": "Practa Creator",
   "requiresAI": false,
@@ -34,6 +34,7 @@
   ],
   "requiredPermissions": [],
   "assets": {
-    "splash": "splash.png"
+    "splash": "splash.png",
+    "icon": "icon.png"
   }
 }
