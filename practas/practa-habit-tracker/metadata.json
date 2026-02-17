@@ -1,6 +1,6 @@
 {
   "name": "Habit Tracker",
-  "version": "1.6.7",
+  "version": "1.6.8",
   "description": "A beautiful daily habit tracker to help you build positive routines",
   "author": "Mike Messenger",
   "requiresAI": false,
@@ -8,6 +8,7 @@
   "icon": "check-circle",
   "dependencies": [
     "@expo/vector-icons",
+    "expo-blur",
     "expo-haptics",
     "expo-linear-gradient",
     "react-native-gesture-handler",

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { View, StyleSheet, Pressable, Platform, ScrollView, TextInput, Modal, Dimensions } from "react-native";
+import { View, StyleSheet, Pressable, Platform, ScrollView, TextInput, Modal, Dimensions, KeyboardAvoidingView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { Feather } from "@expo/vector-icons";
@@ -12,6 +12,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useTheme } from "@/hooks/useTheme";
@@ -19,7 +20,6 @@ import { Spacing, BorderRadius } from "@/constants/theme";
 import { PractaProps } from "@/types/flow";
 import { usePractaChrome } from "@/context/PractaChromeContext";
 import { useHeaderHeight } from "@/components/PractaChromeHeader";
-import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 
 interface Habit {
   id: string;
@@ -71,21 +71,33 @@ interface SectionTheme {
   did: string;
 }
 
-const SECTION_THEMES: SectionTheme[] = [
-  { name: "Apple Clean", could: "#F9F9F9", will: "#F5F5F5", did: "#F0F0F0" },
-  { name: "Ocean Breeze", could: "#E3F2FD", will: "#B3E5FC", did: "#80DEEA" },
-  { name: "Forest", could: "#E8F5E9", will: "#C8E6C9", did: "#A5D6A7" },
-  { name: "Sunset", could: "#FFF3E0", will: "#FFE0B2", did: "#FFCC80" },
-  { name: "Lavender", could: "#F3E5F5", will: "#E1BEE7", did: "#CE93D8" },
-  { name: "Rose", could: "#FCE4EC", will: "#F8BBD0", did: "#F48FB1" },
-  { name: "Slate", could: "#ECEFF1", will: "#CFD8DC", did: "#B0BEC5" },
-  { name: "Midnight", could: "#1A1A2E", will: "#16213E", did: "#0F3460" },
-  { name: "Coral Reef", could: "#FFF8E1", will: "#FFECB3", did: "#FFE082" },
-  { name: "Berry", could: "#EDE7F6", will: "#D1C4E9", did: "#B39DDB" },
-  { name: "Mint", could: "#E0F2F1", will: "#B2DFDB", did: "#80CBC4" },
+interface SectionThemeEntry {
+  name: string;
+  light: { could: string; will: string; did: string };
+  dark: { could: string; will: string; did: string };
+  glass?: boolean;
+}
+
+const GLASS_GRADIENT_LIGHT = ["#C2E9FB", "#A1C4FD", "#D4B5F7"] as const;
+const GLASS_GRADIENT_DARK = ["#0F2027", "#203A43", "#2C5364"] as const;
+
+const SECTION_THEMES: SectionThemeEntry[] = [
+  { name: "Apple Clean",  light: { could: "#F9F9F9", will: "#F5F5F5", did: "#F0F0F0" }, dark: { could: "#1C1C1E", will: "#2C2C2E", did: "#3A3A3C" } },
+  { name: "Glass",        light: { could: "transparent", will: "transparent", did: "transparent" }, dark: { could: "transparent", will: "transparent", did: "transparent" }, glass: true },
+  { name: "Ocean Breeze", light: { could: "#E3F2FD", will: "#B3E5FC", did: "#80DEEA" }, dark: { could: "#0D1B2A", will: "#1B2838", did: "#1A3A4A" } },
+  { name: "Forest",       light: { could: "#E8F5E9", will: "#C8E6C9", did: "#A5D6A7" }, dark: { could: "#1B2E1B", will: "#243824", did: "#2E4A2E" } },
+  { name: "Sunset",       light: { could: "#FFF3E0", will: "#FFE0B2", did: "#FFCC80" }, dark: { could: "#2E1F0D", will: "#3D2A14", did: "#4A341A" } },
+  { name: "Lavender",     light: { could: "#F3E5F5", will: "#E1BEE7", did: "#CE93D8" }, dark: { could: "#1E1A2E", will: "#2A2440", did: "#362E52" } },
+  { name: "Rose",         light: { could: "#FCE4EC", will: "#F8BBD0", did: "#F48FB1" }, dark: { could: "#2E1520", will: "#3D1E2E", did: "#4A263A" } },
+  { name: "Slate",        light: { could: "#ECEFF1", will: "#CFD8DC", did: "#B0BEC5" }, dark: { could: "#1E2226", will: "#2A2E32", did: "#363A3E" } },
+  { name: "Midnight",     light: { could: "#1A1A2E", will: "#16213E", did: "#0F3460" }, dark: { could: "#0E0E1A", will: "#0C1220", did: "#081A34" } },
+  { name: "Coral Reef",   light: { could: "#FFF8E1", will: "#FFECB3", did: "#FFE082" }, dark: { could: "#2E2A14", will: "#3D351A", did: "#4A3F20" } },
+  { name: "Berry",        light: { could: "#EDE7F6", will: "#D1C4E9", did: "#B39DDB" }, dark: { could: "#1A1626", will: "#241E36", did: "#2E2846" } },
+  { name: "Mint",         light: { could: "#E0F2F1", will: "#B2DFDB", did: "#80CBC4" }, dark: { could: "#0D2624", will: "#143230", did: "#1A3E3C" } },
 ];
 
 function getContrastTextColor(hexColor: string): string {
+  if (hexColor === "transparent") return "rgba(0,0,0,0.7)";
   const hex = hexColor.replace("#", "");
   const r = parseInt(hex.substring(0, 2), 16);
   const g = parseInt(hex.substring(2, 4), 16);
@@ -132,9 +144,22 @@ export default function HabitTracker({ context, onComplete, onSettings, showSett
   const [selectedThemeIndex, setSelectedThemeIndex] = useState(0);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   
+  const { isDark } = useTheme();
   const sectionFlex = 1;
-  const currentSectionTheme = SECTION_THEMES[selectedThemeIndex];
-  const isDarkTheme = selectedThemeIndex === 6;
+  const themeEntry = SECTION_THEMES[selectedThemeIndex];
+  const currentSectionTheme = isDark ? themeEntry.dark : themeEntry.light;
+  const isGlass = themeEntry.glass === true;
+  const isDarkTheme = isDark || selectedThemeIndex === 8;
+
+  const glassTextColor = isDark ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,0.7)";
+  const pillBg = isGlass
+    ? (isDark ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.6)")
+    : (isDarkTheme ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.95)");
+  const dottedBorderColor = isDarkTheme || isGlass ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.25)";
+  const handleColor = isDarkTheme ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.2)";
+  const separatorColor = isDarkTheme ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.12)";
+  const selectedBorderColor = isDarkTheme ? theme.text : "white";
+  const glassGradient = isDark ? GLASS_GRADIENT_DARK : GLASS_GRADIENT_LIGHT;
 
 
   const dragX = useSharedValue(0);
@@ -411,6 +436,86 @@ export default function HabitTracker({ context, onComplete, onSettings, showSett
     zIndex: 9999,
   }));
 
+  const sectionTextColor = (sectionKey: "could" | "will" | "did") => {
+    if (isGlass) return glassTextColor;
+    return getContrastTextColor(currentSectionTheme[sectionKey]);
+  };
+
+  const renderSection = (sectionKey: "could" | "will" | "did", title: string, habitsForSection: Habit[], showAdd: boolean) => {
+    const textColor = sectionTextColor(sectionKey);
+    const bgColor = currentSectionTheme[sectionKey];
+    const blurTint = isDark ? "dark" : "light";
+
+    const sectionContent = (
+      <>
+        <View style={styles.sectionHeader}>
+          <ThemedText style={[styles.sectionTitle, { color: textColor }]}>
+            {title}
+          </ThemedText>
+        </View>
+        <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+          <View style={styles.pillGrid}>
+            {habitsForSection.length === 0 && !showAdd ? (
+              <ThemedText style={[styles.emptyText, { color: textColor }]}>
+                {sectionKey === "did" ? "Drag completed habits here" : "Drag habits here"}
+              </ThemedText>
+            ) : (
+              habitsForSection.map((habit) => (
+                <DraggableHabit
+                  key={habit.id}
+                  habit={habit}
+                  onDragStart={startDrag}
+                  onDragUpdate={updateDrag}
+                  onDragEnd={endDrag}
+                  onLongPress={openEditModal}
+                  theme={theme}
+                  isDragging={draggingHabit.habit?.id === habit.id}
+                  pillBg={pillBg}
+                />
+              ))
+            )}
+            {showAdd ? (
+              <Pressable
+                style={[styles.addPillDotted, { borderColor: dottedBorderColor }]}
+                onPress={() => {
+                  triggerHaptic();
+                  setNewHabitName("");
+                  setSelectedIcon("star");
+                  setSelectedColor(AVAILABLE_COLORS[0]);
+                  setShowAddModal(true);
+                }}
+              >
+                <Feather name="plus" size={16} color={textColor} style={{ opacity: 0.5 }} />
+                <ThemedText style={[styles.addPillDottedText, { color: textColor }]}>
+                  Add habit
+                </ThemedText>
+              </Pressable>
+            ) : null}
+          </View>
+        </ScrollView>
+      </>
+    );
+
+    if (isGlass) {
+      return (
+        <BlurView
+          key={sectionKey}
+          intensity={40}
+          tint={blurTint}
+          style={[styles.section, styles.glassSection, { flex: sectionFlex }]}
+        >
+          {sectionContent}
+        </BlurView>
+      );
+    }
+
+    return (
+      <View key={sectionKey} style={[styles.section, { flex: sectionFlex, backgroundColor: bgColor }]}>
+        {sectionContent}
+      </View>
+    );
+  };
+
   if (isLoading) {
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
@@ -428,110 +533,23 @@ export default function HabitTracker({ context, onComplete, onSettings, showSett
       <ThemedView 
         style={[styles.container, { paddingTop: headerHeight + Spacing.lg }]}
       >
-        <View style={styles.sectionsContainer}>
-          <View style={[styles.section, { flex: sectionFlex, backgroundColor: currentSectionTheme.could }]}>
-            <View style={styles.sectionHeader}>
-              <ThemedText style={[styles.sectionTitle, { color: getContrastTextColor(currentSectionTheme.could) }]}>
-                Today I could...
-              </ThemedText>
-            </View>
-            <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-              <View style={styles.pillGrid}>
-                {couldHabits.map((habit) => (
-                  <DraggableHabit
-                    key={habit.id}
-                    habit={habit}
-                    onDragStart={startDrag}
-                    onDragUpdate={updateDrag}
-                    onDragEnd={endDrag}
-                    onLongPress={openEditModal}
-                    theme={theme}
-                    isDragging={draggingHabit.habit?.id === habit.id}
-                  />
-                ))}
-                <Pressable 
-                  style={styles.addPillDotted}
-                  onPress={() => {
-                    triggerHaptic();
-                    setNewHabitName("");
-                    setSelectedIcon("star");
-                    setSelectedColor(AVAILABLE_COLORS[0]);
-                    setShowAddModal(true);
-                  }}
-                >
-                  <Feather name="plus" size={16} color={getContrastTextColor(currentSectionTheme.could)} style={{ opacity: 0.5 }} />
-                  <ThemedText style={[styles.addPillDottedText, { color: getContrastTextColor(currentSectionTheme.could) }]}>
-                    Add habit
-                  </ThemedText>
-                </Pressable>
-              </View>
-            </ScrollView>
+        {isGlass ? (
+          <LinearGradient colors={glassGradient} style={styles.sectionsContainer} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+            {renderSection("could", "Today I could...", couldHabits, true)}
+            <View style={[styles.glassSeparator, { backgroundColor: isDark ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.4)" }]} />
+            {renderSection("will", "Today I will...", willHabits, false)}
+            <View style={[styles.glassSeparator, { backgroundColor: isDark ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.4)" }]} />
+            {renderSection("did", "Today I did...", didHabits, false)}
+          </LinearGradient>
+        ) : (
+          <View style={styles.sectionsContainer}>
+            {renderSection("could", "Today I could...", couldHabits, true)}
+            {selectedThemeIndex === 0 ? <View style={[styles.sectionSeparator, { backgroundColor: separatorColor }]} /> : null}
+            {renderSection("will", "Today I will...", willHabits, false)}
+            {selectedThemeIndex === 0 ? <View style={[styles.sectionSeparator, { backgroundColor: separatorColor }]} /> : null}
+            {renderSection("did", "Today I did...", didHabits, false)}
           </View>
-
-          {selectedThemeIndex === 0 ? <View style={styles.sectionSeparator} /> : null}
-
-          <View style={[styles.section, { flex: sectionFlex, backgroundColor: currentSectionTheme.will }]}>
-            <View style={styles.sectionHeader}>
-              <ThemedText style={[styles.sectionTitle, { color: getContrastTextColor(currentSectionTheme.will) }]}>
-                Today I will...
-              </ThemedText>
-            </View>
-            <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-              <View style={styles.pillGrid}>
-                {willHabits.length === 0 ? (
-                  <ThemedText style={[styles.emptyText, { color: getContrastTextColor(currentSectionTheme.will) }]}>
-                    Drag habits here
-                  </ThemedText>
-                ) : (
-                  willHabits.map((habit) => (
-                    <DraggableHabit
-                      key={habit.id}
-                      habit={habit}
-                      onDragStart={startDrag}
-                      onDragUpdate={updateDrag}
-                      onDragEnd={endDrag}
-                      onLongPress={openEditModal}
-                      theme={theme}
-                      isDragging={draggingHabit.habit?.id === habit.id}
-                    />
-                  ))
-                )}
-              </View>
-            </ScrollView>
-          </View>
-
-          {selectedThemeIndex === 0 ? <View style={styles.sectionSeparator} /> : null}
-
-          <View style={[styles.section, { flex: sectionFlex, backgroundColor: currentSectionTheme.did }]}>
-            <View style={styles.sectionHeader}>
-              <ThemedText style={[styles.sectionTitle, { color: getContrastTextColor(currentSectionTheme.did) }]}>
-                Today I did...
-              </ThemedText>
-            </View>
-            <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-              <View style={styles.pillGrid}>
-                {didHabits.length === 0 ? (
-                  <ThemedText style={[styles.emptyText, { color: getContrastTextColor(currentSectionTheme.did) }]}>
-                    Drag completed habits here
-                  </ThemedText>
-                ) : (
-                  didHabits.map((habit) => (
-                    <DraggableHabit
-                      key={habit.id}
-                      habit={habit}
-                      onDragStart={startDrag}
-                      onDragUpdate={updateDrag}
-                      onDragEnd={endDrag}
-                      onLongPress={openEditModal}
-                      theme={theme}
-                      isDragging={draggingHabit.habit?.id === habit.id}
-                    />
-                  ))
-                )}
-              </View>
-            </ScrollView>
-          </View>
-        </View>
+        )}
 
         <View style={[styles.footer, { bottom: insets.bottom + Spacing.md }]}>
           <Pressable
@@ -544,7 +562,7 @@ export default function HabitTracker({ context, onComplete, onSettings, showSett
 
         {draggingHabit.habit ? (
           <Animated.View style={floatingIconStyle} pointerEvents="none">
-            <View style={[styles.floatingPill, { backgroundColor: "rgba(255,255,255,0.95)" }]}>
+            <View style={[styles.floatingPill, { backgroundColor: pillBg }]}>
               <View style={[styles.pillIcon, { backgroundColor: draggingHabit.habit.color }]}>
                 <Feather name={draggingHabit.habit.icon} size={14} color="white" />
               </View>
@@ -587,11 +605,20 @@ export default function HabitTracker({ context, onComplete, onSettings, showSett
                       selectedThemeIndex === index && { borderColor: theme.primary, borderWidth: 2 }
                     ]}
                   >
-                    <View style={styles.themePreview}>
-                      <View style={[styles.themePreviewSection, { backgroundColor: sectionTheme.could }]} />
-                      <View style={[styles.themePreviewSection, { backgroundColor: sectionTheme.will }]} />
-                      <View style={[styles.themePreviewSection, { backgroundColor: sectionTheme.did }]} />
-                    </View>
+                    {sectionTheme.glass ? (
+                      <LinearGradient
+                        colors={isDark ? GLASS_GRADIENT_DARK : GLASS_GRADIENT_LIGHT}
+                        style={styles.themePreview}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                      />
+                    ) : (
+                      <View style={styles.themePreview}>
+                        <View style={[styles.themePreviewSection, { backgroundColor: (isDark ? sectionTheme.dark : sectionTheme.light).could }]} />
+                        <View style={[styles.themePreviewSection, { backgroundColor: (isDark ? sectionTheme.dark : sectionTheme.light).will }]} />
+                        <View style={[styles.themePreviewSection, { backgroundColor: (isDark ? sectionTheme.dark : sectionTheme.light).did }]} />
+                      </View>
+                    )}
                     <ThemedText style={[styles.themeCardName, selectedThemeIndex === index && { color: theme.primary }]}>
                       {sectionTheme.name}
                     </ThemedText>
@@ -648,12 +675,13 @@ export default function HabitTracker({ context, onComplete, onSettings, showSett
           transparent={true}
           onRequestClose={() => setShowAddModal(false)}
         >
-          <KeyboardAwareScrollViewCompat 
-            contentContainerStyle={styles.modalOverlay}
-            bounces={false}
+          <KeyboardAvoidingView
+            style={styles.modalOverlay}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
           >
+            <Pressable style={styles.modalDismissArea} onPress={() => setShowAddModal(false)} />
             <View style={[styles.modalContent, { backgroundColor: theme.backgroundDefault, paddingBottom: insets.bottom + Spacing.xl }]}>
-              <View style={styles.modalHandle} />
+              <View style={[styles.modalHandle, { backgroundColor: handleColor }]} />
               <View style={styles.modalHeader}>
                 <ThemedText style={styles.modalTitle}>New Habit</ThemedText>
                 <Pressable onPress={() => setShowAddModal(false)} style={styles.closeButton}>
@@ -661,88 +689,90 @@ export default function HabitTracker({ context, onComplete, onSettings, showSett
                 </Pressable>
               </View>
 
-              <TextInput
-                style={[styles.input, { 
-                  backgroundColor: theme.backgroundSecondary,
-                  color: theme.text,
-                }]}
-                placeholder="Habit name..."
-                placeholderTextColor={theme.textSecondary}
-                value={newHabitName}
-                onChangeText={setNewHabitName}
-                autoFocus
-                returnKeyType="done"
-                onSubmitEditing={newHabitName.trim() ? addHabit : undefined}
-              />
+              <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" bounces={false}>
+                <TextInput
+                  style={[styles.input, { 
+                    backgroundColor: theme.backgroundSecondary,
+                    color: theme.text,
+                  }]}
+                  placeholder="Habit name..."
+                  placeholderTextColor={theme.textSecondary}
+                  value={newHabitName}
+                  onChangeText={setNewHabitName}
+                  autoFocus
+                  returnKeyType="done"
+                  onSubmitEditing={newHabitName.trim() ? addHabit : undefined}
+                />
 
-              <ThemedText style={[styles.labelText, { color: theme.textSecondary }]}>
-                Icon
-              </ThemedText>
-              <ScrollView 
-                horizontal 
-                showsHorizontalScrollIndicator={false} 
-                style={styles.iconPicker}
-                contentContainerStyle={styles.iconPickerContent}
-              >
-                {AVAILABLE_ICONS.map((icon) => (
-                  <Pressable
-                    key={icon}
-                    onPress={() => {
-                      triggerHaptic();
-                      setSelectedIcon(icon);
-                    }}
-                    style={[
-                      styles.iconOption,
-                      { backgroundColor: theme.backgroundSecondary },
-                      selectedIcon === icon && { backgroundColor: selectedColor }
-                    ]}
-                  >
-                    <Feather 
-                      name={icon} 
-                      size={26} 
-                      color={selectedIcon === icon ? "white" : theme.textSecondary} 
-                    />
-                  </Pressable>
-                ))}
+                <ThemedText style={[styles.labelText, { color: theme.textSecondary }]}>
+                  Icon
+                </ThemedText>
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false} 
+                  style={styles.iconPicker}
+                  contentContainerStyle={styles.iconPickerContent}
+                >
+                  {AVAILABLE_ICONS.map((icon) => (
+                    <Pressable
+                      key={icon}
+                      onPress={() => {
+                        triggerHaptic();
+                        setSelectedIcon(icon);
+                      }}
+                      style={[
+                        styles.iconOption,
+                        { backgroundColor: theme.backgroundSecondary },
+                        selectedIcon === icon && { backgroundColor: selectedColor }
+                      ]}
+                    >
+                      <Feather 
+                        name={icon} 
+                        size={26} 
+                        color={selectedIcon === icon ? "white" : theme.textSecondary} 
+                      />
+                    </Pressable>
+                  ))}
+                </ScrollView>
+
+                <ThemedText style={[styles.labelText, { color: theme.textSecondary }]}>
+                  Color
+                </ThemedText>
+                <View style={styles.colorPicker}>
+                  {AVAILABLE_COLORS.map((color) => (
+                    <Pressable
+                      key={color}
+                      onPress={() => {
+                        triggerHaptic();
+                        setSelectedColor(color);
+                      }}
+                      style={[
+                        styles.colorOption,
+                        { backgroundColor: color },
+                        selectedColor === color && [styles.colorSelected, { borderColor: selectedBorderColor }]
+                      ]}
+                    >
+                      {selectedColor === color ? (
+                        <Feather name="check" size={20} color="white" />
+                      ) : null}
+                    </Pressable>
+                  ))}
+                </View>
+
+                <Pressable
+                  onPress={addHabit}
+                  style={[
+                    styles.saveButton, 
+                    { backgroundColor: theme.primary },
+                    !newHabitName.trim() && { opacity: 0.5 }
+                  ]}
+                  disabled={!newHabitName.trim()}
+                >
+                  <ThemedText style={styles.saveButtonText}>Add Habit</ThemedText>
+                </Pressable>
               </ScrollView>
-
-              <ThemedText style={[styles.labelText, { color: theme.textSecondary }]}>
-                Color
-              </ThemedText>
-              <View style={styles.colorPicker}>
-                {AVAILABLE_COLORS.map((color) => (
-                  <Pressable
-                    key={color}
-                    onPress={() => {
-                      triggerHaptic();
-                      setSelectedColor(color);
-                    }}
-                    style={[
-                      styles.colorOption,
-                      { backgroundColor: color },
-                      selectedColor === color && styles.colorSelected
-                    ]}
-                  >
-                    {selectedColor === color ? (
-                      <Feather name="check" size={20} color="white" />
-                    ) : null}
-                  </Pressable>
-                ))}
-              </View>
-
-              <Pressable
-                onPress={addHabit}
-                style={[
-                  styles.saveButton, 
-                  { backgroundColor: theme.primary },
-                  !newHabitName.trim() && { opacity: 0.5 }
-                ]}
-                disabled={!newHabitName.trim()}
-              >
-                <ThemedText style={styles.saveButtonText}>Add Habit</ThemedText>
-              </Pressable>
             </View>
-          </KeyboardAwareScrollViewCompat>
+          </KeyboardAvoidingView>
         </Modal>
 
         <Modal
@@ -751,12 +781,13 @@ export default function HabitTracker({ context, onComplete, onSettings, showSett
           transparent={true}
           onRequestClose={() => setShowEditModal(false)}
         >
-          <KeyboardAwareScrollViewCompat 
-            contentContainerStyle={styles.modalOverlay}
-            bounces={false}
+          <KeyboardAvoidingView
+            style={styles.modalOverlay}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
           >
+            <Pressable style={styles.modalDismissArea} onPress={() => setShowEditModal(false)} />
             <View style={[styles.modalContent, { backgroundColor: theme.backgroundDefault, paddingBottom: insets.bottom + Spacing.xl }]}>
-              <View style={styles.modalHandle} />
+              <View style={[styles.modalHandle, { backgroundColor: handleColor }]} />
               <View style={styles.modalHeader}>
                 <ThemedText style={styles.modalTitle}>Edit Habit</ThemedText>
                 <Pressable onPress={() => setShowEditModal(false)} style={styles.closeButton}>
@@ -764,98 +795,100 @@ export default function HabitTracker({ context, onComplete, onSettings, showSett
                 </Pressable>
               </View>
 
-              <TextInput
-                style={[styles.input, { 
-                  backgroundColor: theme.backgroundSecondary,
-                  color: theme.text,
-                }]}
-                placeholder="Habit name..."
-                placeholderTextColor={theme.textSecondary}
-                value={newHabitName}
-                onChangeText={setNewHabitName}
-                autoFocus
-                returnKeyType="done"
-                onSubmitEditing={newHabitName.trim() ? updateHabit : undefined}
-              />
+              <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" bounces={false}>
+                <TextInput
+                  style={[styles.input, { 
+                    backgroundColor: theme.backgroundSecondary,
+                    color: theme.text,
+                  }]}
+                  placeholder="Habit name..."
+                  placeholderTextColor={theme.textSecondary}
+                  value={newHabitName}
+                  onChangeText={setNewHabitName}
+                  autoFocus
+                  returnKeyType="done"
+                  onSubmitEditing={newHabitName.trim() ? updateHabit : undefined}
+                />
 
-              <ThemedText style={[styles.labelText, { color: theme.textSecondary }]}>
-                Icon
-              </ThemedText>
-              <ScrollView 
-                horizontal 
-                showsHorizontalScrollIndicator={false} 
-                style={styles.iconPicker}
-                contentContainerStyle={styles.iconPickerContent}
-              >
-                {AVAILABLE_ICONS.map((icon) => (
+                <ThemedText style={[styles.labelText, { color: theme.textSecondary }]}>
+                  Icon
+                </ThemedText>
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false} 
+                  style={styles.iconPicker}
+                  contentContainerStyle={styles.iconPickerContent}
+                >
+                  {AVAILABLE_ICONS.map((icon) => (
+                    <Pressable
+                      key={icon}
+                      onPress={() => {
+                        triggerHaptic();
+                        setSelectedIcon(icon);
+                      }}
+                      style={[
+                        styles.iconOption,
+                        { backgroundColor: theme.backgroundSecondary },
+                        selectedIcon === icon && { backgroundColor: selectedColor }
+                      ]}
+                    >
+                      <Feather 
+                        name={icon} 
+                        size={26} 
+                        color={selectedIcon === icon ? "white" : theme.textSecondary} 
+                      />
+                    </Pressable>
+                  ))}
+                </ScrollView>
+
+                <ThemedText style={[styles.labelText, { color: theme.textSecondary }]}>
+                  Color
+                </ThemedText>
+                <View style={styles.colorPicker}>
+                  {AVAILABLE_COLORS.map((color) => (
+                    <Pressable
+                      key={color}
+                      onPress={() => {
+                        triggerHaptic();
+                        setSelectedColor(color);
+                      }}
+                      style={[
+                        styles.colorOption,
+                        { backgroundColor: color },
+                        selectedColor === color && [styles.colorSelected, { borderColor: selectedBorderColor }]
+                      ]}
+                    >
+                      {selectedColor === color ? (
+                        <Feather name="check" size={20} color="white" />
+                      ) : null}
+                    </Pressable>
+                  ))}
+                </View>
+
+                <View style={styles.editButtonRow}>
                   <Pressable
-                    key={icon}
-                    onPress={() => {
-                      triggerHaptic();
-                      setSelectedIcon(icon);
-                    }}
-                    style={[
-                      styles.iconOption,
-                      { backgroundColor: theme.backgroundSecondary },
-                      selectedIcon === icon && { backgroundColor: selectedColor }
-                    ]}
+                    onPress={deleteEditingHabit}
+                    style={[styles.deleteButton]}
                   >
-                    <Feather 
-                      name={icon} 
-                      size={26} 
-                      color={selectedIcon === icon ? "white" : theme.textSecondary} 
-                    />
+                    <Feather name="trash-2" size={18} color="white" />
+                    <ThemedText style={styles.deleteButtonText}>Delete</ThemedText>
                   </Pressable>
-                ))}
+                  <Pressable
+                    onPress={updateHabit}
+                    style={[
+                      styles.saveButton, 
+                      styles.saveButtonFlex,
+                      { backgroundColor: theme.primary },
+                      !newHabitName.trim() && { opacity: 0.5 }
+                    ]}
+                    disabled={!newHabitName.trim()}
+                  >
+                    <ThemedText style={styles.saveButtonText}>Save Changes</ThemedText>
+                  </Pressable>
+                </View>
               </ScrollView>
-
-              <ThemedText style={[styles.labelText, { color: theme.textSecondary }]}>
-                Color
-              </ThemedText>
-              <View style={styles.colorPicker}>
-                {AVAILABLE_COLORS.map((color) => (
-                  <Pressable
-                    key={color}
-                    onPress={() => {
-                      triggerHaptic();
-                      setSelectedColor(color);
-                    }}
-                    style={[
-                      styles.colorOption,
-                      { backgroundColor: color },
-                      selectedColor === color && styles.colorSelected
-                    ]}
-                  >
-                    {selectedColor === color ? (
-                      <Feather name="check" size={20} color="white" />
-                    ) : null}
-                  </Pressable>
-                ))}
-              </View>
-
-              <View style={styles.editButtonRow}>
-                <Pressable
-                  onPress={deleteEditingHabit}
-                  style={[styles.deleteButton]}
-                >
-                  <Feather name="trash-2" size={18} color="white" />
-                  <ThemedText style={styles.deleteButtonText}>Delete</ThemedText>
-                </Pressable>
-                <Pressable
-                  onPress={updateHabit}
-                  style={[
-                    styles.saveButton, 
-                    styles.saveButtonFlex,
-                    { backgroundColor: theme.primary },
-                    !newHabitName.trim() && { opacity: 0.5 }
-                  ]}
-                  disabled={!newHabitName.trim()}
-                >
-                  <ThemedText style={styles.saveButtonText}>Save Changes</ThemedText>
-                </Pressable>
-              </View>
             </View>
-          </KeyboardAwareScrollViewCompat>
+          </KeyboardAvoidingView>
         </Modal>
       </ThemedView>
     </GestureHandlerRootView>
@@ -870,9 +903,10 @@ interface DraggableHabitProps {
   onLongPress: (habit: Habit) => void;
   theme: any;
   isDragging: boolean;
+  pillBg: string;
 }
 
-function DraggableHabit({ habit, onDragStart, onDragUpdate, onDragEnd, onLongPress, theme, isDragging }: DraggableHabitProps) {
+function DraggableHabit({ habit, onDragStart, onDragUpdate, onDragEnd, onLongPress, theme, isDragging, pillBg }: DraggableHabitProps) {
   const longPressGesture = Gesture.LongPress()
     .minDuration(1500)
     .onStart(() => {
@@ -898,7 +932,7 @@ function DraggableHabit({ habit, onDragStart, onDragUpdate, onDragEnd, onLongPre
 
   return (
     <GestureDetector gesture={composedGesture}>
-      <View style={[styles.pill, isDragging && { opacity: 0.3 }]}>
+      <View style={[styles.pill, { backgroundColor: pillBg }, isDragging && { opacity: 0.3 }]}>
         <View style={[styles.pillIcon, { backgroundColor: habit.color }]}>
           <Feather name={habit.icon} size={14} color="white" />
         </View>
@@ -957,7 +991,6 @@ const styles = StyleSheet.create({
   pill: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.95)",
     borderRadius: 20,
     paddingVertical: 6,
     paddingLeft: 6,
@@ -1001,13 +1034,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,
-    borderColor: "white",
     zIndex: 1,
   },
   addPill: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.5)",
     borderRadius: 20,
     paddingVertical: 6,
     paddingLeft: 6,
@@ -1016,7 +1047,6 @@ const styles = StyleSheet.create({
     width: "48%",
     borderWidth: 1,
     borderStyle: "dashed",
-    borderColor: "rgba(0,0,0,0.15)",
   },
   addPillIcon: {
     width: PILL_ICON_SIZE,
@@ -1061,9 +1091,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   modalOverlay: {
-    flexGrow: 1,
+    flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "flex-end",
+  },
+  modalDismissArea: {
+    flex: 1,
   },
   modalContent: {
     borderTopLeftRadius: BorderRadius["2xl"],
@@ -1074,7 +1107,6 @@ const styles = StyleSheet.create({
   modalHandle: {
     width: 40,
     height: 4,
-    backgroundColor: "rgba(0,0,0,0.2)",
     borderRadius: 2,
     alignSelf: "center",
     marginBottom: Spacing.lg,
@@ -1135,7 +1167,6 @@ const styles = StyleSheet.create({
   },
   colorSelected: {
     borderWidth: 3,
-    borderColor: "white",
   },
   saveButton: {
     padding: Spacing.lg,
@@ -1160,7 +1191,6 @@ const styles = StyleSheet.create({
     width: "48%",
     borderWidth: 1.5,
     borderStyle: "dashed",
-    borderColor: "rgba(0,0,0,0.25)",
   },
   addPillDottedText: {
     fontSize: 13,
@@ -1205,9 +1235,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     gap: Spacing.md,
   },
-  themeOptionSelected: {
-    backgroundColor: "rgba(0,0,0,0.05)",
-  },
+  themeOptionSelected: {},
   themePreview: {
     flexDirection: "row",
     width: 72,
@@ -1294,6 +1322,15 @@ const styles = StyleSheet.create({
   },
   sectionSeparator: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: "rgba(0,0,0,0.12)",
+  },
+  glassSection: {
+    overflow: "hidden",
+    borderRadius: BorderRadius.md,
+    marginHorizontal: Spacing.sm,
+    marginVertical: 2,
+  },
+  glassSeparator: {
+    height: StyleSheet.hairlineWidth,
+    marginHorizontal: Spacing.xl,
   },
 });

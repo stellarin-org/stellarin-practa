@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-17T07:17:23.676Z",
+  "registryVersion": "2026-02-17T07:20:21.607Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -326,7 +326,7 @@
     },
     {
       "slug": "practa-habit-tracker",
-      "version": "1.6.7",
+      "version": "1.6.8",
       "buildId": "eede6e96-1813-48fb-8af8-b46374c074c1",
       "name": "Habit Tracker",
       "description": "A beautiful daily habit tracker to help you build positive routines",
@@ -338,9 +338,9 @@
       "estimatedDuration": 60,
       "assets": {
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/habbit_tracker_icon.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon40.webp",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon120.webp",
         "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon80.webp",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon120.webp"
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon40.webp"
       },
       "configSchema": {
         "fields": {
@@ -355,6 +355,7 @@
       },
       "dependencies": [
         "@expo/vector-icons",
+        "expo-blur",
         "expo-haptics",
         "expo-linear-gradient",
         "react-native-gesture-handler",
@@ -393,15 +394,15 @@
       "requiresAI": false,
       "estimatedDuration": 180,
       "assets": {
-        "hints": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/hints.json",
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_icon.webp",
-        "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.webp",
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/splash.mp4",
-        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json",
-        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon120.webp",
+        "hints": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/hints.json",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon40.webp",
         "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon80.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon40.webp"
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/splash.mp4",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon120.webp",
+        "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.webp",
+        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json",
+        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json"
       },
       "configSchema": {
         "fields": {
