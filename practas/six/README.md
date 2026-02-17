@@ -36,4 +36,4 @@ Created by Woodenfox
 
 ## Version
 
-1.7.7
+1.7.8

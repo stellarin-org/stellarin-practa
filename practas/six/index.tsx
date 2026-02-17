@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import * as Sharing from "expo-sharing";
 import { Feather } from "@expo/vector-icons";
+import { GlassCard } from "@/components/GlassCard";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -1173,10 +1174,10 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
       } else {
         const isAvailable = await Sharing.isAvailableAsync();
         if (isAvailable) {
-          const { Paths, File: FSFile } = await import("expo-file-system");
-          const file = new FSFile(Paths.cache, "six-result.txt");
-          file.text = text;
-          await Sharing.shareAsync(file.uri, {
+          const FS = await import("expo-file-system/legacy");
+          const fileUri = FS.cacheDirectory + "six-result.txt";
+          await FS.writeAsStringAsync(fileUri, text);
+          await Sharing.shareAsync(fileUri, {
             mimeType: "text/plain",
             dialogTitle: "Share your Six result",
           });
@@ -1328,43 +1329,48 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
             {gameState !== "playing" ? (
               <Animated.View
                 entering={FadeIn.delay(500).duration(400)}
-                style={[styles.resultOverlay, { paddingBottom: insets.bottom + Spacing.md }]}
+                style={styles.resultOverlay}
               >
-                <ThemedText style={styles.resultHeadline}>
-                  {gameState === "won" ? "Good job!" : "Try again tomorrow!"}
-                </ThemedText>
-                <ThemedText style={[styles.resultLine, { color: theme.textSecondary }]}>
-                  {gameState === "won"
-                    ? `${guesses.length} / ${INITIAL_ROWS}`
-                    : targetWord}
-                </ThemedText>
-                <View style={styles.buttonRow}>
-                  <Pressable
-                    onPress={handleShare}
-                    style={({ pressed }) => [
-                      styles.shareButton, 
-                      { 
-                        backgroundColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.06)",
-                        opacity: pressed ? 0.9 : 1,
-                      }
-                    ]}
-                  >
-                    <Feather name="share" size={18} color={theme.text} style={{ marginRight: 8 }} />
-                    <ThemedText style={styles.shareButtonText}>Share</ThemedText>
-                  </Pressable>
-                  <Pressable
-                    onPress={handleComplete}
-                    style={({ pressed }) => [
-                      styles.completeButton, 
-                      { 
-                        backgroundColor: theme.primary,
-                        opacity: pressed ? 0.9 : 1,
-                      }
-                    ]}
-                  >
-                    <ThemedText style={styles.completeButtonText}>Continue</ThemedText>
-                  </Pressable>
-                </View>
+                <GlassCard
+                  style={styles.resultGlass}
+                  intensity={isDark ? 60 : 50}
+                >
+                  <ThemedText style={styles.resultHeadline}>
+                    {gameState === "won" ? "Good job!" : "Try again tomorrow!"}
+                  </ThemedText>
+                  <ThemedText style={[styles.resultLine, { color: theme.textSecondary }]}>
+                    {gameState === "won"
+                      ? `${guesses.length} / ${INITIAL_ROWS}`
+                      : targetWord}
+                  </ThemedText>
+                  <View style={styles.buttonRow}>
+                    <Pressable
+                      onPress={handleShare}
+                      style={({ pressed }) => [
+                        styles.shareButton, 
+                        { 
+                          backgroundColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.06)",
+                          opacity: pressed ? 0.9 : 1,
+                        }
+                      ]}
+                    >
+                      <Feather name="share" size={18} color={theme.text} style={{ marginRight: 8 }} />
+                      <ThemedText style={styles.shareButtonText}>Share</ThemedText>
+                    </Pressable>
+                    <Pressable
+                      onPress={handleComplete}
+                      style={({ pressed }) => [
+                        styles.completeButton, 
+                        { 
+                          backgroundColor: theme.primary,
+                          opacity: pressed ? 0.9 : 1,
+                        }
+                      ]}
+                    >
+                      <ThemedText style={styles.completeButtonText}>Continue</ThemedText>
+                    </Pressable>
+                  </View>
+                </GlassCard>
               </Animated.View>
             ) : null}
           </View>
@@ -1556,7 +1562,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: Spacing.xl,
+  },
+  resultGlass: {
+    alignItems: "center",
     gap: Spacing.lg,
+    width: "100%",
   },
   resultHeadline: {
     fontSize: 22,
