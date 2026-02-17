@@ -15,6 +15,13 @@ import { ThemedView } from "@/components/ThemedView";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 
+const ACCENT_COLORS = {
+  amber: "#F59E0B",
+  amberMuted: "rgba(245, 158, 11, 0.15)",
+  jade: "#10B981",
+  jadeMuted: "rgba(16, 185, 129, 0.15)",
+};
+
 interface IntroTutorialProps {
   onComplete: () => void;
   headerHeight: number;
@@ -79,7 +86,7 @@ export function IntroTutorial({ onComplete, headerHeight }: IntroTutorialProps) 
 
   const renderStep0 = () => (
     <View style={styles.stepContent}>
-      <View style={[styles.iconCircle, { backgroundColor: theme.amberMuted }]}>
+      <View style={[styles.iconCircle, { backgroundColor: ACCENT_COLORS.amberMuted }]}>
         <Feather name="zap" size={48} color={theme.primary} />
       </View>
       <ThemedText style={styles.stepTitle}>Welcome to Major System</ThemedText>
@@ -178,8 +185,8 @@ export function IntroTutorial({ onComplete, headerHeight }: IntroTutorialProps) 
 
   const renderStep3 = () => (
     <View style={styles.stepContent}>
-      <View style={[styles.iconCircle, { backgroundColor: theme.jadeMuted }]}>
-        <Feather name="target" size={48} color={theme.jade} />
+      <View style={[styles.iconCircle, { backgroundColor: ACCENT_COLORS.jadeMuted }]}>
+        <Feather name="target" size={48} color={ACCENT_COLORS.jade} />
       </View>
       <ThemedText style={styles.stepTitle}>Practice Makes Perfect</ThemedText>
       <ThemedText style={[styles.stepDescription, { color: theme.textSecondary }]}>
@@ -188,8 +195,8 @@ export function IntroTutorial({ onComplete, headerHeight }: IntroTutorialProps) 
       
       <View style={styles.drillTypeList}>
         <View style={styles.drillTypeItem}>
-          <View style={[styles.drillIcon, { backgroundColor: theme.amberMuted }]}>
-            <Feather name="hash" size={20} color={theme.amber} />
+          <View style={[styles.drillIcon, { backgroundColor: ACCENT_COLORS.amberMuted }]}>
+            <Feather name="hash" size={20} color={ACCENT_COLORS.amber} />
           </View>
           <View style={styles.drillTypeText}>
             <ThemedText style={styles.drillTypeName}>Number → Image</ThemedText>
@@ -200,8 +207,8 @@ export function IntroTutorial({ onComplete, headerHeight }: IntroTutorialProps) 
         </View>
         
         <View style={styles.drillTypeItem}>
-          <View style={[styles.drillIcon, { backgroundColor: theme.jadeMuted }]}>
-            <Feather name="image" size={20} color={theme.jade} />
+          <View style={[styles.drillIcon, { backgroundColor: ACCENT_COLORS.jadeMuted }]}>
+            <Feather name="image" size={20} color={ACCENT_COLORS.jade} />
           </View>
           <View style={styles.drillTypeText}>
             <ThemedText style={styles.drillTypeName}>Image → Number</ThemedText>
@@ -212,8 +219,8 @@ export function IntroTutorial({ onComplete, headerHeight }: IntroTutorialProps) 
         </View>
         
         <View style={styles.drillTypeItem}>
-          <View style={[styles.drillIcon, { backgroundColor: theme.amberMuted }]}>
-            <Feather name="type" size={20} color={theme.amber} />
+          <View style={[styles.drillIcon, { backgroundColor: ACCENT_COLORS.amberMuted }]}>
+            <Feather name="type" size={20} color={ACCENT_COLORS.amber} />
           </View>
           <View style={styles.drillTypeText}>
             <ThemedText style={styles.drillTypeName}>Number → Word</ThemedText>
@@ -224,8 +231,8 @@ export function IntroTutorial({ onComplete, headerHeight }: IntroTutorialProps) 
         </View>
 
         <View style={styles.drillTypeItem}>
-          <View style={[styles.drillIcon, { backgroundColor: theme.jadeMuted }]}>
-            <Feather name="layers" size={20} color={theme.jade} />
+          <View style={[styles.drillIcon, { backgroundColor: ACCENT_COLORS.jadeMuted }]}>
+            <Feather name="layers" size={20} color={ACCENT_COLORS.jade} />
           </View>
           <View style={styles.drillTypeText}>
             <ThemedText style={styles.drillTypeName}>Pi Sequence</ThemedText>
@@ -236,8 +243,8 @@ export function IntroTutorial({ onComplete, headerHeight }: IntroTutorialProps) 
         </View>
 
         <View style={styles.drillTypeItem}>
-          <View style={[styles.drillIcon, { backgroundColor: theme.amberMuted }]}>
-            <Feather name="calendar" size={20} color={theme.amber} />
+          <View style={[styles.drillIcon, { backgroundColor: ACCENT_COLORS.amberMuted }]}>
+            <Feather name="calendar" size={20} color={ACCENT_COLORS.amber} />
           </View>
           <View style={styles.drillTypeText}>
             <ThemedText style={styles.drillTypeName}>Historical Dates</ThemedText>

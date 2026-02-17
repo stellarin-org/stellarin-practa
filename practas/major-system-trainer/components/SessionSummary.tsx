@@ -30,7 +30,7 @@ export function SessionSummaryView({
   const getPerformanceColor = () => {
     if (summary.accuracy >= 0.9) return theme.success;
     if (summary.accuracy >= 0.7) return theme.primary;
-    if (summary.accuracy >= 0.5) return theme.amber;
+    if (summary.accuracy >= 0.5) return theme.warning;
     return theme.error;
   };
 

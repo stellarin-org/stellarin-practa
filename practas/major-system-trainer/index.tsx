@@ -32,7 +32,6 @@ type Phase = "loading" | "tutorial" | "ready" | "drilling" | "feedback" | "summa
 export default function MajorSystemTrainer({
   context,
   onComplete,
-  onSkip,
   onSettings,
   showSettings,
 }: PractaProps) {
@@ -336,11 +335,6 @@ export default function MajorSystemTrainer({
       <ThemedView style={[styles.container, { paddingTop: headerHeight + Spacing.lg }]}>
         <View style={styles.centerContent}>
           <ThemedText style={styles.errorText}>{error}</ThemedText>
-          {onSkip ? (
-            <Pressable onPress={onSkip} style={[styles.button, { backgroundColor: theme.primary }]}>
-              <ThemedText style={styles.buttonText}>Skip</ThemedText>
-            </Pressable>
-          ) : null}
         </View>
       </ThemedView>
     );
@@ -420,13 +414,6 @@ export default function MajorSystemTrainer({
             </ThemedText>
           </Pressable>
 
-          {onSkip ? (
-            <Pressable onPress={onSkip} style={styles.skipButton}>
-              <ThemedText style={[styles.skipText, { color: theme.textSecondary }]}>
-                Skip
-              </ThemedText>
-            </Pressable>
-          ) : null}
         </View>
       </ThemedView>
     );

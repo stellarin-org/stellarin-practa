@@ -1,6 +1,6 @@
 {
   "name": "Major System Trainer",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "description": "Learn the Major System 00-99 with images and spaced repetition",
   "author": "Stellarin",
   "requiresAI": false,
@@ -40,6 +40,7 @@
   ],
   "requiredPermissions": [],
   "assets": {
+    "icon": "icon.png",
     "deck": "cards_00_99.json",
     "historical_dates": "historical_dates.json",
     "img_00_sauce": "00_sauce.webp",
