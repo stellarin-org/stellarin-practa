@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-17T07:54:34.872Z",
+  "registryVersion": "2026-02-17T07:55:19.982Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -150,7 +150,7 @@
     },
     {
       "slug": "grounding-thumbs",
-      "version": "2.5.5",
+      "version": "2.5.7",
       "buildId": "ae435e2f-0360-4b16-b7ee-f61f30a45dce",
       "name": "Grounding Thumbs",
       "description": "A relaxation exercise using multitouch. Place both thumbs on the circles, hold and squeeze, then slowly release to let tension melt away.",
@@ -161,9 +161,28 @@
       "requiresAI": false,
       "estimatedDuration": 20,
       "assets": {
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/splash.png",
-        "content": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/content.json"
-      }
+        "content": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/content.json",
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/splash.webp"
+      },
+      "configSchema": {
+        "fields": {
+          "aiEnabled": {
+            "type": "boolean",
+            "label": "AI Features",
+            "default": true,
+            "description": "Enable AI-powered enhancements"
+          }
+        }
+      },
+      "dependencies": [
+        "@expo/vector-icons",
+        "expo-blur",
+        "expo-haptics",
+        "expo-linear-gradient",
+        "react-native-gesture-handler",
+        "react-native-reanimated",
+        "react-native-safe-area-context"
+      ]
     },
     {
       "slug": "letter-to-future-self",
@@ -373,8 +392,8 @@
       "requiresAI": false,
       "estimatedDuration": 420,
       "assets": {
-        "content": "https://stellarin-practa-verification.replit.app/assets/practa/ospan-a/788de9d5-2cdf-436f-9a8c-3c62f8784424/content.json",
         "splash": "https://stellarin-practa-verification.replit.app/assets/practa/ospan-a/788de9d5-2cdf-436f-9a8c-3c62f8784424/splash.mp4",
+        "content": "https://stellarin-practa-verification.replit.app/assets/practa/ospan-a/788de9d5-2cdf-436f-9a8c-3c62f8784424/content.json",
         "wellness-bg": "https://stellarin-practa-verification.replit.app/assets/practa/ospan-a/788de9d5-2cdf-436f-9a8c-3c62f8784424/wellness-bg.webp"
       },
       "configSchema": {
