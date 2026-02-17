@@ -1335,14 +1335,16 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
                   style={styles.resultGlass}
                   intensity={isDark ? 60 : 50}
                 >
-                  <ThemedText style={styles.resultHeadline}>
-                    {gameState === "won" ? "Good job!" : "Try again tomorrow!"}
-                  </ThemedText>
-                  <ThemedText style={[styles.resultLine, { color: theme.textSecondary }]}>
-                    {gameState === "won"
-                      ? `${guesses.length} / ${INITIAL_ROWS}`
-                      : targetWord}
-                  </ThemedText>
+                  <View style={styles.resultTextGroup}>
+                    <ThemedText style={styles.resultScore}>
+                      {gameState === "won"
+                        ? `${guesses.length} / ${INITIAL_ROWS}`
+                        : targetWord}
+                    </ThemedText>
+                    <ThemedText style={[styles.resultSubtitle, { color: theme.textSecondary }]}>
+                      {gameState === "won" ? "Good job!" : "Better luck next time"}
+                    </ThemedText>
+                  </View>
                   <View style={styles.buttonRow}>
                     <Pressable
                       onPress={handleShare}
@@ -1367,7 +1369,7 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
                         }
                       ]}
                     >
-                      <ThemedText style={styles.completeButtonText}>Continue</ThemedText>
+                      <ThemedText style={styles.completeButtonText} lightColor="#FFFFFF" darkColor="#FFFFFF">Continue</ThemedText>
                     </Pressable>
                   </View>
                 </GlassCard>
@@ -1568,14 +1570,18 @@ const styles = StyleSheet.create({
     gap: Spacing.lg,
     width: "100%",
   },
-  resultHeadline: {
-    fontSize: 22,
-    fontWeight: "700",
+  resultTextGroup: {
+    alignItems: "center",
+    gap: Spacing.xs,
   },
-  resultLine: {
-    fontSize: 18,
-    fontWeight: "600",
-    letterSpacing: 2,
+  resultScore: {
+    fontSize: 28,
+    fontWeight: "700",
+    letterSpacing: 3,
+  },
+  resultSubtitle: {
+    fontSize: 15,
+    fontWeight: "500",
   },
   completeButton: {
     flex: 1,
@@ -1592,6 +1598,7 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: "row",
     gap: Spacing.sm,
+    width: "100%",
   },
   shareButton: {
     flexDirection: "row",

@@ -1,6 +1,6 @@
 {
   "name": "Six",
-  "version": "1.7.8",
+  "version": "1.7.9",
   "description": "A daily word guessing game - guess the 6-letter word in 6 tries",
   "author": "Woodenfox",
   "estimatedDuration": 180,
