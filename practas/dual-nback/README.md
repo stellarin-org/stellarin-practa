@@ -1,6 +1,6 @@
 # Dual N-Back
 
-Train your working memory with the classic dual-N-back cognitive exercise
+Train your working memory by tracking position and audio simultaneously with the Dual N-Back exercise
 
 ## Installation
 
@@ -16,7 +16,6 @@ function MyFlow() {
     <DualNBack
       context={{ flowId: "my-flow", practaIndex: 0 }}
       onComplete={(output) => console.log("Completed:", output)}
-      onSkip={() => console.log("Skipped")}
     />
   );
 }
@@ -30,12 +29,11 @@ This component accepts the standard Practa props:
 |------|------|----------|-------------|
 | `context` | PractaContext | Yes | Flow context from previous Practa |
 | `onComplete` | (output: PractaOutput) => void | Yes | Callback when the Practa completes |
-| `onSkip` | () => void | No | Optional callback to skip the Practa |
 
 ## Author
 
-Created by Practa
+Created by Your Name
 
 ## Version
 
-1.0.2
+2.0.1

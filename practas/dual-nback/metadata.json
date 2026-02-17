@@ -1,18 +1,47 @@
 {
-  "id": "dual-nback",
   "name": "Dual N-Back",
-  "version": "1.0.2",
-  "description": "Train your working memory with the classic dual-N-back cognitive exercise",
-  "author": "Practa",
+  "version": "2.0.1",
+  "description": "Train your working memory by tracking position and audio simultaneously with the Dual N-Back exercise",
+  "author": "Your Name",
+  "estimatedDuration": 30,
+  "requiresAI": false,
+  "dependencies": [
+    "@expo/vector-icons",
+    "expo-audio",
+    "expo-haptics",
+    "expo-linear-gradient",
+    "react-native-reanimated",
+    "react-native-safe-area-context"
+  ],
+  "configSchema": {
+    "fields": {
+      "aiEnabled": {
+        "type": "boolean",
+        "label": "Enable AI Features",
+        "description": "Allow this Practa to use AI-powered enhancements when available",
+        "default": true
+      }
+    },
+    "requiredConfig": false
+  },
+  "id": "dual-nback",
   "type": "widget",
-  "category": "cognitive",
+  "category": "wellness",
   "tags": [
+    "cognitive",
     "memory",
     "brain-training",
-    "focus",
-    "cognitive"
+    "focus"
   ],
-  "estimatedDuration": 120,
   "requiredPermissions": [],
-  "assets": {}
+  "assets": {
+    "letterC": "letter-c.mp3",
+    "letterH": "letter-h.mp3",
+    "letterK": "letter-k.mp3",
+    "letterL": "letter-l.mp3",
+    "letterQ": "letter-q.mp3",
+    "letterR": "letter-r.mp3",
+    "letterS": "letter-s.mp3",
+    "letterT": "letter-t.mp3"
+  }
 }

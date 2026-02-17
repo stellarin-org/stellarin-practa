@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { View, StyleSheet, Pressable, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
-import * as Speech from "expo-speech";
+import { useAudioPlayer } from "expo-audio";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -12,6 +12,17 @@ import Animated, {
 } from "react-native-reanimated";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+
+const LETTER_AUDIO: Record<string, any> = {
+  C: require("./assets/letter-c.mp3"),
+  H: require("./assets/letter-h.mp3"),
+  K: require("./assets/letter-k.mp3"),
+  L: require("./assets/letter-l.mp3"),
+  Q: require("./assets/letter-q.mp3"),
+  R: require("./assets/letter-r.mp3"),
+  S: require("./assets/letter-s.mp3"),
+  T: require("./assets/letter-t.mp3"),
+};
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -46,11 +57,18 @@ interface GameStats {
   audioFalseAlarms: number;
 }
 
-export default function DualNBackPracta({ context, onComplete, onSkip, onSettings, showSettings }: PractaProps) {
+export default function DualNBackPracta({
+  context,
+  onComplete,
+  onSkip,
+  onSettings,
+  showSettings,
+}: PractaProps) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const { setConfig } = usePractaChrome();
   const headerHeight = useHeaderHeight();
+  const letterPlayer = useAudioPlayer(LETTER_AUDIO.C);
 
   const [phase, setPhase] = useState<Phase>("intro");
   const [nLevel, setNLevel] = useState(2);
@@ -149,12 +167,14 @@ export default function DualNBackPracta({ context, onComplete, onSkip, onSetting
     const positionMatches = trials.filter((t) => t.isPositionMatch).length;
     const audioMatches = trials.filter((t) => t.isAudioMatch).length;
 
-    const positionAccuracy = positionMatches > 0
-      ? Math.round((stats.positionHits / positionMatches) * 100)
-      : 100;
-    const audioAccuracy = audioMatches > 0
-      ? Math.round((stats.audioHits / audioMatches) * 100)
-      : 100;
+    const positionAccuracy =
+      positionMatches > 0
+        ? Math.round((stats.positionHits / positionMatches) * 100)
+        : 100;
+    const audioAccuracy =
+      audioMatches > 0
+        ? Math.round((stats.audioHits / audioMatches) * 100)
+        : 100;
     const totalAccuracy = Math.round((positionAccuracy + audioAccuracy) / 2);
 
     return { positionAccuracy, audioAccuracy, totalAccuracy };
@@ -195,7 +215,10 @@ export default function DualNBackPracta({ context, onComplete, onSkip, onSetting
       setStats((prev) => ({ ...prev, positionHits: prev.positionHits + 1 }));
       triggerHaptic("success");
     } else {
-      setStats((prev) => ({ ...prev, positionFalseAlarms: prev.positionFalseAlarms + 1 }));
+      setStats((prev) => ({
+        ...prev,
+        positionFalseAlarms: prev.positionFalseAlarms + 1,
+      }));
       triggerHaptic("error");
     }
   }, [phase, positionPressed, currentTrial, nLevel, trials, triggerHaptic]);
@@ -211,7 +234,10 @@ export default function DualNBackPracta({ context, onComplete, onSkip, onSetting
       setStats((prev) => ({ ...prev, audioHits: prev.audioHits + 1 }));
       triggerHaptic("success");
     } else {
-      setStats((prev) => ({ ...prev, audioFalseAlarms: prev.audioFalseAlarms + 1 }));
+      setStats((prev) => ({
+        ...prev,
+        audioFalseAlarms: prev.audioFalseAlarms + 1,
+      }));
       triggerHaptic("error");
     }
   }, [phase, audioPressed, currentTrial, nLevel, trials, triggerHaptic]);
@@ -222,7 +248,10 @@ export default function DualNBackPracta({ context, onComplete, onSkip, onSetting
     if (currentTrial >= nLevel) {
       const trial = trials[currentTrial];
       if (trial.isPositionMatch && !positionPressed) {
-        setStats((prev) => ({ ...prev, positionMisses: prev.positionMisses + 1 }));
+        setStats((prev) => ({
+          ...prev,
+          positionMisses: prev.positionMisses + 1,
+        }));
       }
       if (trial.isAudioMatch && !audioPressed) {
         setStats((prev) => ({ ...prev, audioMisses: prev.audioMisses + 1 }));
@@ -251,8 +280,10 @@ export default function DualNBackPracta({ context, onComplete, onSkip, onSetting
     setActiveLetter(trial.letter);
     triggerHaptic("light");
 
-    if (Platform.OS !== "web") {
-      Speech.speak(trial.letter, { language: "en-US", pitch: 1.0, rate: 0.8 });
+    if (LETTER_AUDIO[trial.letter]) {
+      letterPlayer.replace(LETTER_AUDIO[trial.letter]);
+      letterPlayer.seekTo(0);
+      letterPlayer.play();
     }
 
     stimulusTimerRef.current = setTimeout(() => {
@@ -276,7 +307,8 @@ export default function DualNBackPracta({ context, onComplete, onSkip, onSetting
 
   const handleComplete = () => {
     triggerHaptic("light");
-    const { positionAccuracy, audioAccuracy, totalAccuracy } = calculateResults();
+    const { positionAccuracy, audioAccuracy, totalAccuracy } =
+      calculateResults();
     onComplete({
       content: {
         type: "text",
@@ -301,10 +333,15 @@ export default function DualNBackPracta({ context, onComplete, onSkip, onSetting
 
   const renderIntro = () => (
     <View style={styles.introContainer}>
-      <View style={[styles.iconContainer, { backgroundColor: theme.primary + "20" }]}>
+      <View
+        style={[
+          styles.iconContainer,
+          { backgroundColor: theme.primary + "20" },
+        ]}
+      >
         <Feather name="grid" size={48} color={theme.primary} />
       </View>
-      
+
       <ThemedText style={styles.title}>Dual N-Back</ThemedText>
       <ThemedText style={[styles.subtitle, { color: theme.textSecondary }]}>
         Train your working memory by tracking position and audio simultaneously
@@ -320,7 +357,10 @@ export default function DualNBackPracta({ context, onComplete, onSkip, onSetting
               style={[
                 styles.nLevelButton,
                 {
-                  backgroundColor: nLevel === level ? theme.primary : theme.backgroundSecondary,
+                  backgroundColor:
+                    nLevel === level
+                      ? theme.primary
+                      : theme.backgroundSecondary,
                 },
               ]}
             >
@@ -352,14 +392,23 @@ export default function DualNBackPracta({ context, onComplete, onSkip, onSetting
         </View>
       </View>
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.lg }]}>
-        <Pressable onPress={startGame} style={[styles.button, { backgroundColor: theme.primary }]}>
+      <View
+        style={[styles.footer, { paddingBottom: insets.bottom + Spacing.lg }]}
+      >
+        <Pressable
+          onPress={startGame}
+          style={[styles.button, { backgroundColor: theme.primary }]}
+        >
           <ThemedText style={styles.buttonText}>Start Training</ThemedText>
         </Pressable>
 
         {onSkip ? (
           <Pressable onPress={onSkip} style={styles.skipButton}>
-            <ThemedText style={[styles.skipText, { color: theme.textSecondary }]}>Skip</ThemedText>
+            <ThemedText
+              style={[styles.skipText, { color: theme.textSecondary }]}
+            >
+              Skip
+            </ThemedText>
           </Pressable>
         ) : null}
       </View>
@@ -376,7 +425,9 @@ export default function DualNBackPracta({ context, onComplete, onSkip, onSetting
       </View>
 
       <View style={styles.letterDisplay}>
-        <ThemedText style={styles.currentLetter}>{activeLetter || ""}</ThemedText>
+        <ThemedText style={styles.currentLetter}>
+          {activeLetter || ""}
+        </ThemedText>
       </View>
 
       <View style={styles.grid}>
@@ -392,7 +443,9 @@ export default function DualNBackPracta({ context, onComplete, onSkip, onSetting
           style={[
             styles.controlButton,
             {
-              backgroundColor: positionPressed ? theme.secondary : theme.backgroundDefault,
+              backgroundColor: positionPressed
+                ? theme.secondary
+                : theme.backgroundDefault,
               borderColor: theme.primary,
               opacity: currentTrial < nLevel ? 0.5 : 1,
             },
@@ -419,7 +472,9 @@ export default function DualNBackPracta({ context, onComplete, onSkip, onSetting
           style={[
             styles.controlButton,
             {
-              backgroundColor: audioPressed ? theme.secondary : theme.backgroundDefault,
+              backgroundColor: audioPressed
+                ? theme.secondary
+                : theme.backgroundDefault,
               borderColor: theme.primary,
               opacity: currentTrial < nLevel ? 0.5 : 1,
             },
@@ -444,44 +499,73 @@ export default function DualNBackPracta({ context, onComplete, onSkip, onSetting
   );
 
   const renderResults = () => {
-    const { positionAccuracy, audioAccuracy, totalAccuracy } = calculateResults();
+    const { positionAccuracy, audioAccuracy, totalAccuracy } =
+      calculateResults();
 
     return (
       <View style={styles.resultsContainer}>
         <ThemedText style={styles.resultsTitle}>Session Complete</ThemedText>
 
         <View style={styles.scoreCircle}>
-          <ThemedText style={[styles.scoreValue, { color: getScoreColor(totalAccuracy) }]}>
+          <ThemedText
+            style={[styles.scoreValue, { color: getScoreColor(totalAccuracy) }]}
+          >
             {totalAccuracy}%
           </ThemedText>
-          <ThemedText style={[styles.scoreLabel, { color: theme.textSecondary }]}>
+          <ThemedText
+            style={[styles.scoreLabel, { color: theme.textSecondary }]}
+          >
             Overall Accuracy
           </ThemedText>
         </View>
 
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
-            <Feather name="grid" size={24} color={getScoreColor(positionAccuracy)} />
-            <ThemedText style={[styles.statValue, { color: getScoreColor(positionAccuracy) }]}>
+            <Feather
+              name="grid"
+              size={24}
+              color={getScoreColor(positionAccuracy)}
+            />
+            <ThemedText
+              style={[
+                styles.statValue,
+                { color: getScoreColor(positionAccuracy) },
+              ]}
+            >
               {positionAccuracy}%
             </ThemedText>
-            <ThemedText style={[styles.statLabel, { color: theme.textSecondary }]}>
+            <ThemedText
+              style={[styles.statLabel, { color: theme.textSecondary }]}
+            >
               Position
             </ThemedText>
           </View>
 
           <View style={styles.statCard}>
-            <Feather name="volume-2" size={24} color={getScoreColor(audioAccuracy)} />
-            <ThemedText style={[styles.statValue, { color: getScoreColor(audioAccuracy) }]}>
+            <Feather
+              name="volume-2"
+              size={24}
+              color={getScoreColor(audioAccuracy)}
+            />
+            <ThemedText
+              style={[
+                styles.statValue,
+                { color: getScoreColor(audioAccuracy) },
+              ]}
+            >
               {audioAccuracy}%
             </ThemedText>
-            <ThemedText style={[styles.statLabel, { color: theme.textSecondary }]}>
+            <ThemedText
+              style={[styles.statLabel, { color: theme.textSecondary }]}
+            >
               Audio
             </ThemedText>
           </View>
         </View>
 
-        <ThemedText style={[styles.performanceMessage, { color: theme.textSecondary }]}>
+        <ThemedText
+          style={[styles.performanceMessage, { color: theme.textSecondary }]}
+        >
           {totalAccuracy >= 80
             ? "Excellent! You're mastering this level."
             : totalAccuracy >= 60
@@ -489,8 +573,13 @@ export default function DualNBackPracta({ context, onComplete, onSkip, onSetting
               : "Keep going! You'll improve with practice."}
         </ThemedText>
 
-        <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.lg }]}>
-          <Pressable onPress={handleComplete} style={[styles.button, { backgroundColor: theme.primary }]}>
+        <View
+          style={[styles.footer, { paddingBottom: insets.bottom + Spacing.lg }]}
+        >
+          <Pressable
+            onPress={handleComplete}
+            style={[styles.button, { backgroundColor: theme.primary }]}
+          >
             <ThemedText style={styles.buttonText}>Complete</ThemedText>
           </Pressable>
 
@@ -505,7 +594,9 @@ export default function DualNBackPracta({ context, onComplete, onSkip, onSetting
   };
 
   return (
-    <ThemedView style={[styles.container, { paddingTop: headerHeight + Spacing.lg }]}>
+    <ThemedView
+      style={[styles.container, { paddingTop: headerHeight + Spacing.lg }]}
+    >
       {phase === "intro" && renderIntro()}
       {phase === "playing" && renderPlaying()}
       {phase === "results" && renderResults()}
@@ -525,7 +616,7 @@ function GridCell({ isActive, theme }: GridCellProps) {
     if (isActive) {
       scale.value = withSequence(
         withSpring(1.05, { damping: 10 }),
-        withSpring(1, { damping: 15 })
+        withSpring(1, { damping: 15 }),
       );
     }
   }, [isActive, scale]);
