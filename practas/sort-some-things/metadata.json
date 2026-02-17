@@ -1,6 +1,6 @@
 {
   "name": "Sort Some Things",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "description": "A gentle exercise to surface priorities and choose one place to begin",
   "author": "Practa Developer",
   "requiresAI": false,
@@ -33,6 +33,7 @@
   ],
   "requiredPermissions": [],
   "assets": {
-    "splash": "splash.mp4"
+    "splash": "splash.mp4",
+    "icon": "icon.png"
   }
 }
