@@ -13,17 +13,6 @@ import Animated, {
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
-const LETTER_AUDIO: Record<string, any> = {
-  C: require("./assets/letter-c.mp3"),
-  H: require("./assets/letter-h.mp3"),
-  K: require("./assets/letter-k.mp3"),
-  L: require("./assets/letter-l.mp3"),
-  Q: require("./assets/letter-q.mp3"),
-  R: require("./assets/letter-r.mp3"),
-  S: require("./assets/letter-s.mp3"),
-  T: require("./assets/letter-t.mp3"),
-};
-
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useTheme } from "@/hooks/useTheme";
@@ -68,7 +57,11 @@ export default function DualNBackPracta({
   const insets = useSafeAreaInsets();
   const { setConfig } = usePractaChrome();
   const headerHeight = useHeaderHeight();
-  const letterPlayer = useAudioPlayer(LETTER_AUDIO.C);
+  const LETTER_ASSET_KEYS: Record<string, string> = {
+    C: "letterC", H: "letterH", K: "letterK", L: "letterL",
+    Q: "letterQ", R: "letterR", S: "letterS", T: "letterT",
+  };
+  const letterPlayer = useAudioPlayer(context.assets?.letterC);
 
   const [phase, setPhase] = useState<Phase>("intro");
   const [nLevel, setNLevel] = useState(2);
@@ -280,8 +273,10 @@ export default function DualNBackPracta({
     setActiveLetter(trial.letter);
     triggerHaptic("light");
 
-    if (LETTER_AUDIO[trial.letter]) {
-      letterPlayer.replace(LETTER_AUDIO[trial.letter]);
+    const assetKey = LETTER_ASSET_KEYS[trial.letter];
+    const audioSource = assetKey ? context.assets?.[assetKey] : null;
+    if (audioSource) {
+      letterPlayer.replace(audioSource);
       letterPlayer.seekTo(0);
       letterPlayer.play();
     }
