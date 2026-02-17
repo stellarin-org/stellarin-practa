@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-17T07:21:30.127Z",
+  "registryVersion": "2026-02-17T07:30:11.604Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -178,6 +178,42 @@
       "requiresAI": false,
       "estimatedDuration": 120,
       "assets": {}
+    },
+    {
+      "slug": "letter-to-me",
+      "version": "1.0.5",
+      "buildId": "b8472849-9c04-4b10-a5e7-6c1bcc55b57a",
+      "name": "Letter to Me",
+      "description": "Write heartfelt letters to your future self, delivered when the time is right",
+      "author": "Woodenfox",
+      "category": "wellness",
+      "practaType": "wellness",
+      "type": "community",
+      "requiresAI": false,
+      "estimatedDuration": 120,
+      "assets": {
+        "icon": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon.webp",
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/splash.webp",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon120.webp",
+        "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon80.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon40.webp"
+      },
+      "configSchema": {
+        "fields": {
+          "aiEnabled": {
+            "type": "boolean",
+            "label": "AI Enhanced",
+            "default": false,
+            "description": "Enable AI-powered reflections"
+          }
+        }
+      },
+      "dependencies": [
+        "@expo/vector-icons",
+        "expo-haptics",
+        "react-native-reanimated",
+        "react-native-safe-area-context"
+      ]
     },
     {
       "slug": "major-system-trainer",
@@ -437,10 +473,10 @@
       "estimatedDuration": 180,
       "assets": {
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/sort-some-things/016e7159-34ec-4e62-89c0-21cc2c66a5a9/icon.webp",
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/sort-some-things/016e7159-34ec-4e62-89c0-21cc2c66a5a9/splash.mp4",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/sort-some-things/016e7159-34ec-4e62-89c0-21cc2c66a5a9/icon120.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/sort-some-things/016e7159-34ec-4e62-89c0-21cc2c66a5a9/icon40.webp",
         "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/sort-some-things/016e7159-34ec-4e62-89c0-21cc2c66a5a9/icon80.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/sort-some-things/016e7159-34ec-4e62-89c0-21cc2c66a5a9/icon40.webp"
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/sort-some-things/016e7159-34ec-4e62-89c0-21cc2c66a5a9/splash.mp4",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/sort-some-things/016e7159-34ec-4e62-89c0-21cc2c66a5a9/icon120.webp"
       },
       "configSchema": {
         "fields": {

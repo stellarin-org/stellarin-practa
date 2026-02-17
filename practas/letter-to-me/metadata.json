@@ -1,0 +1,37 @@
+{
+  "name": "Letter to Me",
+  "version": "1.0.5",
+  "description": "Write heartfelt letters to your future self, delivered when the time is right",
+  "author": "Woodenfox",
+  "estimatedDuration": 120,
+  "requiresAI": false,
+  "configSchema": {
+    "fields": {
+      "aiEnabled": {
+        "type": "boolean",
+        "label": "AI Enhanced",
+        "description": "Enable AI-powered reflections",
+        "default": false
+      }
+    }
+  },
+  "dependencies": [
+    "@expo/vector-icons",
+    "expo-haptics",
+    "react-native-reanimated",
+    "react-native-safe-area-context"
+  ],
+  "id": "letter-to-me",
+  "type": "widget",
+  "category": "wellness",
+  "tags": [
+    "reflection",
+    "mindfulness",
+    "journaling"
+  ],
+  "requiredPermissions": [],
+  "assets": {
+    "icon": "icon.png",
+    "splash": "splash.png"
+  }
+}
