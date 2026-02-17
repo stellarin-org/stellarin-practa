@@ -49,7 +49,6 @@ interface GameStats {
 export default function DualNBackPracta({
   context,
   onComplete,
-  onSkip,
   onSettings,
   showSettings,
 }: PractaProps) {
@@ -397,15 +396,6 @@ export default function DualNBackPracta({
           <ThemedText style={styles.buttonText}>Start Training</ThemedText>
         </Pressable>
 
-        {onSkip ? (
-          <Pressable onPress={onSkip} style={styles.skipButton}>
-            <ThemedText
-              style={[styles.skipText, { color: theme.textSecondary }]}
-            >
-              Skip
-            </ThemedText>
-          </Pressable>
-        ) : null}
       </View>
     </View>
   );

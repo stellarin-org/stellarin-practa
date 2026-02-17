@@ -36,4 +36,4 @@ Created by Your Name
 
 ## Version
 
-2.0.2
+2.0.4

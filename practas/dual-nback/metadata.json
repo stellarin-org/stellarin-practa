@@ -1,6 +1,6 @@
 {
   "name": "Dual N-Back",
-  "version": "2.0.2",
+  "version": "2.0.4",
   "description": "Train your working memory by tracking position and audio simultaneously with the Dual N-Back exercise",
   "author": "Your Name",
   "estimatedDuration": 30,
