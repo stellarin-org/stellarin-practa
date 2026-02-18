@@ -1,6 +1,6 @@
 {
   "name": "Grounding Thumbs",
-  "version": "2.5.7",
+  "version": "2.6.0",
   "description": "A relaxation exercise using multitouch. Place both thumbs on the circles, hold and squeeze, then slowly release to let tension melt away.",
   "author": "Mike Messenger",
   "estimatedDuration": 20,
@@ -17,7 +17,6 @@
   },
   "dependencies": [
     "@expo/vector-icons",
-    "expo-blur",
     "expo-haptics",
     "expo-linear-gradient",
     "react-native-gesture-handler",
@@ -34,8 +33,5 @@
     "multitouch"
   ],
   "requiredPermissions": [],
-  "assets": {
-    "content": "content.json",
-    "splash": "splash.png"
-  }
+  "assets": {}
 }

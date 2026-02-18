@@ -26,7 +26,6 @@ import Animated, {
 } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
-import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -615,17 +614,17 @@ export default function SqueezeRelease({ context, onComplete, showSettings, onSe
       case "place":
         return "This exercise will ground you";
       case "hold":
-        return "Keep holding, feel the tension build";
+        return "Keep holding, feel a little tension build";
       case "squeeze":
         return "Building tension in your thumbs";
       case "squeeze_harder":
         return "Holding the phone firmly in your hands";
       case "release":
-        return "Let the tension melt away slowly";
+        return "Let a little tension melt away slowly";
       case "deep_release":
         return "Sink deeper into relaxation";
       case "complete":
-        return "You released the tension. Feel the calm.";
+        return "You released a little tension. Feel the calm.";
     }
   };
 
@@ -653,27 +652,21 @@ export default function SqueezeRelease({ context, onComplete, showSettings, onSe
         {/* Settings button - positioned absolutely */}
         {showSettings && onSettings ? (
           <View style={[styles.closeButtonRow, { top: insets.top + 10 }]}>
-            <View style={styles.glassIconButton}>
-              <Pressable onPress={onSettings} style={styles.closeButton}>
-                <Feather name="settings" size={24} color="rgba(255,255,255,0.9)" />
-              </Pressable>
-            </View>
+            <Pressable onPress={onSettings} style={styles.closeButton}>
+              <Feather name="settings" size={24} color="rgba(255,255,255,0.8)" />
+            </Pressable>
           </View>
         ) : null}
         
         {/* Top section - Title text centered in available space above circles */}
         <View style={[styles.topSection, { height: OTTOMAN_TOP, paddingTop: insets.top }]}>
-          <View style={styles.glassCard}>
-            <BlurView intensity={30} tint="light" style={styles.glassCardBlur}>
-              <View style={styles.glassCardInner}>
-                <Animated.View style={[styles.decorativeLine, decorativeLineStyle]} />
-                <Animated.Text style={[styles.title, textColorStyle]}>{getPhaseText()}</Animated.Text>
-                <Animated.Text style={[styles.subtitle, subtitleColorStyle]}>
-                  {getSubtext()}
-                </Animated.Text>
-                <Animated.View style={[styles.decorativeLine, decorativeLineStyle]} />
-              </View>
-            </BlurView>
+          <View style={styles.headerContent}>
+            <Animated.View style={[styles.decorativeLine, decorativeLineStyle]} />
+            <Animated.Text style={[styles.title, textColorStyle]}>{getPhaseText()}</Animated.Text>
+            <Animated.Text style={[styles.subtitle, subtitleColorStyle]}>
+              {getSubtext()}
+            </Animated.Text>
+            <Animated.View style={[styles.decorativeLine, decorativeLineStyle]} />
           </View>
         </View>
 
@@ -700,7 +693,7 @@ export default function SqueezeRelease({ context, onComplete, showSettings, onSe
                     </Animated.View>
                   </GestureDetector>
                 </View>
-                <ThemedText style={[styles.circleLabel, { color: "rgba(255,255,255,0.85)" }]}>
+                <ThemedText style={[styles.circleLabel, { color: "rgba(255,255,255,0.7)" }]}>
                   Left thumb
                 </ThemedText>
               </View>
@@ -724,7 +717,7 @@ export default function SqueezeRelease({ context, onComplete, showSettings, onSe
                     </Animated.View>
                   </GestureDetector>
                 </View>
-                <ThemedText style={[styles.circleLabel, { color: "rgba(255,255,255,0.85)" }]}>
+                <ThemedText style={[styles.circleLabel, { color: "rgba(255,255,255,0.7)" }]}>
                   Right thumb
                 </ThemedText>
               </View>
@@ -735,33 +728,30 @@ export default function SqueezeRelease({ context, onComplete, showSettings, onSe
         {/* Bottom section - Footer */}
         <View style={styles.bottomSection}>
           {phase === "complete" ? (
-            <Pressable onPress={handleComplete} style={styles.glassButton}>
-              <BlurView intensity={25} tint="light" style={styles.glassButtonBlur}>
-                <ThemedText style={styles.buttonText}>Complete</ThemedText>
-              </BlurView>
+            <Pressable
+              onPress={handleComplete}
+              style={[styles.button, { backgroundColor: theme.primary }]}
+            >
+              <ThemedText style={styles.buttonText}>Complete</ThemedText>
             </Pressable>
           ) : (
             <>
               {phase === "place" && showSettings && onSettings ? (
                 <Pressable onPress={onSettings} style={styles.hintPressable}>
-                  <View style={styles.glassHintPill}>
-                    <ThemedText style={[styles.progressHint, { color: "rgba(255,255,255,0.9)" }]}>
-                      Skip
-                    </ThemedText>
-                  </View>
+                  <ThemedText style={[styles.progressHint, { color: "rgba(255,255,255,0.7)" }]}>
+                    Skip
+                  </ThemedText>
                 </Pressable>
               ) : (
-                <View style={styles.glassHintPill}>
-                  <ThemedText style={[styles.progressHint, { color: "rgba(255,255,255,0.9)" }]}>
-                    {phase === "place" 
-                      ? " "
-                      : phase === "release" || phase === "deep_release"
-                        ? "Release your thumbs slowly when ready" 
-                        : phase === "squeeze_harder"
-                          ? "Maximum tension - hold it!"
-                          : "Keep both thumbs pressed"}
-                  </ThemedText>
-                </View>
+                <ThemedText style={[styles.progressHint, { color: "rgba(255,255,255,0.7)" }]}>
+                  {phase === "place" 
+                    ? " "
+                    : phase === "release" || phase === "deep_release"
+                      ? "Release your thumbs slowly when ready" 
+                      : phase === "squeeze_harder"
+                        ? "Maximum tension - hold it!"
+                        : "Keep both thumbs pressed"}
+                </ThemedText>
               )}
             </>
           )}
@@ -821,6 +811,7 @@ const styles = StyleSheet.create({
   },
   headerContent: {
     alignItems: "center",
+    paddingHorizontal: Spacing.xl,
   },
   decorativeLine: {
     width: 40,
@@ -864,9 +855,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   orangeCircle: {
-    backgroundColor: "rgba(251, 147, 56, 0.35)",
-    borderWidth: 1.5,
-    borderColor: "rgba(255, 255, 255, 0.4)",
+    backgroundColor: "#fb9338",
   },
   circleGlow: {
     position: "absolute",
@@ -889,8 +878,8 @@ const styles = StyleSheet.create({
     width: BASE_CIRCLE_SIZE,
     height: BASE_CIRCLE_SIZE,
     borderRadius: BASE_CIRCLE_SIZE / 2,
-    borderWidth: 1.5,
-    borderColor: "rgba(255, 255, 255, 0.3)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.5)",
     zIndex: -1,
   },
   circleLabel: {
@@ -899,6 +888,11 @@ const styles = StyleSheet.create({
   },
   thumbIcon: {
     opacity: 0.8,
+  },
+  button: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
   },
   buttonText: {
     color: "white",
@@ -912,50 +906,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
     marginTop: Spacing.md,
-  },
-  glassCard: {
-    borderRadius: BorderRadius.lg,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.3)",
-    marginHorizontal: Spacing["2xl"],
-  },
-  glassCardBlur: {
-    overflow: "hidden",
-    borderRadius: BorderRadius.lg,
-  },
-  glassCardInner: {
-    alignItems: "center",
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.lg,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-  },
-  glassButton: {
-    borderRadius: BorderRadius.md,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.35)",
-  },
-  glassButtonBlur: {
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing["3xl"],
-    alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.15)",
-  },
-  glassHintPill: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    borderRadius: BorderRadius.full,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.15)",
-    alignSelf: "center",
-  },
-  glassIconButton: {
-    backgroundColor: "rgba(255, 255, 255, 0.15)",
-    borderRadius: BorderRadius.full,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.25)",
-    overflow: "hidden",
   },
 });

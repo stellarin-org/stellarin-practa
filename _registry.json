@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-17T16:40:28.933Z",
+  "registryVersion": "2026-02-18T16:39:41.227Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -174,7 +174,7 @@
     },
     {
       "slug": "grounding-thumbs",
-      "version": "2.5.7",
+      "version": "2.6.0",
       "buildId": "ae435e2f-0360-4b16-b7ee-f61f30a45dce",
       "name": "Grounding Thumbs",
       "description": "A relaxation exercise using multitouch. Place both thumbs on the circles, hold and squeeze, then slowly release to let tension melt away.",
@@ -184,10 +184,7 @@
       "type": "core",
       "requiresAI": false,
       "estimatedDuration": 20,
-      "assets": {
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/splash.webp",
-        "content": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/content.json"
-      },
+      "assets": {},
       "configSchema": {
         "fields": {
           "aiEnabled": {
@@ -200,7 +197,6 @@
       },
       "dependencies": [
         "@expo/vector-icons",
-        "expo-blur",
         "expo-haptics",
         "expo-linear-gradient",
         "react-native-gesture-handler",
@@ -507,15 +503,15 @@
       "requiresAI": false,
       "estimatedDuration": 180,
       "assets": {
-        "hints": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/hints.json",
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_icon.webp",
-        "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.webp",
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/splash.mp4",
-        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json",
-        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon120.webp",
+        "hints": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/hints.json",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon40.webp",
         "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon80.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon40.webp"
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/splash.mp4",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon120.webp",
+        "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.webp",
+        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json",
+        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json"
       },
       "configSchema": {
         "fields": {
