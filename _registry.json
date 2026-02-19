@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-18T16:39:41.227Z",
+  "registryVersion": "2026-02-19T03:38:13.994Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -174,7 +174,7 @@
     },
     {
       "slug": "grounding-thumbs",
-      "version": "2.6.0",
+      "version": "2.6.1",
       "buildId": "ae435e2f-0360-4b16-b7ee-f61f30a45dce",
       "name": "Grounding Thumbs",
       "description": "A relaxation exercise using multitouch. Place both thumbs on the circles, hold and squeeze, then slowly release to let tension melt away.",
@@ -187,11 +187,116 @@
       "assets": {},
       "configSchema": {
         "fields": {
+          "title": {
+            "type": "string",
+            "label": "Exercise Title",
+            "default": "Grounding Thumbs",
+            "description": "Custom title shown during the exercise",
+            "placeholder": "e.g., My Calm Moment"
+          },
           "aiEnabled": {
             "type": "boolean",
             "label": "AI Features",
             "default": true,
             "description": "Enable AI-powered enhancements"
+          },
+          "holdTitle": {
+            "type": "string",
+            "label": "Hold Phase - Title",
+            "default": "Hold..."
+          },
+          "intensity": {
+            "type": "select",
+            "label": "Intensity",
+            "default": "moderate",
+            "options": [
+              {
+                "label": "Gentle",
+                "value": "gentle"
+              },
+              {
+                "label": "Moderate",
+                "value": "moderate"
+              },
+              {
+                "label": "Deep",
+                "value": "deep"
+              }
+            ],
+            "description": "How intense the squeeze-release cycle feels"
+          },
+          "placeTitle": {
+            "type": "string",
+            "label": "Place Phase - Title",
+            "default": "Place both thumbs on the circles",
+            "description": "Main instruction when placing thumbs"
+          },
+          "holdSubtext": {
+            "type": "string",
+            "label": "Hold Phase - Subtitle",
+            "default": "Keep holding, feel a little tension build"
+          },
+          "placeSubtext": {
+            "type": "string",
+            "label": "Place Phase - Subtitle",
+            "default": "This exercise will ground you",
+            "description": "Supporting message when placing thumbs"
+          },
+          "releaseTitle": {
+            "type": "string",
+            "label": "Release Phase - Title",
+            "default": "Slowly Release"
+          },
+          "squeezeTitle": {
+            "type": "string",
+            "label": "Squeeze Phase - Title",
+            "default": "Squeeze a little..."
+          },
+          "completeTitle": {
+            "type": "string",
+            "label": "Complete Phase - Title",
+            "default": "Well Done"
+          },
+          "hapticFeedback": {
+            "type": "boolean",
+            "label": "Haptic Feedback",
+            "default": true,
+            "description": "Enable vibration during the exercise"
+          },
+          "releaseSubtext": {
+            "type": "string",
+            "label": "Release Phase - Subtitle",
+            "default": "Let a little tension melt away slowly"
+          },
+          "squeezeSubtext": {
+            "type": "string",
+            "label": "Squeeze Phase - Subtitle",
+            "default": "Building tension in your thumbs"
+          },
+          "completeSubtext": {
+            "type": "string",
+            "label": "Complete Phase - Subtitle",
+            "default": "You released a little tension. Feel the calm."
+          },
+          "deepReleaseTitle": {
+            "type": "string",
+            "label": "Deep Release Phase - Title",
+            "default": "Let go, briefly closing your eyes"
+          },
+          "deepReleaseSubtext": {
+            "type": "string",
+            "label": "Deep Release Phase - Subtitle",
+            "default": "Sink deeper into relaxation"
+          },
+          "squeezeHarderTitle": {
+            "type": "string",
+            "label": "Squeeze Harder Phase - Title",
+            "default": "Just a little tighter"
+          },
+          "squeezeHarderSubtext": {
+            "type": "string",
+            "label": "Squeeze Harder Phase - Subtitle",
+            "default": "Holding the phone firmly in your hands"
           }
         }
       },

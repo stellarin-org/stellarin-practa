@@ -590,41 +590,43 @@ export default function SqueezeRelease({ context, onComplete, showSettings, onSe
     startAttentionAnimation();
   }, [contentOpacity, startAttentionAnimation]);
 
+  const cfg = context.config ?? {};
+
   const getPhaseText = () => {
     switch (phase) {
       case "place":
-        return "Place both thumbs on the circles";
+        return cfg.placeTitle ?? "Place both thumbs on the circles";
       case "hold":
-        return "Hold...";
+        return cfg.holdTitle ?? "Hold...";
       case "squeeze":
-        return "Squeeze a little...";
+        return cfg.squeezeTitle ?? "Squeeze a little...";
       case "squeeze_harder":
-        return "Just a little tighter";
+        return cfg.squeezeHarderTitle ?? "Just a little tighter";
       case "release":
-        return "Slowly Release";
+        return cfg.releaseTitle ?? "Slowly Release";
       case "deep_release":
-        return "Let go, briefly closing your eyes";
+        return cfg.deepReleaseTitle ?? "Let go, briefly closing your eyes";
       case "complete":
-        return "Well Done";
+        return cfg.completeTitle ?? "Well Done";
     }
   };
 
   const getSubtext = () => {
     switch (phase) {
       case "place":
-        return "This exercise will ground you";
+        return cfg.placeSubtext ?? "This exercise will ground you";
       case "hold":
-        return "Keep holding, feel a little tension build";
+        return cfg.holdSubtext ?? "Keep holding, feel a little tension build";
       case "squeeze":
-        return "Building tension in your thumbs";
+        return cfg.squeezeSubtext ?? "Building tension in your thumbs";
       case "squeeze_harder":
-        return "Holding the phone firmly in your hands";
+        return cfg.squeezeHarderSubtext ?? "Holding the phone firmly in your hands";
       case "release":
-        return "Let a little tension melt away slowly";
+        return cfg.releaseSubtext ?? "Let a little tension melt away slowly";
       case "deep_release":
-        return "Sink deeper into relaxation";
+        return cfg.deepReleaseSubtext ?? "Sink deeper into relaxation";
       case "complete":
-        return "You released a little tension. Feel the calm.";
+        return cfg.completeSubtext ?? "You released a little tension. Feel the calm.";
     }
   };
 

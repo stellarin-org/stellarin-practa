@@ -1,12 +1,132 @@
 {
   "name": "Grounding Thumbs",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "description": "A relaxation exercise using multitouch. Place both thumbs on the circles, hold and squeeze, then slowly release to let tension melt away.",
   "author": "Mike Messenger",
   "estimatedDuration": 20,
   "requiresAI": false,
   "configSchema": {
     "fields": {
+      "title": {
+        "type": "string",
+        "label": "Exercise Title",
+        "description": "Custom title shown during the exercise",
+        "default": "Grounding Thumbs",
+        "maxLength": 40,
+        "placeholder": "e.g., My Calm Moment"
+      },
+      "hapticFeedback": {
+        "type": "boolean",
+        "label": "Haptic Feedback",
+        "description": "Enable vibration during the exercise",
+        "default": true
+      },
+      "intensity": {
+        "type": "select",
+        "label": "Intensity",
+        "description": "How intense the squeeze-release cycle feels",
+        "default": "moderate",
+        "options": [
+          {
+            "value": "gentle",
+            "label": "Gentle"
+          },
+          {
+            "value": "moderate",
+            "label": "Moderate"
+          },
+          {
+            "value": "deep",
+            "label": "Deep"
+          }
+        ]
+      },
+      "placeTitle": {
+        "type": "string",
+        "label": "Place Phase - Title",
+        "description": "Main instruction when placing thumbs",
+        "default": "Place both thumbs on the circles",
+        "maxLength": 60
+      },
+      "placeSubtext": {
+        "type": "string",
+        "label": "Place Phase - Subtitle",
+        "description": "Supporting message when placing thumbs",
+        "default": "This exercise will ground you",
+        "maxLength": 80
+      },
+      "holdTitle": {
+        "type": "string",
+        "label": "Hold Phase - Title",
+        "default": "Hold...",
+        "maxLength": 60
+      },
+      "holdSubtext": {
+        "type": "string",
+        "label": "Hold Phase - Subtitle",
+        "default": "Keep holding, feel a little tension build",
+        "maxLength": 80
+      },
+      "squeezeTitle": {
+        "type": "string",
+        "label": "Squeeze Phase - Title",
+        "default": "Squeeze a little...",
+        "maxLength": 60
+      },
+      "squeezeSubtext": {
+        "type": "string",
+        "label": "Squeeze Phase - Subtitle",
+        "default": "Building tension in your thumbs",
+        "maxLength": 80
+      },
+      "squeezeHarderTitle": {
+        "type": "string",
+        "label": "Squeeze Harder Phase - Title",
+        "default": "Just a little tighter",
+        "maxLength": 60
+      },
+      "squeezeHarderSubtext": {
+        "type": "string",
+        "label": "Squeeze Harder Phase - Subtitle",
+        "default": "Holding the phone firmly in your hands",
+        "maxLength": 80
+      },
+      "releaseTitle": {
+        "type": "string",
+        "label": "Release Phase - Title",
+        "default": "Slowly Release",
+        "maxLength": 60
+      },
+      "releaseSubtext": {
+        "type": "string",
+        "label": "Release Phase - Subtitle",
+        "default": "Let a little tension melt away slowly",
+        "maxLength": 80
+      },
+      "deepReleaseTitle": {
+        "type": "string",
+        "label": "Deep Release Phase - Title",
+        "default": "Let go, briefly closing your eyes",
+        "maxLength": 60
+      },
+      "deepReleaseSubtext": {
+        "type": "string",
+        "label": "Deep Release Phase - Subtitle",
+        "default": "Sink deeper into relaxation",
+        "maxLength": 80
+      },
+      "completeTitle": {
+        "type": "string",
+        "label": "Complete Phase - Title",
+        "default": "Well Done",
+        "maxLength": 60
+      },
+      "completeSubtext": {
+        "type": "string",
+        "label": "Complete Phase - Subtitle",
+        "default": "You released a little tension. Feel the calm.",
+        "maxLength": 80
+      },
       "aiEnabled": {
         "type": "boolean",
         "label": "AI Features",
