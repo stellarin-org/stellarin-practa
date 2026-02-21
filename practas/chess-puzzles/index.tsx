@@ -18,6 +18,7 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useTheme } from "@/hooks/useTheme";
+import { GlassCard } from "@/components/GlassCard";
 import { usePractaChrome } from "@/context/PractaChromeContext";
 import { useHeaderHeight } from "@/components/PractaChromeHeader";
 import { Spacing, BorderRadius } from "@/constants/theme";
@@ -80,7 +81,7 @@ interface SettingsModalProps {
 }
 
 function SettingsModal({ visible, onClose, selectedDifficulty, onSelectDifficulty, puzzleMode, onTogglePuzzleMode }: SettingsModalProps) {
-  const { theme } = useTheme();
+  const { theme, isDark, toggleTheme } = useTheme();
   const insets = useSafeAreaInsets();
 
   const handleSelect = (difficulty: Difficulty) => {
@@ -99,22 +100,45 @@ function SettingsModal({ visible, onClose, selectedDifficulty, onSelectDifficult
         style={[settingsStyles.overlay, { backgroundColor: "rgba(0,0,0,0.5)" }]}
         onPress={onClose}
       >
-        <Pressable 
-          style={[
-            settingsStyles.container, 
-            { 
-              backgroundColor: theme.backgroundDefault,
-              paddingBottom: insets.bottom + Spacing.lg,
-            }
-          ]}
+        <Pressable
           onPress={(e) => e.stopPropagation()}
+          style={{ maxHeight: "80%" }}
         >
+          <GlassCard
+            style={{
+              borderTopLeftRadius: BorderRadius.xl,
+              borderTopRightRadius: BorderRadius.xl,
+              borderBottomLeftRadius: 0,
+              borderBottomRightRadius: 0,
+              paddingBottom: insets.bottom + Spacing.lg,
+            }}
+            noPadding
+          >
           <View style={settingsStyles.header}>
             <ThemedText style={[settingsStyles.title, { color: theme.text }]}>
               Game Settings
             </ThemedText>
             <Pressable onPress={onClose} style={settingsStyles.closeButton}>
               <Feather name="x" size={24} color={theme.textSecondary} />
+            </Pressable>
+          </View>
+
+          <View style={settingsStyles.modeSection}>
+            <ThemedText style={[settingsStyles.sectionLabel, { color: theme.textSecondary }]}>
+              Appearance
+            </ThemedText>
+            <Pressable
+              onPress={toggleTheme}
+              style={[
+                settingsStyles.modeOption,
+                { borderColor: theme.border, flexDirection: "row", flex: 0, paddingHorizontal: Spacing.lg },
+              ]}
+            >
+              <Feather name={isDark ? "moon" : "sun"} size={18} color={theme.primary} />
+              <ThemedText style={[settingsStyles.modeOptionText, { color: theme.text }]}>
+                {isDark ? "Dark Mode" : "Light Mode"}
+              </ThemedText>
+              <Feather name="refresh-cw" size={14} color={theme.textSecondary} style={{ marginLeft: "auto" }} />
             </Pressable>
           </View>
 
@@ -168,7 +192,7 @@ function SettingsModal({ visible, onClose, selectedDifficulty, onSelectDifficult
                   style={[
                     settingsStyles.item,
                     { 
-                      backgroundColor: isSelected ? theme.backgroundSecondary : "transparent",
+                      backgroundColor: isSelected ? theme.accentSoft : "transparent",
                       borderColor: isSelected ? diff.color : theme.border,
                     },
                   ]}
@@ -196,6 +220,7 @@ function SettingsModal({ visible, onClose, selectedDifficulty, onSelectDifficult
               );
             })}
           </ScrollView>
+          </GlassCard>
         </Pressable>
       </Pressable>
     </Modal>
@@ -1306,20 +1331,22 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
   return (
     <ThemedView style={[styles.container, { paddingTop: headerHeight }]}>
       <View style={styles.modeDisplayWidget}>
-        <View style={[styles.modeDisplayContainer, { backgroundColor: theme.backgroundSecondary }]}>
-          <ThemedText style={[styles.modeDisplayText, { color: theme.textSecondary }]}>
-            Playing {boardSizeLabel} {currentDifficultyInfo.label}
-          </ThemedText>
-          <Pressable
-            onPress={() => setShowSettingsModal(true)}
-            style={[styles.changeButton, { backgroundColor: theme.primary + "15" }]}
-          >
-            <ThemedText style={[styles.changeButtonText, { color: theme.primary }]}>
-              Change
+        <GlassCard style={styles.modeDisplayContainer} noPadding>
+          <View style={styles.modeDisplayInner}>
+            <ThemedText style={[styles.modeDisplayText, { color: theme.textSecondary }]}>
+              Playing {boardSizeLabel} {currentDifficultyInfo.label}
             </ThemedText>
-            <Feather name="chevron-right" size={16} color={theme.primary} />
-          </Pressable>
-        </View>
+            <Pressable
+              onPress={() => setShowSettingsModal(true)}
+              style={[styles.changeButton, { backgroundColor: theme.primary + "15" }]}
+            >
+              <ThemedText style={[styles.changeButtonText, { color: theme.primary }]}>
+                Change
+              </ThemedText>
+              <Feather name="chevron-right" size={16} color={theme.primary} />
+            </Pressable>
+          </View>
+        </GlassCard>
       </View>
 
       <Animated.View style={[styles.boardWrapper, boardAnimatedStyle]}>
@@ -1340,11 +1367,15 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
 
       <View style={styles.statusContainer}>
         {puzzleSolved ? (
-          <Animated.View style={[styles.successBanner, { backgroundColor: theme.success + "15" }, successAnimatedStyle]}>
-            <Feather name="check-circle" size={20} color={theme.success} />
-            <ThemedText style={[styles.successText, { color: theme.success }]}>
-              Puzzle Solved!
-            </ThemedText>
+          <Animated.View style={successAnimatedStyle}>
+            <GlassCard style={styles.successBanner}>
+              <View style={styles.successContent}>
+                <Feather name="check-circle" size={20} color={theme.success} />
+                <ThemedText style={[styles.successText, { color: theme.success }]}>
+                  Puzzle Solved!
+                </ThemedText>
+              </View>
+            </GlassCard>
           </Animated.View>
         ) : wrongMove ? (
           <View style={styles.statusMessage}>
@@ -1498,6 +1529,12 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.full,
     gap: Spacing.sm,
   },
+  successContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: Spacing.sm,
+  },
   successText: {
     fontSize: 16,
     fontWeight: "600",
@@ -1547,13 +1584,15 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   modeDisplayContainer: {
+    borderRadius: BorderRadius.md,
+  },
+  modeDisplayInner: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: Spacing.md,
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.lg,
-    borderRadius: BorderRadius.md,
   },
   modeDisplayText: {
     fontSize: 15,
