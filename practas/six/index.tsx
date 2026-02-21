@@ -501,70 +501,124 @@ interface TutorialOverlayProps {
   onDismiss: () => void;
 }
 
+function TutorialTile({ letter, color, borderColor }: { letter: string; color?: string; borderColor?: string }) {
+  return (
+    <View style={[
+      styles.tutTile,
+      color ? { backgroundColor: color } : undefined,
+      borderColor ? { borderColor, borderWidth: 2 } : undefined,
+    ]}>
+      <ThemedText style={[styles.tutTileLetter, color ? { color: "#FFFFFF" } : undefined]}>{letter}</ThemedText>
+    </View>
+  );
+}
+
 function TutorialOverlay({ visible, onDismiss }: TutorialOverlayProps) {
   const { theme, isDark } = useTheme();
   const insets = useSafeAreaInsets();
-  
+
   if (!visible) return null;
-  
-  const tips = [
-    { icon: "edit-3" as const, title: "Start smart", text: "Begin with words that have common vowels like A, E, O and popular consonants like R, S, T." },
-    { icon: "eye" as const, title: "Read the colors", text: "Green means correct spot. Yellow means right letter, wrong spot. Gray means the letter isn't in the word." },
-    { icon: "zap" as const, title: "Use what you learn", text: "Each guess gives you clues. Use confirmed letters in your next guess to narrow down faster." },
-  ];
-  
+
+  const absentColor = isDark ? COLORS.absent.dark : COLORS.absent.light;
+  const emptyBorder = isDark ? COLORS.tileBorder.dark : COLORS.tileBorder.light;
+
   return (
-    <Animated.View 
-      entering={FadeIn.duration(200)}
-      exiting={FadeOut.duration(150)}
-      style={[styles.tutorialFullScreen, { backgroundColor: isDark ? '#121213' : '#FFFFFF' }]}
+    <Animated.View
+      entering={FadeIn.duration(300)}
+      exiting={FadeOut.duration(200)}
+      style={[styles.tutorialFullScreen, { backgroundColor: isDark ? "#121213" : "#FFFFFF" }]}
     >
-      <View style={[styles.tutorialContainer, { paddingTop: insets.top + Spacing.lg, paddingBottom: insets.bottom + Spacing.lg }]}>
-        <View style={styles.tutorialHeader}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={[
+          styles.tutorialScroll,
+          { paddingTop: insets.top + Spacing.xl, paddingBottom: insets.bottom + Spacing.xl },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.tutorialHero}>
           <ThemedText style={styles.tutorialTitle}>How to Play</ThemedText>
+          <ThemedText style={[styles.tutorialGoal, { color: theme.textSecondary }]}>
+            Guess the six-letter word in 6 tries. Each guess must be a valid word. After each guess, the tiles change color to show how close you are.
+          </ThemedText>
         </View>
-        
-        <ScrollView style={styles.tutorialContent} showsVerticalScrollIndicator={false} contentContainerStyle={styles.tutorialScrollContent}>
-          {tips.map((tip, index) => (
-            <View key={index} style={styles.tutorialTip}>
-              <View style={[styles.tutorialIconContainer, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }]}>
-                <Feather name={tip.icon} size={20} color={theme.primary} />
-              </View>
-              <View style={styles.tutorialTipText}>
-                <ThemedText style={styles.tutorialTipTitle}>{tip.title}</ThemedText>
-                <ThemedText style={[styles.tutorialTipDescription, { color: theme.textSecondary }]}>
-                  {tip.text}
-                </ThemedText>
-              </View>
+
+        <View style={[styles.tutorialDivider, { backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)" }]} />
+
+        <View style={styles.tutorialSection}>
+          <ThemedText style={styles.tutorialSectionTitle}>Examples</ThemedText>
+
+          <View style={styles.tutorialExample}>
+            <View style={styles.tutTileRow}>
+              <TutorialTile letter="N" color={COLORS.correct} />
+              <TutorialTile letter="O" borderColor={emptyBorder} />
+              <TutorialTile letter="T" borderColor={emptyBorder} />
+              <TutorialTile letter="I" borderColor={emptyBorder} />
+              <TutorialTile letter="C" borderColor={emptyBorder} />
+              <TutorialTile letter="E" borderColor={emptyBorder} />
             </View>
-          ))}
-          
-          <View style={[styles.tutorialColorGuide, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
-            <View style={styles.tutorialColorRow}>
-              <View style={[styles.tutorialColorBox, { backgroundColor: COLORS.correct }]} />
-              <ThemedText style={styles.tutorialColorText}>Correct position</ThemedText>
-            </View>
-            <View style={styles.tutorialColorRow}>
-              <View style={[styles.tutorialColorBox, { backgroundColor: COLORS.present }]} />
-              <ThemedText style={styles.tutorialColorText}>Wrong position</ThemedText>
-            </View>
-            <View style={styles.tutorialColorRow}>
-              <View style={[styles.tutorialColorBox, { backgroundColor: isDark ? COLORS.absent.dark : COLORS.absent.light }]} />
-              <ThemedText style={styles.tutorialColorText}>Not in word</ThemedText>
-            </View>
+            <ThemedText style={[styles.tutorialExampleText, { color: theme.textSecondary }]}>
+              <ThemedText style={styles.tutorialBold}>N</ThemedText> is in the word and in the correct spot.
+            </ThemedText>
           </View>
-        </ScrollView>
-        
-        <Pressable 
+
+          <View style={styles.tutorialExample}>
+            <View style={styles.tutTileRow}>
+              <TutorialTile letter="B" borderColor={emptyBorder} />
+              <TutorialTile letter="R" borderColor={emptyBorder} />
+              <TutorialTile letter="E" color={COLORS.present} />
+              <TutorialTile letter="A" borderColor={emptyBorder} />
+              <TutorialTile letter="T" borderColor={emptyBorder} />
+              <TutorialTile letter="H" borderColor={emptyBorder} />
+            </View>
+            <ThemedText style={[styles.tutorialExampleText, { color: theme.textSecondary }]}>
+              <ThemedText style={styles.tutorialBold}>E</ThemedText> is in the word but in the wrong spot.
+            </ThemedText>
+          </View>
+
+          <View style={styles.tutorialExample}>
+            <View style={styles.tutTileRow}>
+              <TutorialTile letter="G" borderColor={emptyBorder} />
+              <TutorialTile letter="E" borderColor={emptyBorder} />
+              <TutorialTile letter="N" borderColor={emptyBorder} />
+              <TutorialTile letter="T" borderColor={emptyBorder} />
+              <TutorialTile letter="L" color={absentColor} />
+              <TutorialTile letter="E" borderColor={emptyBorder} />
+            </View>
+            <ThemedText style={[styles.tutorialExampleText, { color: theme.textSecondary }]}>
+              <ThemedText style={styles.tutorialBold}>L</ThemedText> is not in the word at all.
+            </ThemedText>
+          </View>
+        </View>
+
+        <View style={[styles.tutorialDivider, { backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)" }]} />
+
+        <View style={styles.tutorialSection}>
+          <ThemedText style={styles.tutorialSectionTitle}>Tips</ThemedText>
+          <View style={styles.tutorialTipsList}>
+            {[
+              { icon: "target" as const, text: "Start with words rich in vowels and common consonants like R, S, T, N." },
+              { icon: "zap" as const, text: "Use what you learn from each guess to narrow down your next try." },
+              { icon: "clock" as const, text: "A new word is available every day. Take your time!" },
+            ].map((tip, i) => (
+              <View key={i} style={styles.tutorialTipRow}>
+                <Feather name={tip.icon} size={16} color={theme.primary} style={{ marginTop: 2 }} />
+                <ThemedText style={[styles.tutorialTipText, { color: theme.textSecondary }]}>{tip.text}</ThemedText>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <Pressable
           onPress={onDismiss}
           style={({ pressed }) => [
             styles.tutorialButton,
-            { backgroundColor: theme.primary, opacity: pressed ? 0.9 : 1 }
+            { backgroundColor: theme.primary, opacity: pressed ? 0.9 : 1 },
           ]}
         >
-          <ThemedText style={styles.tutorialButtonText}>Got it!</ThemedText>
+          <ThemedText style={styles.tutorialButtonText}>Ok, I got it!</ThemedText>
         </Pressable>
-      </View>
+      </ScrollView>
     </Animated.View>
   );
 }
@@ -698,6 +752,7 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
   const [warningMessage, setWarningMessage] = useState("");
   const [popIndex, setPopIndex] = useState(-1);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [tutorialChecked, setTutorialChecked] = useState(false);
   const [hintWord, setHintWord] = useState<string | null>(null);
   const [showHint, setShowHint] = useState(false);
   const [hintLetterIndex, setHintLetterIndex] = useState(-1);
@@ -904,6 +959,22 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
       resetConfig();
     };
   }, [setConfig, resetConfig, showSettings, onSettings]);
+
+  useEffect(() => {
+    context.storage?.get<boolean>("tutorial_seen")
+      .then((seen) => {
+        if (!seen) {
+          setShowTutorial(true);
+        }
+        setTutorialChecked(true);
+      })
+      .catch(() => setTutorialChecked(true));
+  }, [context.storage]);
+
+  const handleTutorialDismiss = useCallback(() => {
+    setShowTutorial(false);
+    context.storage?.set("tutorial_seen", true).catch(() => {});
+  }, [context.storage]);
   
   const [ghostWords, setGhostWords] = useState<string[]>(() => {
     const shuffled = [...EXAMPLE_WORDS].sort(() => Math.random() - 0.5);
@@ -1276,7 +1347,7 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
             {context.assets?.sixLogo ? (
               <Image
                 source={context.assets.sixLogo as ImageSourcePropType}
-                style={[styles.logo, { height: sizes.logoHeight, width: sizes.logoHeight * 2 }]}
+                style={[styles.logo, { height: sizes.logoHeight, width: sizes.logoHeight * 2, tintColor: isDark ? "#FFFFFF" : undefined }]}
                 resizeMode="contain"
               />
             ) : null}
@@ -1298,7 +1369,7 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
 
           <Toast message={warningMessage} visible={!!warningMessage} />
           
-          <TutorialOverlay visible={showTutorial} onDismiss={() => setShowTutorial(false)} />
+          <TutorialOverlay visible={showTutorial} onDismiss={handleTutorialDismiss} />
 
           <View style={styles.bottomArea}>
             <View 
@@ -1416,78 +1487,88 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     zIndex: 200,
   },
-  tutorialContainer: {
-    flex: 1,
-    paddingHorizontal: Spacing.xl,
+  tutorialScroll: {
+    paddingHorizontal: Spacing.xl + 4,
   },
-  tutorialHeader: {
+  tutorialHero: {
     alignItems: "center",
-    marginBottom: Spacing.md,
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
   },
   tutorialTitle: {
-    fontSize: 20,
+    fontSize: 24,
+    fontWeight: "800",
+    letterSpacing: 0.5,
+  },
+  tutorialGoal: {
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: "center",
+    maxWidth: 320,
+  },
+  tutorialDivider: {
+    height: 1,
+    marginVertical: Spacing.md,
+  },
+  tutorialSection: {
+    marginBottom: Spacing.sm,
+  },
+  tutorialSectionTitle: {
+    fontSize: 13,
     fontWeight: "700",
-  },
-  tutorialContent: {
-    flex: 1,
-  },
-  tutorialScrollContent: {
-    paddingTop: Spacing.md,
-  },
-  tutorialTip: {
-    flexDirection: "row",
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
     marginBottom: Spacing.md,
   },
-  tutorialIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  tutorialExample: {
+    marginBottom: Spacing.lg,
+    gap: Spacing.xs + 2,
+  },
+  tutTileRow: {
+    flexDirection: "row",
+    gap: 5,
+  },
+  tutTile: {
+    width: 38,
+    height: 38,
+    borderRadius: 4,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: Spacing.sm,
+  },
+  tutTileLetter: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  tutorialExampleText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  tutorialBold: {
+    fontWeight: "700",
+  },
+  tutorialTipsList: {
+    gap: Spacing.sm + 2,
+  },
+  tutorialTipRow: {
+    flexDirection: "row",
+    gap: Spacing.sm,
+    alignItems: "flex-start",
   },
   tutorialTipText: {
     flex: 1,
-  },
-  tutorialTipTitle: {
-    fontSize: 15,
-    fontWeight: "600",
-    marginBottom: 2,
-  },
-  tutorialTipDescription: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  tutorialColorGuide: {
-    padding: Spacing.sm,
-    borderRadius: BorderRadius.md,
-    marginTop: Spacing.xs,
-    marginBottom: Spacing.sm,
-  },
-  tutorialColorRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 4,
-  },
-  tutorialColorBox: {
-    width: 24,
-    height: 24,
-    borderRadius: 4,
-    marginRight: Spacing.sm,
-  },
-  tutorialColorText: {
-    fontSize: 13,
+    fontSize: 14,
+    lineHeight: 20,
   },
   tutorialButton: {
     borderRadius: BorderRadius.md,
-    paddingVertical: Spacing.sm + 2,
+    paddingVertical: Spacing.md,
     alignItems: "center",
-    marginTop: Spacing.xs,
+    marginTop: Spacing.lg,
   },
   tutorialButtonText: {
     color: "#FFFFFF",
-    fontSize: 15,
-    fontWeight: "600",
+    fontSize: 16,
+    fontWeight: "700",
   },
   toast: {
     position: "absolute",
