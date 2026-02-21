@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-21T09:02:31.980Z",
+  "registryVersion": "2026-02-21T19:54:22.353Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -116,7 +116,7 @@
     },
     {
       "slug": "dual-nback",
-      "version": "2.0.4",
+      "version": "2.0.6",
       "buildId": "ab49b186-1b8a-41c8-8eb3-6143c4311945",
       "name": "Dual N-Back",
       "description": "Train your working memory by tracking position and audio simultaneously with the Dual N-Back exercise",
@@ -323,9 +323,9 @@
       "estimatedDuration": 120,
       "assets": {
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon.webp",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon120.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon40.webp",
         "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon80.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon40.webp"
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon120.webp"
       },
       "configSchema": {
         "fields": {
