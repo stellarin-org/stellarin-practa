@@ -1,0 +1,42 @@
+{
+  "name": "SnackChat",
+  "version": "1.0.3",
+  "description": "A quick, fun tap-to-respond chat that guides you through bite-sized conversations",
+  "author": "Stellarin",
+  "estimatedDuration": 60,
+  "requiresAI": false,
+  "icon": "message-circle",
+  "dependencies": [
+    "@expo/vector-icons",
+    "expo-haptics",
+    "react-native-reanimated",
+    "react-native-safe-area-context"
+  ],
+  "configSchema": {
+    "fields": {
+      "aiEnabled": {
+        "type": "boolean",
+        "label": "Enable AI Features",
+        "description": "Allow this Practa to use AI-powered enhancements when available",
+        "default": true
+      }
+    },
+    "requiredConfig": false
+  },
+  "id": "snack-chat",
+  "type": "widget",
+  "category": "social-wellness",
+  "tags": [
+    "chat",
+    "social",
+    "empathy",
+    "conversation",
+    "fun"
+  ],
+  "requiredPermissions": [],
+  "assets": {
+    "chats": "chats.json",
+    "splash": "splash.png",
+    "icon": "icon.png"
+  }
+}
