@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-19T03:38:13.994Z",
+  "registryVersion": "2026-02-21T08:19:30.698Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -310,22 +310,8 @@
       ]
     },
     {
-      "slug": "letter-to-future-self",
-      "version": "1.0.0",
-      "buildId": "bf7b025f-2596-4332-9956-f6dc0253ca5a",
-      "name": "Letter to Future Self",
-      "description": "Write heartfelt letters to your future self, delivered when the time is right",
-      "author": "Woodenfox",
-      "category": "wellness",
-      "practaType": "wellness",
-      "type": "community",
-      "requiresAI": false,
-      "estimatedDuration": 120,
-      "assets": {}
-    },
-    {
       "slug": "letter-to-me",
-      "version": "1.0.5",
+      "version": "1.0.11",
       "buildId": "b8472849-9c04-4b10-a5e7-6c1bcc55b57a",
       "name": "Letter to Me",
       "description": "Write heartfelt letters to your future self, delivered when the time is right",
@@ -337,17 +323,32 @@
       "estimatedDuration": 120,
       "assets": {
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon40.webp",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon120.webp",
         "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon80.webp",
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/splash.webp",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon120.webp"
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/letter-to-me/b8472849-9c04-4b10-a5e7-6c1bcc55b57a/icon40.webp"
       },
       "configSchema": {
         "fields": {
+          "mode": {
+            "type": "select",
+            "label": "Mode",
+            "default": "write",
+            "options": [
+              {
+                "label": "Write a Letter",
+                "value": "write"
+              },
+              {
+                "label": "Check for Letters",
+                "value": "check"
+              }
+            ],
+            "description": "Write a new letter or check for delivered letters"
+          },
           "aiEnabled": {
             "type": "boolean",
             "label": "AI Enhanced",
-            "default": false,
+            "default": true,
             "description": "Enable AI-powered reflections"
           }
         }

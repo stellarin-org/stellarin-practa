@@ -1,17 +1,33 @@
 {
   "name": "Letter to Me",
-  "version": "1.0.5",
+  "version": "1.0.11",
   "description": "Write heartfelt letters to your future self, delivered when the time is right",
   "author": "Woodenfox",
   "estimatedDuration": 120,
   "requiresAI": false,
   "configSchema": {
     "fields": {
+      "mode": {
+        "type": "select",
+        "label": "Mode",
+        "description": "Write a new letter or check for delivered letters",
+        "default": "write",
+        "options": [
+          {
+            "value": "write",
+            "label": "Write a Letter"
+          },
+          {
+            "value": "check",
+            "label": "Check for Letters"
+          }
+        ]
+      },
       "aiEnabled": {
         "type": "boolean",
         "label": "AI Enhanced",
         "description": "Enable AI-powered reflections",
-        "default": false
+        "default": true
       }
     }
   },
@@ -31,7 +47,6 @@
   ],
   "requiredPermissions": [],
   "assets": {
-    "icon": "icon.png",
-    "splash": "splash.png"
+    "icon": "icon.png"
   }
 }

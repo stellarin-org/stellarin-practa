@@ -39,10 +39,6 @@ interface Letter {
   deliveryLabel: string;
 }
 
-interface Config {
-  mode?: "save" | "show";
-}
-
 type WriteStep = "write" | "schedule" | "done";
 
 const DELIVERY_OPTIONS = [
@@ -97,9 +93,9 @@ export default function MyPracta({
   const { setConfig } = usePractaChrome();
   const headerHeight = useHeaderHeight();
 
-  const config = (context.assets?.config as Config) || {};
+  const configMode = (context.config?.mode as string) || "write";
+  const mode = configMode === "check" ? "show" : "save";
   const inputRef = useRef<TextInput>(null);
-  const mode = config.mode || "save";
 
   const [letterContent, setLetterContent] = useState("");
   const [selectedDelivery, setSelectedDelivery] = useState<string | null>(null);
@@ -141,6 +137,12 @@ export default function MyPracta({
   useEffect(() => {
     loadLetters();
   }, []);
+
+  useEffect(() => {
+    if (!isLoading && configMode === "check" && dueLetters.length === 0) {
+      onComplete({});
+    }
+  }, [isLoading, configMode, dueLetters.length]);
 
   useEffect(() => {
     if (mode === "save" && writeStep === "write" && !isLoading) {
