@@ -29,7 +29,6 @@ import Animated, {
   runOnJS,
 } from "react-native-reanimated";
 import { Feather } from "@expo/vector-icons";
-import Svg, { Polyline, Circle, Line, Text as SvgText } from "react-native-svg";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -68,14 +67,18 @@ const MIN_LIST_LENGTH = 8;
 const MAX_LIST_LENGTH = 15;
 const INITIAL_RECALL_SIZE = 3;
 const MAX_RECALL_SIZE = 6;
-const TRIALS_PER_SESSION = 8;
+const DEFAULT_TRIALS_PER_SESSION = 8;
 const INTER_STIMULUS_INTERVAL = 200;
 
-export default function RunningSpan({ context, onComplete, onSkip, onSettings, showSettings }: PractaProps) {
+export default function RunningSpan({ context, onComplete, onSettings, showSettings }: PractaProps) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const { setConfig } = usePractaChrome();
   const headerHeight = useHeaderHeight();
+
+  const trialsPerSession = typeof context.config?.trialsPerSession === "number"
+    ? Math.max(3, Math.min(20, Math.round(context.config.trialsPerSession)))
+    : DEFAULT_TRIALS_PER_SESSION;
 
   const [phase, setPhase] = useState<Phase>("intro");
   const [currentStimulus, setCurrentStimulus] = useState<string>("");
@@ -168,8 +171,8 @@ export default function RunningSpan({ context, onComplete, onSkip, onSettings, s
 
     if (index < seq.length) {
       setCurrentStimulus(seq[index]);
-      stimulusOpacity.value = withTiming(1, { duration: 150 });
-      stimulusScale.value = withSpring(1, { damping: 15 });
+      stimulusOpacity.value = withTiming(1, { duration: 120 });
+      stimulusScale.value = 1;
       
       triggerHaptic(Haptics.ImpactFeedbackStyle.Light);
 
@@ -177,7 +180,7 @@ export default function RunningSpan({ context, onComplete, onSkip, onSettings, s
         if (!isMountedRef.current) return;
         
         stimulusOpacity.value = withTiming(0, { duration: 100 });
-        stimulusScale.value = withTiming(0.8, { duration: 100 });
+        stimulusScale.value = 1;
         
         presentationRef.current = setTimeout(() => {
           if (!isMountedRef.current) return;
@@ -271,7 +274,7 @@ export default function RunningSpan({ context, onComplete, onSkip, onSettings, s
         if (!isMountedRef.current) return;
         setShowingFeedback(false);
         
-        if (trialNumber + 1 >= TRIALS_PER_SESSION) {
+        if (trialNumber + 1 >= trialsPerSession) {
           setPhase("complete");
         } else {
           setTrialNumber(prev => prev + 1);
@@ -418,7 +421,7 @@ export default function RunningSpan({ context, onComplete, onSkip, onSettings, s
   const renderPresenting = () => (
     <View style={styles.content}>
       <ThemedText style={[styles.trialIndicator, { color: theme.textSecondary }]}>
-        Trial {trialNumber + 1} of {TRIALS_PER_SESSION}
+        Trial {trialNumber + 1} of {trialsPerSession}
       </ThemedText>
       
       <View style={styles.stimulusContainer}>
@@ -440,7 +443,7 @@ export default function RunningSpan({ context, onComplete, onSkip, onSettings, s
     return (
     <View style={styles.content}>
       <ThemedText style={[styles.trialIndicator, { color: theme.textSecondary }]}>
-        Trial {trialNumber + 1} of {TRIALS_PER_SESSION}
+        Trial {trialNumber + 1} of {trialsPerSession}
       </ThemedText>
       
       <ThemedText style={styles.recallTitle}>
@@ -486,14 +489,12 @@ export default function RunningSpan({ context, onComplete, onSkip, onSettings, s
         ))}
       </View>
       
-      {userResponse.length > 0 ? (
-        <Pressable style={styles.undoButton} onPress={handleUndo}>
-          <Feather name="delete" size={20} color={theme.textSecondary} />
-          <ThemedText style={[styles.undoText, { color: theme.textSecondary }]}>
-            Undo
-          </ThemedText>
-        </Pressable>
-      ) : null}
+      <Pressable style={[styles.undoButton, { opacity: userResponse.length > 0 ? 1 : 0 }]} onPress={handleUndo} disabled={userResponse.length === 0}>
+        <Feather name="delete" size={20} color={theme.textSecondary} />
+        <ThemedText style={[styles.undoText, { color: theme.textSecondary }]}>
+          Undo
+        </ThemedText>
+      </Pressable>
     </View>
   );
   };
@@ -562,10 +563,14 @@ export default function RunningSpan({ context, onComplete, onSkip, onSettings, s
     );
   };
 
-  const renderProgressChart = () => {
+  const renderProgressSummary = () => {
+    const now = Date.now();
+    const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
+    const oneMonthAgo = now - 30 * 24 * 60 * 60 * 1000;
+    
     const allSessions = [...sessionHistory];
     const currentSession: SessionRecord = {
-      timestamp: Date.now(),
+      timestamp: now,
       averageScore: results.reduce((sum, r) => sum + r.score, 0) / results.length,
       averageRecallSize: results.reduce((sum, r) => sum + r.recallSize, 0) / results.length,
       finalRecallSize: recallSize,
@@ -573,37 +578,39 @@ export default function RunningSpan({ context, onComplete, onSkip, onSettings, s
     };
     allSessions.push(currentSession);
     
-    if (allSessions.length < 2) return null;
+    const weekSessions = allSessions.filter(s => s.timestamp >= oneWeekAgo);
+    const monthSessions = allSessions.filter(s => s.timestamp >= oneMonthAgo);
     
-    const chartWidth = 280;
-    const chartHeight = 100;
-    const padding = 20;
-    const dataPoints = allSessions.slice(-10);
+    if (monthSessions.length < 1) return null;
     
-    const scores = dataPoints.map(s => s.averageScore * 100);
-    const maxScore = 100;
-    const minScore = 0;
-    
-    const getX = (i: number) => padding + (i * (chartWidth - 2 * padding)) / (dataPoints.length - 1);
-    const getY = (score: number) => chartHeight - padding - ((score - minScore) / (maxScore - minScore)) * (chartHeight - 2 * padding);
-    
-    const points = scores.map((score, i) => `${getX(i)},${getY(score)}`).join(" ");
+    const weekAvg = weekSessions.length > 0
+      ? Math.round((weekSessions.reduce((sum, s) => sum + s.averageScore, 0) / weekSessions.length) * 100)
+      : null;
+    const monthAvg = Math.round((monthSessions.reduce((sum, s) => sum + s.averageScore, 0) / monthSessions.length) * 100);
     
     return (
-      <View style={styles.chartContainer}>
-        <ThemedText style={[styles.chartTitle, { color: theme.textSecondary }]}>
-          Your Progress (Last {dataPoints.length} sessions)
-        </ThemedText>
-        <Svg width={chartWidth} height={chartHeight}>
-          <Line x1={padding} y1={chartHeight - padding} x2={chartWidth - padding} y2={chartHeight - padding} stroke={theme.textSecondary + "40"} strokeWidth="1" />
-          <Line x1={padding} y1={padding} x2={padding} y2={chartHeight - padding} stroke={theme.textSecondary + "40"} strokeWidth="1" />
-          <Polyline points={points} fill="none" stroke={theme.primary} strokeWidth="2" />
-          {scores.map((score, i) => (
-            <Circle key={i} cx={getX(i)} cy={getY(score)} r={i === scores.length - 1 ? 5 : 3} fill={i === scores.length - 1 ? theme.primary : theme.primary + "80"} />
-          ))}
-          <SvgText x={padding - 5} y={padding + 4} fontSize="10" fill={theme.textSecondary} textAnchor="end">100%</SvgText>
-          <SvgText x={padding - 5} y={chartHeight - padding + 4} fontSize="10" fill={theme.textSecondary} textAnchor="end">0%</SvgText>
-        </Svg>
+      <View style={styles.progressSummary}>
+        <View style={styles.progressRow}>
+          <View style={styles.progressItem}>
+            <ThemedText style={[styles.progressLabel, { color: theme.textSecondary }]}>This Week</ThemedText>
+            <ThemedText style={[styles.progressValue, { color: theme.primary }]}>
+              {weekAvg !== null ? `${weekAvg}%` : "--"}
+            </ThemedText>
+            <ThemedText style={[styles.progressCount, { color: theme.textSecondary }]}>
+              {weekSessions.length} session{weekSessions.length !== 1 ? "s" : ""}
+            </ThemedText>
+          </View>
+          <View style={[styles.statDivider, { backgroundColor: theme.backgroundSecondary }]} />
+          <View style={styles.progressItem}>
+            <ThemedText style={[styles.progressLabel, { color: theme.textSecondary }]}>This Month</ThemedText>
+            <ThemedText style={[styles.progressValue, { color: theme.primary }]}>
+              {`${monthAvg}%`}
+            </ThemedText>
+            <ThemedText style={[styles.progressCount, { color: theme.textSecondary }]}>
+              {monthSessions.length} session{monthSessions.length !== 1 ? "s" : ""}
+            </ThemedText>
+          </View>
+        </View>
       </View>
     );
   };
@@ -665,7 +672,7 @@ export default function RunningSpan({ context, onComplete, onSkip, onSettings, s
           </View>
         </View>
         
-        {renderProgressChart()}
+        {renderProgressSummary()}
         
         <ThemedText style={[styles.researchNote, { color: theme.textSecondary }]}>
           {sessionHistory.length === 0 
@@ -703,13 +710,6 @@ export default function RunningSpan({ context, onComplete, onSkip, onSettings, s
           </Pressable>
         ) : null}
 
-        {onSkip && (phase === "intro" || phase === "complete") ? (
-          <Pressable onPress={onSkip} style={styles.skipButton}>
-            <ThemedText style={[styles.skipText, { color: theme.textSecondary }]}>
-              Skip
-            </ThemedText>
-          </Pressable>
-        ) : null}
       </View>
     </ThemedView>
   );
@@ -931,13 +931,30 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
   },
-  chartContainer: {
-    alignItems: "center",
+  progressSummary: {
     marginVertical: Spacing.lg,
+    width: "100%",
   },
-  chartTitle: {
+  progressRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  progressItem: {
+    alignItems: "center",
+    paddingHorizontal: Spacing.xl,
+  },
+  progressLabel: {
     fontSize: 12,
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.xs,
+  },
+  progressValue: {
+    fontSize: 28,
+    fontWeight: "700",
+  },
+  progressCount: {
+    fontSize: 11,
+    marginTop: 2,
   },
   footer: {
     paddingHorizontal: Spacing.lg,
@@ -951,13 +968,5 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "600",
     fontSize: 16,
-  },
-  skipButton: {
-    padding: Spacing.md,
-    alignItems: "center",
-    marginTop: Spacing.sm,
-  },
-  skipText: {
-    fontSize: 14,
   },
 });

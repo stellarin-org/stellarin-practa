@@ -1,9 +1,36 @@
 {
-  "id": "running-span",
   "name": "Running Span",
-  "version": "1.0.5",
+  "version": "1.0.11",
   "description": "A scientifically-validated working memory assessment. Watch an unpredictable sequence and recall the last N items in order.",
   "author": "Your Name",
+  "requiresAI": false,
+  "estimatedDuration": 180,
+  "icon": "zap",
+  "configSchema": {
+    "fields": {
+      "aiEnabled": {
+        "type": "boolean",
+        "label": "Enable AI Features",
+        "description": "Allow this Practa to use AI-powered enhancements when available",
+        "default": true
+      },
+      "trialsPerSession": {
+        "type": "number",
+        "label": "Number of Trials",
+        "description": "How many recall trials to run per session",
+        "default": 8,
+        "min": 3,
+        "max": 20
+      }
+    }
+  },
+  "dependencies": [
+    "@expo/vector-icons",
+    "expo-haptics",
+    "react-native-reanimated",
+    "react-native-safe-area-context"
+  ],
+  "id": "running-span",
   "type": "widget",
   "category": "cognitive",
   "tags": [
@@ -12,7 +39,8 @@
     "attention",
     "memory-span"
   ],
-  "estimatedDuration": 180,
   "requiredPermissions": [],
-  "assets": {}
+  "assets": {
+    "icon": "icon.png"
+  }
 }

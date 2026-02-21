@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-21T19:54:22.353Z",
+  "registryVersion": "2026-02-21T20:01:51.388Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -587,7 +587,7 @@
     },
     {
       "slug": "running-span",
-      "version": "1.0.5",
+      "version": "1.0.11",
       "buildId": "6031ceb8-2054-45ef-8445-e41766b6e1a2",
       "name": "Running Span",
       "description": "A scientifically-validated working memory assessment. Watch an unpredictable sequence and recall the last N items in order.",
@@ -598,9 +598,41 @@
       "requiresAI": false,
       "estimatedDuration": 180,
       "assets": {
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/running-span/6031ceb8-2054-45ef-8445-e41766b6e1a2/splash.mp4",
-        "content": "https://stellarin-practa-verification.replit.app/assets/practa/running-span/6031ceb8-2054-45ef-8445-e41766b6e1a2/content.json",
-        "wellness-bg": "https://stellarin-practa-verification.replit.app/assets/practa/running-span/6031ceb8-2054-45ef-8445-e41766b6e1a2/wellness-bg.png"
+        "icon": "https://stellarin-practa-verification.replit.app/assets/practa/running-span/6031ceb8-2054-45ef-8445-e41766b6e1a2/icon.webp",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/running-span/6031ceb8-2054-45ef-8445-e41766b6e1a2/icon120.webp",
+        "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/running-span/6031ceb8-2054-45ef-8445-e41766b6e1a2/icon80.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/running-span/6031ceb8-2054-45ef-8445-e41766b6e1a2/icon40.webp"
+      },
+      "configSchema": {
+        "fields": {
+          "aiEnabled": {
+            "type": "boolean",
+            "label": "Enable AI Features",
+            "default": true,
+            "description": "Allow this Practa to use AI-powered enhancements when available"
+          },
+          "trialsPerSession": {
+            "max": 20,
+            "min": 3,
+            "type": "number",
+            "label": "Number of Trials",
+            "default": 8,
+            "description": "How many recall trials to run per session"
+          }
+        }
+      },
+      "dependencies": [
+        "@expo/vector-icons",
+        "expo-haptics",
+        "react-native-reanimated",
+        "react-native-safe-area-context"
+      ],
+      "replitJson": {
+        "REPLIT_USER": "woodenfox",
+        "generatedAt": "2026-02-21T20:01:31.231Z",
+        "REPLIT_USERID": "22787089",
+        "REPLIT_DOMAINS": "5149848d-a7aa-4d01-916f-f6fdf05af07b-00-20v5qz1eokr4.worf.replit.dev",
+        "REPLIT_DEV_DOMAIN": "5149848d-a7aa-4d01-916f-f6fdf05af07b-00-20v5qz1eokr4.worf.replit.dev"
       }
     },
     {
