@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-21T20:31:58.454Z",
+  "registryVersion": "2026-02-21T20:32:57.236Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -14,13 +14,13 @@
       "requiresAI": false,
       "estimatedDuration": 90,
       "assets": {
-        "fullBoardPuzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/full-board-puzzles.json",
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/icon.webp",
-        "miniPuzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/mini-puzzles.json",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/icon40.webp",
+        "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/icon80.webp",
         "splash": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/splash.webp",
         "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/icon120.webp",
-        "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/icon80.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/icon40.webp"
+        "miniPuzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/mini-puzzles.json",
+        "fullBoardPuzzles": "https://stellarin-practa-verification.replit.app/assets/practa/chess-puzzles/f4738c7e-cb32-4e5c-9d88-3bd1d10bd000/full-board-puzzles.json"
       },
       "configSchema": {
         "fields": {
@@ -42,7 +42,7 @@
     },
     {
       "slug": "daily-sudoku",
-      "version": "1.3.3",
+      "version": "1.3.4",
       "buildId": "439e4888-caf7-4145-9a3f-8f046453a57e",
       "name": "Daily Sudoku",
       "description": "A calming Sudoku puzzle game to exercise your mind and focus",
@@ -54,10 +54,10 @@
       "estimatedDuration": 300,
       "assets": {
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/icon.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/icon40.webp",
-        "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/icon80.webp",
         "splash": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/splash.webp",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/icon120.webp"
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/icon120.webp",
+        "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/icon80.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/icon40.webp"
       },
       "configSchema": {
         "fields": {
@@ -71,9 +71,7 @@
       },
       "dependencies": [
         "@expo/vector-icons",
-        "expo-blur",
         "expo-haptics",
-        "expo-linear-gradient",
         "react-native-reanimated",
         "react-native-safe-area-context"
       ]

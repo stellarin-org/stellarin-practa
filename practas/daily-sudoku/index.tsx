@@ -8,8 +8,6 @@ import {
   Image,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
-import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import Animated, {
   useSharedValue,
@@ -25,6 +23,8 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
+import { GlassCard } from "@/components/GlassCard";
+import { GlassBackground } from "@/components/GlassBackground";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { Feather } from "@expo/vector-icons";
@@ -320,24 +320,6 @@ const Confetti = ({ screenWidth, screenHeight }: { screenWidth: number; screenHe
         <ConfettiPiece key={i} delay={i * 30} screenWidth={screenWidth} screenHeight={screenHeight} />
       ))}
     </View>
-  );
-};
-
-const GlassCard = ({ children, style, intensity = 40 }: { children: React.ReactNode; style?: any; intensity?: number }) => {
-  const { isDark } = useTheme();
-  
-  if (Platform.OS === "web") {
-    return (
-      <View style={[styles.glassCardFallback, { backgroundColor: isDark ? "rgba(40,40,40,0.85)" : "rgba(255,255,255,0.85)" }, style]}>
-        {children}
-      </View>
-    );
-  }
-  
-  return (
-    <BlurView intensity={intensity} tint={isDark ? "dark" : "light"} style={[styles.glassCard, style]}>
-      {children}
-    </BlurView>
   );
 };
 
@@ -644,7 +626,7 @@ export default function MyPracta({
 
     let backgroundColor = "transparent";
     if (cell.isError) {
-      backgroundColor = isDark ? "rgba(239,68,68,0.35)" : "rgba(239,68,68,0.25)";
+      backgroundColor = isDark ? theme.error + "59" : theme.error + "40";
     } else if (isSelected) {
       backgroundColor = theme.primary + "50";
     } else if (isSameValue) {
@@ -735,21 +717,15 @@ export default function MyPracta({
         </ThemedText>
         <View style={[styles.countBadge, { backgroundColor: theme.primary + "20" }]}>
           <ThemedText style={[styles.countText, { color: theme.primary }]}>
-            {9 - count}
+            {currentGridSize - count}
           </ThemedText>
         </View>
       </AnimatedPressable>
     );
   };
 
-  const gradientColors = isDark 
-    ? ["#1a1a2e", "#16213e", "#0f3460"] as const
-    : ["#ffffff", "#f8f9fa", "#f1f3f5"] as const;
-
   return (
-    <View style={styles.container}>
-      <LinearGradient colors={gradientColors} style={StyleSheet.absoluteFill} />
-      
+    <GlassBackground style={styles.container}>
       <View style={[styles.content, { paddingTop: headerHeight + Spacing.lg, paddingBottom: insets.bottom + Spacing.lg }]}>
         <Animated.View entering={FadeInDown.duration(400)} style={[styles.header, headerAnimStyle]}>
           {showTimer || showErrors ? (
@@ -899,7 +875,7 @@ export default function MyPracta({
           setPendingDifficulty(null);
           setShowSettings(false);
         }}>
-          <Pressable style={[styles.settingsModal, { backgroundColor: isDark ? "#2a2a2a" : "#fff" }]} onPress={(e) => e.stopPropagation()}>
+          <GlassCard style={styles.settingsModal} noPadding intensity={80}>
             <View style={styles.settingsHeader}>
               <ThemedText style={styles.settingsTitle}>Settings</ThemedText>
               <Pressable onPress={() => {
@@ -1020,11 +996,11 @@ export default function MyPracta({
                 <ThemedText style={styles.doneButtonText}>Done</ThemedText>
               </Pressable>
             </View>
-          </Pressable>
+          </GlassCard>
         </Pressable>
       ) : null}
 
-    </View>
+    </GlassBackground>
   );
 }
 
@@ -1063,14 +1039,6 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 13,
     marginTop: 2,
-  },
-  glassCard: {
-    borderRadius: BorderRadius.lg,
-    overflow: "hidden",
-  },
-  glassCardFallback: {
-    borderRadius: BorderRadius.lg,
-    overflow: "hidden",
   },
   statsCard: {
     padding: Spacing.md,
