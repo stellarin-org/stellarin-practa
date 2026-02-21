@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-21T08:19:30.698Z",
+  "registryVersion": "2026-02-21T09:02:31.980Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -311,7 +311,7 @@
     },
     {
       "slug": "letter-to-me",
-      "version": "1.0.11",
+      "version": "1.0.12",
       "buildId": "b8472849-9c04-4b10-a5e7-6c1bcc55b57a",
       "name": "Letter to Me",
       "description": "Write heartfelt letters to your future self, delivered when the time is right",
@@ -358,7 +358,14 @@
         "expo-haptics",
         "react-native-reanimated",
         "react-native-safe-area-context"
-      ]
+      ],
+      "replitJson": {
+        "REPLIT_USER": null,
+        "generatedAt": "2026-02-21T09:01:58.846Z",
+        "REPLIT_USERID": null,
+        "REPLIT_DOMAINS": "b98e6774-c51a-4359-8fed-d8ae2da64a06-00-2ks0b2hpr351s.kirk.replit.dev",
+        "REPLIT_DEV_DOMAIN": "b98e6774-c51a-4359-8fed-d8ae2da64a06-00-2ks0b2hpr351s.kirk.replit.dev"
+      }
     },
     {
       "slug": "major-system-trainer",
