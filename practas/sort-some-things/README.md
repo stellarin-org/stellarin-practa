@@ -36,4 +36,4 @@ Created by Practa Developer
 
 ## Version
 
-1.5.5
+1.5.10

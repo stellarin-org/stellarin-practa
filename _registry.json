@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-21T22:10:51.455Z",
+  "registryVersion": "2026-02-21T22:15:57.208Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -582,9 +582,9 @@
       "estimatedDuration": 60,
       "assets": {
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/habbit_tracker_icon.webp",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon120.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon40.webp",
         "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon80.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon40.webp"
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/practa-habit-tracker/eede6e96-1813-48fb-8af8-b46374c074c1/icon120.webp"
       },
       "configSchema": {
         "fields": {
@@ -742,6 +742,49 @@
         "REPLIT_USERID": null,
         "REPLIT_DOMAINS": "4d09e747-7069-48e2-89ed-d910ffc3972b-00-1nkg8m8c2y5rl.worf.replit.dev",
         "REPLIT_DEV_DOMAIN": "4d09e747-7069-48e2-89ed-d910ffc3972b-00-1nkg8m8c2y5rl.worf.replit.dev"
+      }
+    },
+    {
+      "slug": "sort-some-things",
+      "version": "1.5.10",
+      "buildId": "016e7159-34ec-4e62-89c0-21cc2c66a5a9",
+      "name": "Sort Some Things",
+      "description": "A gentle exercise to surface priorities and choose one place to begin",
+      "author": "Practa Developer",
+      "category": "prioritization",
+      "practaType": "prioritization",
+      "type": "core",
+      "requiresAI": false,
+      "estimatedDuration": 180,
+      "assets": {
+        "icon": "https://stellarin-practa-verification.replit.app/assets/practa/sort-some-things/016e7159-34ec-4e62-89c0-21cc2c66a5a9/icon.webp",
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/sort-some-things/016e7159-34ec-4e62-89c0-21cc2c66a5a9/splash.mp4",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/sort-some-things/016e7159-34ec-4e62-89c0-21cc2c66a5a9/icon120.webp",
+        "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/sort-some-things/016e7159-34ec-4e62-89c0-21cc2c66a5a9/icon80.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/sort-some-things/016e7159-34ec-4e62-89c0-21cc2c66a5a9/icon40.webp"
+      },
+      "configSchema": {
+        "fields": {
+          "aiEnabled": {
+            "type": "boolean",
+            "label": "Enable AI Features",
+            "default": true,
+            "description": "Allow this Practa to use AI-powered enhancements when available"
+          }
+        },
+        "requiredConfig": false
+      },
+      "dependencies": [
+        "@expo/vector-icons",
+        "expo-haptics",
+        "react-native-safe-area-context"
+      ],
+      "replitJson": {
+        "REPLIT_USER": null,
+        "generatedAt": "2026-02-21T22:15:39.502Z",
+        "REPLIT_USERID": null,
+        "REPLIT_DOMAINS": "858d946e-d6f6-4d8e-b126-a6a1f6af4cb8-00-1qm2r70pda7g9.picard.replit.dev",
+        "REPLIT_DEV_DOMAIN": "858d946e-d6f6-4d8e-b126-a6a1f6af4cb8-00-1qm2r70pda7g9.picard.replit.dev"
       }
     }
   ]
