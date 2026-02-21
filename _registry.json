@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-21T20:32:57.236Z",
+  "registryVersion": "2026-02-21T20:34:13.254Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -54,10 +54,10 @@
       "estimatedDuration": 300,
       "assets": {
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/icon.webp",
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/splash.webp",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/icon120.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/icon40.webp",
         "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/icon80.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/icon40.webp"
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/splash.webp",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/daily-sudoku/439e4888-caf7-4145-9a3f-8f046453a57e/icon120.webp"
       },
       "configSchema": {
         "fields": {
@@ -659,7 +659,7 @@
     },
     {
       "slug": "six",
-      "version": "1.7.9",
+      "version": "1.7.10",
       "buildId": "d65f36c4-2d03-4357-8c0f-4db5d19562cc",
       "name": "Six",
       "description": "A daily word guessing game - guess the 6-letter word in 6 tries",
@@ -670,15 +670,15 @@
       "requiresAI": false,
       "estimatedDuration": 180,
       "assets": {
-        "icon": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_icon.webp",
         "hints": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/hints.json",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon40.webp",
-        "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon80.webp",
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/splash.mp4",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon120.webp",
+        "icon": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_icon.webp",
         "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.webp",
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/splash.mp4",
+        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json",
         "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json",
-        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json"
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon120.webp",
+        "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon80.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon40.webp"
       },
       "configSchema": {
         "fields": {
