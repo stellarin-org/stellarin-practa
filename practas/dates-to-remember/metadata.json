@@ -1,6 +1,6 @@
 {
   "name": "Dates to Remember",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "Never forget an important date.",
   "author": "Mike Messenger",
   "requiresAI": false,
@@ -18,6 +18,30 @@
         "label": "Enable AI Features",
         "description": "Allow this Practa to use AI-powered enhancements when available",
         "default": true
+      },
+      "openCondition": {
+        "type": "select",
+        "label": "When to Open",
+        "description": "Only open this Practa when there is an upcoming event within the selected time window. Otherwise it will be skipped.",
+        "options": [
+          {
+            "value": "always",
+            "label": "Always"
+          },
+          {
+            "value": "3days",
+            "label": "Within 3 days"
+          },
+          {
+            "value": "7days",
+            "label": "Within 7 days"
+          },
+          {
+            "value": "month",
+            "label": "Within a month"
+          }
+        ],
+        "default": "always"
       }
     },
     "requiredConfig": false

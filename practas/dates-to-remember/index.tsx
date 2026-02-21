@@ -151,6 +151,27 @@ function getDaysInMonth(month: number): number {
   return 31;
 }
 
+function getOpenConditionDays(condition: string): number | null {
+  switch (condition) {
+    case "3days": return 3;
+    case "7days": return 7;
+    case "month": return 30;
+    default: return null;
+  }
+}
+
+function hasUpcomingEvent(dates: SavedDate[], withinDays: number): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return dates.some((d) => {
+    const next = getNextDate(d.month, d.day);
+    const diffMs = next.getTime() - today.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    return diffDays <= withinDays;
+  });
+}
+
 export default function MyPracta({ context, onComplete, onSettings, showSettings }: PractaProps) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
@@ -163,6 +184,7 @@ export default function MyPracta({ context, onComplete, onSettings, showSettings
   const [contacts, setContacts] = useState<ContactInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isStorageLoaded, setIsStorageLoaded] = useState(false);
+  const [skipped, setSkipped] = useState(false);
   
   const [newDateName, setNewDateName] = useState("");
   const [newDateMonth, setNewDateMonth] = useState<number | null>(null);
@@ -174,6 +196,8 @@ export default function MyPracta({ context, onComplete, onSettings, showSettings
   const yearInputRef = useRef<TextInput>(null);
 
   const [editingDateId, setEditingDateId] = useState<string | null>(null);
+
+  const openCondition = (context.config?.openCondition as string) || "always";
 
   useEffect(() => {
     setConfig({
@@ -219,12 +243,23 @@ export default function MyPracta({ context, onComplete, onSettings, showSettings
   const loadSavedDates = async () => {
     try {
       const stored = await context.storage?.get<SavedDate[]>("savedDates");
+      let dates: SavedDate[] = [];
       if (stored && stored.length > 0) {
-        setSavedDates(stored);
+        dates = stored;
       } else if (__DEV__) {
-        const sampleDates = generateDevSampleDates();
-        setSavedDates(sampleDates);
-        await context.storage?.set("savedDates", sampleDates);
+        dates = generateDevSampleDates();
+        await context.storage?.set("savedDates", dates);
+      }
+      setSavedDates(dates);
+
+      const maxDays = getOpenConditionDays(openCondition);
+      if (maxDays !== null && !hasUpcomingEvent(dates, maxDays)) {
+        setSkipped(true);
+        onComplete({
+          content: { type: "text", value: "No upcoming events — skipped." },
+          metadata: { skipped: true, openCondition, datesCount: dates.length },
+        });
+        return;
       }
     } catch (error) {
       console.error("Error loading saved dates:", error);
@@ -529,7 +564,7 @@ export default function MyPracta({ context, onComplete, onSettings, showSettings
     );
   };
 
-  if (!isStorageLoaded) {
+  if (!isStorageLoaded || skipped) {
     return (
       <ThemedView style={[styles.container, { paddingTop: headerHeight + Spacing.lg }]}>
         <View style={styles.centerContent}>

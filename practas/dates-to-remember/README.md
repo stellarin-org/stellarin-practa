@@ -36,4 +36,4 @@ Created by Mike Messenger
 
 ## Version
 
-2.0.6
+2.0.7
