@@ -14,7 +14,6 @@ import Animated, {
   FadeIn,
   FadeInDown,
   FadeInUp,
-  SlideInDown,
   useSharedValue,
   useAnimatedStyle,
   withSpring,
@@ -60,8 +59,6 @@ type ChatMessage = {
 };
 
 type ChatPhase = "opening" | "choose-response" | "npc-reply" | "choose-followup" | "npc-closing" | "done";
-
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 function TypingIndicator({ theme }: { theme: any }) {
   const dot1 = useSharedValue(0);
@@ -152,25 +149,26 @@ function ResponseOption({
   index: number;
 }) {
   return (
-    <AnimatedPressable
-      entering={SlideInDown.delay(index * 80 + 150).duration(350).springify().damping(14)}
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={text}
-      style={({ pressed }) => [
-        styles.optionButton,
-        {
-          backgroundColor: pressed ? theme.backgroundTertiary : theme.backgroundSecondary,
-          borderColor: theme.textSecondary + "40",
-          transform: [{ scale: pressed ? 0.98 : 1 }],
-        },
-      ]}
-    >
-      <ThemedText style={[styles.optionText, { color: theme.text }]}>
-        {text}
-      </ThemedText>
-      <Feather name="chevron-right" size={16} color={theme.textSecondary} />
-    </AnimatedPressable>
+    <Animated.View entering={FadeIn.delay(index * 60 + 100).duration(250)}>
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={text}
+        style={({ pressed }) => [
+          styles.optionButton,
+          {
+            backgroundColor: pressed ? theme.backgroundTertiary : theme.backgroundSecondary,
+            borderColor: theme.textSecondary + "30",
+            opacity: pressed ? 0.8 : 1,
+          },
+        ]}
+      >
+        <ThemedText style={[styles.optionText, { color: theme.text }]}>
+          {text}
+        </ThemedText>
+        <Feather name="chevron-right" size={14} color={theme.textSecondary} />
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -551,22 +549,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
   },
   optionsList: {
-    gap: Spacing.md,
+    gap: 8,
   },
   optionButton: {
     flexDirection: "row",
     alignItems: "center",
-    minHeight: 48,
-    paddingVertical: Spacing.lg,
-    paddingHorizontal: Spacing.lg,
+    minHeight: 44,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     borderRadius: BorderRadius.sm,
     borderWidth: 1,
-    gap: Spacing.sm,
+    gap: 8,
   },
   optionText: {
     flex: 1,
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: 15,
+    lineHeight: 20,
   },
   doneContainer: {
     alignItems: "center",
