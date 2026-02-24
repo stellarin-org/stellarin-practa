@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-24T00:28:24.150Z",
+  "registryVersion": "2026-02-24T05:37:36.338Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -150,10 +150,10 @@
       "estimatedDuration": 300,
       "assets": {
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/doubbling/71e286d3-0165-4f03-993e-7d4cfda1181f/icon.webp",
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/doubbling/71e286d3-0165-4f03-993e-7d4cfda1181f/splash.webp",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/doubbling/71e286d3-0165-4f03-993e-7d4cfda1181f/icon120.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/doubbling/71e286d3-0165-4f03-993e-7d4cfda1181f/icon40.webp",
         "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/doubbling/71e286d3-0165-4f03-993e-7d4cfda1181f/icon80.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/doubbling/71e286d3-0165-4f03-993e-7d4cfda1181f/icon40.webp"
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/doubbling/71e286d3-0165-4f03-993e-7d4cfda1181f/splash.webp",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/doubbling/71e286d3-0165-4f03-993e-7d4cfda1181f/icon120.webp"
       },
       "configSchema": {
         "fields": {
@@ -610,6 +610,50 @@
         "react-native-reanimated",
         "react-native-safe-area-context"
       ]
+    },
+    {
+      "slug": "pathflow-puzzle",
+      "version": "1.0.3",
+      "buildId": "f2b8b4b5-505a-4255-92c0-2a989113716a",
+      "name": "Pathflow",
+      "description": "A calming path puzzle where you connect numbers in order by filling every square. Draw your way to flow.",
+      "author": "Stellarin",
+      "category": "focus",
+      "practaType": "focus",
+      "type": "core",
+      "requiresAI": false,
+      "estimatedDuration": 300,
+      "assets": {
+        "icon": "https://stellarin-practa-verification.replit.app/assets/practa/pathflow-puzzle/f2b8b4b5-505a-4255-92c0-2a989113716a/icon.webp",
+        "levels": "https://stellarin-practa-verification.replit.app/assets/practa/pathflow-puzzle/f2b8b4b5-505a-4255-92c0-2a989113716a/levels.json",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/pathflow-puzzle/f2b8b4b5-505a-4255-92c0-2a989113716a/icon120.webp",
+        "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/pathflow-puzzle/f2b8b4b5-505a-4255-92c0-2a989113716a/icon80.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/pathflow-puzzle/f2b8b4b5-505a-4255-92c0-2a989113716a/icon40.webp"
+      },
+      "configSchema": {
+        "fields": {
+          "aiEnabled": {
+            "type": "boolean",
+            "label": "Enable AI Features",
+            "default": true,
+            "description": "Allow this Practa to use AI-powered enhancements when available"
+          }
+        },
+        "requiredConfig": false
+      },
+      "dependencies": [
+        "@expo/vector-icons",
+        "react-native-reanimated",
+        "react-native-safe-area-context",
+        "react-native-svg"
+      ],
+      "replitJson": {
+        "REPLIT_USER": null,
+        "generatedAt": "2026-02-24T05:37:02.489Z",
+        "REPLIT_USERID": null,
+        "REPLIT_DOMAINS": "ebf0cb4a-6247-4df6-abec-f7e93b9b66fe-00-3fosx1btn763l.picard.replit.dev",
+        "REPLIT_DEV_DOMAIN": "ebf0cb4a-6247-4df6-abec-f7e93b9b66fe-00-3fosx1btn763l.picard.replit.dev"
+      }
     },
     {
       "slug": "practa-habit-tracker",

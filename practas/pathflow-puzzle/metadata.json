@@ -1,0 +1,40 @@
+{
+  "name": "Pathflow",
+  "version": "1.0.3",
+  "description": "A calming path puzzle where you connect numbers in order by filling every square. Draw your way to flow.",
+  "author": "Stellarin",
+  "estimatedDuration": 300,
+  "requiresAI": false,
+  "icon": "grid",
+  "dependencies": [
+    "@expo/vector-icons",
+    "react-native-reanimated",
+    "react-native-safe-area-context",
+    "react-native-svg"
+  ],
+  "configSchema": {
+    "fields": {
+      "aiEnabled": {
+        "type": "boolean",
+        "label": "Enable AI Features",
+        "description": "Allow this Practa to use AI-powered enhancements when available",
+        "default": true
+      }
+    },
+    "requiredConfig": false
+  },
+  "id": "pathflow-puzzle",
+  "type": "widget",
+  "category": "focus",
+  "tags": [
+    "puzzle",
+    "focus",
+    "mindfulness",
+    "logic"
+  ],
+  "requiredPermissions": [],
+  "assets": {
+    "icon": "icon.png",
+    "levels": "levels.json"
+  }
+}
