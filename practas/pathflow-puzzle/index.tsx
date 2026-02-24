@@ -1101,6 +1101,7 @@ export default function ZipPuzzle({
 
   const processTouch = useCallback(
     (pageX: number, pageY: number) => {
+      try {
       if (hasWonRef.current) return;
       const cell = getCellAt(pageX, pageY);
       if (!cell || cell.blocked) return;
@@ -1191,6 +1192,7 @@ export default function ZipPuzzle({
       setGameState(current);
       const lastCell = bridge[bridge.length - 1];
       if (!checkWin(current, lastCell)) showMissedHint(lastCell, current.path.length);
+      } catch (_e) {}
     },
     [getCellAt, haptics, triggerWin, findBridge, applyMove]
   );
@@ -1202,8 +1204,9 @@ export default function ZipPuzzle({
         onMoveShouldSetPanResponder: () => true,
         onPanResponderTerminationRequest: () => false,
         onPanResponderGrant: (evt: GestureResponderEvent) => {
+          const { pageX, pageY } = evt.nativeEvent;
           measureGrid();
-          setTimeout(() => processTouch(evt.nativeEvent.pageX, evt.nativeEvent.pageY), 0);
+          setTimeout(() => processTouch(pageX, pageY), 0);
         },
         onPanResponderMove: (_evt: GestureResponderEvent, gs: PanResponderGestureState) => {
           processTouch(gs.moveX, gs.moveY);
@@ -1658,7 +1661,7 @@ export default function ZipPuzzle({
             style={[StyleSheet.absoluteFill, { zIndex: 3 }]}
             pointerEvents="none"
           >
-            {pathPoints.length > 0 ? (
+            {displayPath.length >= 2 ? (
               <Polyline
                 points={pathPoints}
                 stroke={isReplaying ? theme.success : hasWon ? theme.success : theme.primary}
