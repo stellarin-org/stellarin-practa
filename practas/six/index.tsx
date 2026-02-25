@@ -27,6 +27,7 @@ import { Spacing, BorderRadius } from "@/constants/theme";
 import { PractaContext, PractaCompleteHandler } from "@/types/flow";
 import { usePractaChrome } from "@/context/PractaChromeContext";
 import { ImageSourcePropType } from "react-native";
+import { getApiUrl } from "@/lib/query-client";
 
 const WORD_LENGTH = 6;
 const INITIAL_ROWS = 6;
@@ -528,27 +529,21 @@ function TutorialOverlay({ visible, onDismiss }: TutorialOverlayProps) {
       exiting={FadeOut.duration(200)}
       style={[styles.tutorialFullScreen, { backgroundColor: isDark ? "#121213" : "#FFFFFF" }]}
     >
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={[
-          styles.tutorialScroll,
-          { paddingTop: insets.top + Spacing.xl, paddingBottom: insets.bottom + Spacing.xl },
+      <View
+        style={[
+          styles.tutorialInner,
+          { paddingTop: insets.top + Spacing.lg, paddingBottom: insets.bottom + Spacing.lg },
         ]}
-        showsVerticalScrollIndicator={false}
       >
         <View style={styles.tutorialHero}>
           <ThemedText style={styles.tutorialTitle}>How to Play</ThemedText>
           <ThemedText style={[styles.tutorialGoal, { color: theme.textSecondary }]}>
-            Guess the six-letter word in 6 tries. Each guess must be a valid word. After each guess, the tiles change color to show how close you are.
+            Guess the six-letter word in 6 tries. Tiles change color after each guess.
           </ThemedText>
         </View>
 
-        <View style={[styles.tutorialDivider, { backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)" }]} />
-
-        <View style={styles.tutorialSection}>
-          <ThemedText style={styles.tutorialSectionTitle}>Examples</ThemedText>
-
-          <View style={styles.tutorialExample}>
+        <View style={styles.tutorialExamples}>
+          <View style={styles.tutorialExampleCompact}>
             <View style={styles.tutTileRow}>
               <TutorialTile letter="N" color={COLORS.correct} />
               <TutorialTile letter="O" borderColor={emptyBorder} />
@@ -557,12 +552,12 @@ function TutorialOverlay({ visible, onDismiss }: TutorialOverlayProps) {
               <TutorialTile letter="C" borderColor={emptyBorder} />
               <TutorialTile letter="E" borderColor={emptyBorder} />
             </View>
-            <ThemedText style={[styles.tutorialExampleText, { color: theme.textSecondary }]}>
-              <ThemedText style={styles.tutorialBold}>N</ThemedText> is in the word and in the correct spot.
+            <ThemedText style={[styles.tutorialExampleLabel, { color: theme.textSecondary }]}>
+              <ThemedText style={styles.tutorialBold}>N</ThemedText> is correct
             </ThemedText>
           </View>
 
-          <View style={styles.tutorialExample}>
+          <View style={styles.tutorialExampleCompact}>
             <View style={styles.tutTileRow}>
               <TutorialTile letter="B" borderColor={emptyBorder} />
               <TutorialTile letter="R" borderColor={emptyBorder} />
@@ -571,12 +566,12 @@ function TutorialOverlay({ visible, onDismiss }: TutorialOverlayProps) {
               <TutorialTile letter="T" borderColor={emptyBorder} />
               <TutorialTile letter="H" borderColor={emptyBorder} />
             </View>
-            <ThemedText style={[styles.tutorialExampleText, { color: theme.textSecondary }]}>
-              <ThemedText style={styles.tutorialBold}>E</ThemedText> is in the word but in the wrong spot.
+            <ThemedText style={[styles.tutorialExampleLabel, { color: theme.textSecondary }]}>
+              <ThemedText style={styles.tutorialBold}>E</ThemedText> is in the word, wrong spot
             </ThemedText>
           </View>
 
-          <View style={styles.tutorialExample}>
+          <View style={styles.tutorialExampleCompact}>
             <View style={styles.tutTileRow}>
               <TutorialTile letter="G" borderColor={emptyBorder} />
               <TutorialTile letter="E" borderColor={emptyBorder} />
@@ -585,27 +580,9 @@ function TutorialOverlay({ visible, onDismiss }: TutorialOverlayProps) {
               <TutorialTile letter="L" color={absentColor} />
               <TutorialTile letter="E" borderColor={emptyBorder} />
             </View>
-            <ThemedText style={[styles.tutorialExampleText, { color: theme.textSecondary }]}>
-              <ThemedText style={styles.tutorialBold}>L</ThemedText> is not in the word at all.
+            <ThemedText style={[styles.tutorialExampleLabel, { color: theme.textSecondary }]}>
+              <ThemedText style={styles.tutorialBold}>L</ThemedText> is not in the word
             </ThemedText>
-          </View>
-        </View>
-
-        <View style={[styles.tutorialDivider, { backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)" }]} />
-
-        <View style={styles.tutorialSection}>
-          <ThemedText style={styles.tutorialSectionTitle}>Tips</ThemedText>
-          <View style={styles.tutorialTipsList}>
-            {[
-              { icon: "target" as const, text: "Start with words rich in vowels and common consonants like R, S, T, N." },
-              { icon: "zap" as const, text: "Use what you learn from each guess to narrow down your next try." },
-              { icon: "clock" as const, text: "A new word is available every day. Take your time!" },
-            ].map((tip, i) => (
-              <View key={i} style={styles.tutorialTipRow}>
-                <Feather name={tip.icon} size={16} color={theme.primary} style={{ marginTop: 2 }} />
-                <ThemedText style={[styles.tutorialTipText, { color: theme.textSecondary }]}>{tip.text}</ThemedText>
-              </View>
-            ))}
           </View>
         </View>
 
@@ -618,7 +595,7 @@ function TutorialOverlay({ visible, onDismiss }: TutorialOverlayProps) {
         >
           <ThemedText style={styles.tutorialButtonText}>Ok, I got it!</ThemedText>
         </Pressable>
-      </ScrollView>
+      </View>
     </Animated.View>
   );
 }
@@ -712,6 +689,138 @@ function KeyboardKey({ letter, state, onPress, shimmerProgress = -1, keyIndex = 
 
 type GameState = "playing" | "won" | "lost";
 
+const AI_COMMENT_INTERVAL = 20000;
+
+function useAICoPlayer(
+  gameState: GameState,
+  guesses: string[],
+  targetWord: string,
+  remainingRows: number,
+  letterStates: Record<string, LetterState>,
+  aiEnabled: boolean,
+  currentGuess: string,
+) {
+  const [comment, setComment] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastGuessCountRef = useRef(0);
+  const hasFetchedInitialRef = useRef(false);
+  const dismissTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const currentGuessRef = useRef(currentGuess);
+  currentGuessRef.current = currentGuess;
+
+  const fetchComment = useCallback(async () => {
+    if (!aiEnabled || !targetWord) return;
+    setIsLoading(true);
+    try {
+      const baseUrl = getApiUrl();
+      const url = new URL("/api/ai-comment", baseUrl);
+      const partial = currentGuessRef.current;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          guesses,
+          targetWord,
+          gameState,
+          remainingRows,
+          letterStates,
+          guessNumber: guesses.length,
+          currentGuess: partial || undefined,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.comment) {
+          setComment(data.comment);
+          setVisible(true);
+          if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
+          dismissTimerRef.current = setTimeout(() => setVisible(false), 8000);
+        }
+      }
+    } catch {
+    } finally {
+      setIsLoading(false);
+    }
+  }, [aiEnabled, targetWord, guesses, gameState, remainingRows, letterStates]);
+
+  useEffect(() => {
+    if (!aiEnabled || gameState !== "playing" || !targetWord) return;
+
+    if (!hasFetchedInitialRef.current) {
+      hasFetchedInitialRef.current = true;
+      const delay = setTimeout(() => fetchComment(), 3000);
+      return () => clearTimeout(delay);
+    }
+  }, [aiEnabled, gameState, targetWord]);
+
+  useEffect(() => {
+    if (!aiEnabled || gameState !== "playing") return;
+
+    if (guesses.length > lastGuessCountRef.current) {
+      lastGuessCountRef.current = guesses.length;
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => fetchComment(), 2000);
+    }
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [guesses.length, aiEnabled, gameState, fetchComment]);
+
+  useEffect(() => {
+    if (!aiEnabled || gameState !== "playing" || !targetWord) return;
+
+    const interval = setInterval(() => {
+      if (!isLoading) fetchComment();
+    }, AI_COMMENT_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [aiEnabled, gameState, targetWord, isLoading, fetchComment]);
+
+  useEffect(() => {
+    if (gameState !== "playing" && aiEnabled) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
+      const endDelay = setTimeout(() => fetchComment(), 1500);
+      return () => clearTimeout(endDelay);
+    }
+  }, [gameState, aiEnabled, fetchComment]);
+
+  const dismiss = useCallback(() => {
+    setVisible(false);
+    if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
+  }, []);
+
+  return { comment, visible, isLoading, dismiss };
+}
+
+function AICoPlayerBubble({ comment, visible, onDismiss }: { comment: string | null; visible: boolean; onDismiss: () => void }) {
+  const { theme, isDark } = useTheme();
+
+  return (
+    <View style={styles.aiBubbleContainer}>
+      {visible && comment ? (
+        <Animated.View
+          entering={FadeIn.duration(300)}
+          exiting={FadeOut.duration(200)}
+        >
+          <Pressable onPress={onDismiss} style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}>
+            <View style={[
+              styles.aiBubble,
+              { backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)" },
+            ]}>
+              <Feather name="message-circle" size={14} color={theme.primary} style={{ marginTop: 1 }} />
+              <ThemedText style={[styles.aiBubbleText, { color: theme.text }]}>{comment}</ThemedText>
+            </View>
+          </Pressable>
+        </Animated.View>
+      ) : null}
+    </View>
+  );
+}
+
 export default function MyPracta({ context, onComplete, showSettings, onSettings }: {
   context: PractaContext;
   onComplete: PractaCompleteHandler;
@@ -762,6 +871,9 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
   const hintLetterRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const HINT_DELAY = 15000;
   const HINT_LETTER_DURATION = 800;
+
+  const aiEnabled = context.config?.aiEnabled !== false;
+  const aiCoPlayer = useAICoPlayer(gameState, guesses, targetWord, remainingRows, letterStates, aiEnabled, currentGuess);
 
   const findMatchingValidWord = useCallback((): string | null => {
     if (guesses.length === 0 || !targetWord) return null;
@@ -1367,6 +1479,8 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
 
           <View style={styles.grid}>{renderGrid()}</View>
 
+          <AICoPlayerBubble comment={aiCoPlayer.comment} visible={aiCoPlayer.visible} onDismiss={aiCoPlayer.dismiss} />
+
           <Toast message={warningMessage} visible={!!warningMessage} />
           
           <TutorialOverlay visible={showTutorial} onDismiss={handleTutorialDismiss} />
@@ -1487,12 +1601,14 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     zIndex: 200,
   },
-  tutorialScroll: {
+  tutorialInner: {
+    flex: 1,
     paddingHorizontal: Spacing.xl + 4,
+    justifyContent: "center",
   },
   tutorialHero: {
     alignItems: "center",
-    gap: Spacing.sm,
+    gap: Spacing.xs,
     marginBottom: Spacing.lg,
   },
   tutorialTitle: {
@@ -1501,69 +1617,43 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   tutorialGoal: {
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 14,
+    lineHeight: 20,
     textAlign: "center",
-    maxWidth: 320,
   },
-  tutorialDivider: {
-    height: 1,
-    marginVertical: Spacing.md,
-  },
-  tutorialSection: {
-    marginBottom: Spacing.sm,
-  },
-  tutorialSectionTitle: {
-    fontSize: 13,
-    fontWeight: "700",
-    letterSpacing: 1.5,
-    textTransform: "uppercase",
-    marginBottom: Spacing.md,
-  },
-  tutorialExample: {
+  tutorialExamples: {
+    gap: Spacing.md,
     marginBottom: Spacing.lg,
-    gap: Spacing.xs + 2,
+  },
+  tutorialExampleCompact: {
+    gap: Spacing.xs,
   },
   tutTileRow: {
     flexDirection: "row",
     gap: 5,
   },
   tutTile: {
-    width: 38,
-    height: 38,
+    width: 36,
+    height: 36,
     borderRadius: 4,
     justifyContent: "center",
     alignItems: "center",
   },
   tutTileLetter: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "700",
   },
-  tutorialExampleText: {
-    fontSize: 14,
-    lineHeight: 20,
+  tutorialExampleLabel: {
+    fontSize: 13,
+    lineHeight: 18,
   },
   tutorialBold: {
     fontWeight: "700",
-  },
-  tutorialTipsList: {
-    gap: Spacing.sm + 2,
-  },
-  tutorialTipRow: {
-    flexDirection: "row",
-    gap: Spacing.sm,
-    alignItems: "flex-start",
-  },
-  tutorialTipText: {
-    flex: 1,
-    fontSize: 14,
-    lineHeight: 20,
   },
   tutorialButton: {
     borderRadius: BorderRadius.md,
     paddingVertical: Spacing.md,
     alignItems: "center",
-    marginTop: Spacing.lg,
   },
   tutorialButtonText: {
     color: "#FFFFFF",
@@ -1588,6 +1678,27 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "600",
+  },
+  aiBubbleContainer: {
+    alignItems: "center",
+    paddingHorizontal: Spacing.lg,
+    height: 32,
+    justifyContent: "center",
+    zIndex: 50,
+  },
+  aiBubble: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: Spacing.xs,
+    paddingVertical: Spacing.xs + 2,
+    paddingHorizontal: Spacing.sm + 2,
+    borderRadius: BorderRadius.md,
+  },
+  aiBubbleText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
+    fontStyle: "italic",
   },
   grid: {
     flex: 1,
