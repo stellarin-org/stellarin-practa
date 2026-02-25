@@ -739,7 +739,7 @@ export default function ZipPuzzle({
   const [hasWon, setHasWon] = useState(false);
   const [startTime, setStartTime] = useState<number>(0);
   const [solveTime, setSolveTime] = useState<number>(0);
-  const [dailyDifficulty, setDailyDifficulty] = useState<DailyDifficulty>("medium");
+  const [dailyDifficulty, setDailyDifficulty] = useState<DailyDifficulty>("easy");
   const [dailyCompletedMap, setDailyCompletedMap] = useState<Record<string, string>>({});
 
   const [replayPhase, setReplayPhase] = useState<"none" | "replaying" | "done">("none");
@@ -838,12 +838,14 @@ export default function ZipPuzzle({
   maxLabelRef.current = maxLabel;
 
   const screenWidth = Dimensions.get("window").width;
+  const screenHeight = Dimensions.get("window").height;
   const availableWidth = screenWidth - Spacing.lg * 2;
+  const verticalChrome = (headerHeight + Spacing.lg) + 80 + 60 + 50;
+  const availableHeight = screenHeight - verticalChrome;
 
-  const cellSize = Math.min(
-    MAX_CELL_SIZE,
-    Math.max(MIN_CELL_SIZE, Math.floor((availableWidth - (activeLevel.width - 1) * CELL_GAP) / activeLevel.width))
-  );
+  const cellFromWidth = Math.floor((availableWidth - (activeLevel.width - 1) * CELL_GAP) / activeLevel.width);
+  const cellFromHeight = Math.floor((availableHeight - (activeLevel.height - 1) * CELL_GAP) / activeLevel.height);
+  const cellSize = Math.min(MAX_CELL_SIZE, Math.max(MIN_CELL_SIZE, Math.min(cellFromWidth, cellFromHeight)));
 
   const gridWidth = cellSize * activeLevel.width + (activeLevel.width - 1) * CELL_GAP;
   const gridHeight = cellSize * activeLevel.height + (activeLevel.height - 1) * CELL_GAP;
@@ -875,6 +877,9 @@ export default function ZipPuzzle({
       });
       context.storage.get<boolean>("bridgeTutorialComplete").then((saved) => {
         setBridgeTutorialDone(saved === true);
+      }).catch(() => {});
+      context.storage.get<DailyDifficulty>("preferredDifficulty").then((saved) => {
+        if (saved && DAILY_DIFFICULTIES.includes(saved)) setDailyDifficulty(saved);
       }).catch(() => {});
     } else {
       setTutorialDone(true);
@@ -1309,11 +1314,20 @@ export default function ZipPuzzle({
       setTutorialWon(false);
       setGameState(initialGameState());
       setHasWon(false);
+      setReplayPhase("none");
+      setReplayIndex(0);
+      setWinningPath([]);
       lastCellRef.current = null;
+      modalSlide.value = 400;
+      modalOpacity.value = 0;
+      overlayOpacity.value = 0;
       return;
     }
     setShowBridgeTutorial(false);
     setDailyDifficulty(diff);
+    if (context.storage) {
+      context.storage.set("preferredDifficulty", diff).catch(() => {});
+    }
     setGameState(initialGameState());
     setHasWon(false);
     setReplayPhase("none");
@@ -1558,11 +1572,51 @@ export default function ZipPuzzle({
 
     return (
       <View style={styles.topSection}>
-        <View style={styles.dateRow}>
-          <Feather name="calendar" size={15} color={theme.primary} style={{ marginRight: 6 }} />
-          <ThemedText style={[styles.dateText, { color: theme.text }]}>
-            {displayDate}
-          </ThemedText>
+        <View style={styles.topRow}>
+          <View style={styles.dateRow}>
+            <Feather name="calendar" size={15} color={theme.primary} style={{ marginRight: 6 }} />
+            <ThemedText style={[styles.dateText, { color: theme.text }]}>
+              {displayDate}
+            </ThemedText>
+          </View>
+          <View style={styles.topBarActions}>
+            <Pressable
+              onPress={handleHint}
+              style={[styles.iconBtn, { backgroundColor: theme.backgroundSecondary }]}
+              disabled={hasWon || isTutorialMode || activeLevel.solution.length === 0}
+              hitSlop={8}
+            >
+              <Feather
+                name="help-circle"
+                size={18}
+                color={hasWon || isTutorialMode ? theme.textSecondary + "40" : theme.warning}
+              />
+            </Pressable>
+            <Pressable
+              onPress={handleUndo}
+              style={[styles.iconBtn, { backgroundColor: theme.backgroundSecondary, marginLeft: Spacing.xs }]}
+              disabled={gameState.path.length === 0 || hasWon}
+              hitSlop={8}
+            >
+              <Feather
+                name="corner-up-left"
+                size={18}
+                color={gameState.path.length === 0 || hasWon ? theme.textSecondary + "40" : theme.text}
+              />
+            </Pressable>
+            <Pressable
+              onPress={handleReset}
+              style={[styles.iconBtn, { backgroundColor: theme.backgroundSecondary, marginLeft: Spacing.xs }]}
+              disabled={gameState.path.length === 0 && !hasWon}
+              hitSlop={8}
+            >
+              <Feather
+                name="rotate-ccw"
+                size={18}
+                color={gameState.path.length === 0 && !hasWon ? theme.textSecondary + "40" : theme.text}
+              />
+            </Pressable>
+          </View>
         </View>
 
         <View style={[styles.diffToggle, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border }]}>
@@ -1579,8 +1633,8 @@ export default function ZipPuzzle({
                 ]}
                 disabled={hasWon || isReplaying}
               >
-                {done && !active ? (
-                  <Feather name="check" size={12} color={theme.success} style={{ marginRight: 4 }} />
+                {done ? (
+                  <Feather name="check" size={13} color={active ? "#FFFFFF" : theme.success} style={{ marginRight: 4 }} />
                 ) : null}
                 <ThemedText style={[
                   styles.diffText,
@@ -1591,45 +1645,6 @@ export default function ZipPuzzle({
               </Pressable>
             );
           })}
-        </View>
-
-        <View style={styles.topBarActions}>
-          <Pressable
-            onPress={handleHint}
-            style={[styles.iconBtn, { backgroundColor: theme.backgroundSecondary }]}
-            disabled={hasWon || isTutorialMode || activeLevel.solution.length === 0}
-            hitSlop={8}
-          >
-            <Feather
-              name="help-circle"
-              size={18}
-              color={hasWon || isTutorialMode ? theme.textSecondary + "40" : theme.warning}
-            />
-          </Pressable>
-          <Pressable
-            onPress={handleUndo}
-            style={[styles.iconBtn, { backgroundColor: theme.backgroundSecondary, marginLeft: Spacing.xs }]}
-            disabled={gameState.path.length === 0 || hasWon}
-            hitSlop={8}
-          >
-            <Feather
-              name="corner-up-left"
-              size={18}
-              color={gameState.path.length === 0 || hasWon ? theme.textSecondary + "40" : theme.text}
-            />
-          </Pressable>
-          <Pressable
-            onPress={handleReset}
-            style={[styles.iconBtn, { backgroundColor: theme.backgroundSecondary, marginLeft: Spacing.xs }]}
-            disabled={gameState.path.length === 0 && !hasWon}
-            hitSlop={8}
-          >
-            <Feather
-              name="rotate-ccw"
-              size={18}
-              color={gameState.path.length === 0 && !hasWon ? theme.textSecondary + "40" : theme.text}
-            />
-          </Pressable>
         </View>
       </View>
     );
@@ -1812,69 +1827,55 @@ export default function ZipPuzzle({
         </View>
       </View>
 
-      {gameState.path.length === 0 && !hasWon && !isReplaying && !isTutorialMode && !isBridgeTutorial ? (
-        <View style={styles.hintContainer}>
-          <View style={[styles.hintPill, { backgroundColor: theme.backgroundSecondary }]}>
-            <Feather name="navigation" size={14} color={theme.primary} style={{ marginRight: 6 }} />
-            <ThemedText style={[styles.hintText, { color: theme.textSecondary }]}>
-              {isDone ? "Already solved - replay for fun" : "Drag from 1 to draw your path"}
-            </ThemedText>
-          </View>
-        </View>
-      ) : null}
 
-      {replayPhase === "replaying" ? (
-        <View style={styles.hintContainer}>
-          <View style={[styles.hintPill, { backgroundColor: theme.success + "15" }]}>
-            <Feather name="zap" size={14} color={theme.success} style={{ marginRight: 6 }} />
-            <ThemedText style={[styles.hintText, { color: theme.success }]}>
-              Replaying your solution...
-            </ThemedText>
-          </View>
-        </View>
-      ) : null}
-
-      {missedCellsHint ? (
-        <View style={styles.hintContainer}>
-          <View style={[styles.hintPill, { backgroundColor: theme.warning + "15" }]}>
-            <Feather name="alert-circle" size={14} color={theme.warning} style={{ marginRight: 6 }} />
-            <ThemedText style={[styles.hintText, { color: theme.warning }]}>
-              Visit every empty cell before reaching the end
-            </ThemedText>
-          </View>
-        </View>
-      ) : null}
-
-      {(isTutorialMode || isBridgeTutorial) && tutorialWon ? (
-        <View style={styles.tutorialWinBar}>
-          <View style={[styles.tutorialWinPill, { backgroundColor: theme.success + "12", borderColor: theme.success + "30" }]}>
-            <Feather name="check-circle" size={18} color={theme.success} style={{ marginRight: 8 }} />
-            <ThemedText style={[styles.tutorialWinText, { color: theme.success }]}>
-              {isBridgeTutorial ? "Bridge mastered" : tutorialStep < TUTORIAL_LESSONS.length - 1 ? "Got it" : "You're ready"}
-            </ThemedText>
-            <Pressable
-              onPress={isBridgeTutorial ? handleBridgeTutorialDone : handleTutorialNext}
-              style={[styles.tutorialNextBtn, { backgroundColor: theme.primary }]}
-            >
-              <ThemedText style={styles.tutorialNextBtnText}>
-                {isBridgeTutorial ? "Play Hard Mode" : tutorialStep < TUTORIAL_LESSONS.length - 1 ? "Next Lesson" : "Start Playing"}
+      <View style={styles.bottomSlot}>
+        {replayPhase === "replaying" ? (
+          <View style={styles.hintContainer}>
+            <View style={[styles.hintPill, { backgroundColor: theme.success + "15" }]}>
+              <Feather name="zap" size={14} color={theme.success} style={{ marginRight: 6 }} />
+              <ThemedText style={[styles.hintText, { color: theme.success }]}>
+                Replaying your solution...
               </ThemedText>
-              <Feather name="arrow-right" size={16} color="#FFFFFF" style={{ marginLeft: 6 }} />
-            </Pressable>
+            </View>
           </View>
-        </View>
-      ) : null}
-
-      {(isTutorialMode || isBridgeTutorial) && !tutorialWon && gameState.path.length === 0 ? (
-        <View style={styles.hintContainer}>
-          <View style={[styles.hintPill, { backgroundColor: theme.primary + "10" }]}>
-            <Feather name="info" size={14} color={theme.primary} style={{ marginRight: 6 }} />
-            <ThemedText style={[styles.hintText, { color: theme.primary }]}>
-              Start by tapping the cell marked 1
-            </ThemedText>
+        ) : missedCellsHint ? (
+          <View style={styles.hintContainer}>
+            <View style={[styles.hintPill, { backgroundColor: theme.warning + "15" }]}>
+              <Feather name="alert-circle" size={14} color={theme.warning} style={{ marginRight: 6 }} />
+              <ThemedText style={[styles.hintText, { color: theme.warning }]}>
+                Visit every empty cell before reaching the end
+              </ThemedText>
+            </View>
           </View>
-        </View>
-      ) : null}
+        ) : (isTutorialMode || isBridgeTutorial) && tutorialWon ? (
+          <View style={styles.hintContainer}>
+            <View style={[styles.hintPill, { backgroundColor: theme.success + "15" }]}>
+              <Feather name="check-circle" size={14} color={theme.success} style={{ marginRight: 6 }} />
+              <ThemedText style={[styles.hintText, { color: theme.success }]}>
+                {isBridgeTutorial ? "Bridge mastered" : tutorialStep < TUTORIAL_LESSONS.length - 1 ? "Got it" : "You're ready"}
+              </ThemedText>
+              <Pressable
+                onPress={isBridgeTutorial ? handleBridgeTutorialDone : handleTutorialNext}
+                style={[styles.tutorialNextInline, { backgroundColor: theme.primary }]}
+              >
+                <ThemedText style={styles.tutorialNextBtnText}>
+                  {isBridgeTutorial ? "Play Hard Mode" : tutorialStep < TUTORIAL_LESSONS.length - 1 ? "Next" : "Start"}
+                </ThemedText>
+                <Feather name="arrow-right" size={14} color="#FFFFFF" style={{ marginLeft: 4 }} />
+              </Pressable>
+            </View>
+          </View>
+        ) : (isTutorialMode || isBridgeTutorial) && !tutorialWon && gameState.path.length === 0 ? (
+          <View style={styles.hintContainer}>
+            <View style={[styles.hintPill, { backgroundColor: theme.primary + "10" }]}>
+              <Feather name="info" size={14} color={theme.primary} style={{ marginRight: 6 }} />
+              <ThemedText style={[styles.hintText, { color: theme.primary }]}>
+                Start by tapping the cell marked 1
+              </ThemedText>
+            </View>
+          </View>
+        ) : null}
+      </View>
 
       {replayPhase === "done" ? (
         <>
@@ -1923,12 +1924,30 @@ export default function ZipPuzzle({
                 </View>
               </View>
 
+              {dailyDifficulty === "easy" && dailyCompletedMap["medium"] !== todayStr ? (
+                <Pressable
+                  onPress={() => switchDifficulty("medium")}
+                  style={[styles.continueBtn, { backgroundColor: theme.primary }]}
+                >
+                  <ThemedText style={styles.continueBtnText}>Try Medium</ThemedText>
+                  <Feather name="arrow-right" size={18} color="#FFFFFF" style={{ marginLeft: 8 }} />
+                </Pressable>
+              ) : dailyDifficulty === "medium" && dailyCompletedMap["hard"] !== todayStr ? (
+                <Pressable
+                  onPress={() => switchDifficulty("hard")}
+                  style={[styles.continueBtn, { backgroundColor: theme.primary }]}
+                >
+                  <ThemedText style={styles.continueBtnText}>Try Hard</ThemedText>
+                  <Feather name="arrow-right" size={18} color="#FFFFFF" style={{ marginLeft: 8 }} />
+                </Pressable>
+              ) : null}
               <Pressable
                 onPress={handleContinue}
-                style={[styles.continueBtn, { backgroundColor: theme.primary }]}
+                style={[styles.doneBtn, { borderColor: theme.border }]}
               >
-                <ThemedText style={styles.continueBtnText}>Continue</ThemedText>
-                <Feather name="arrow-right" size={18} color="#FFFFFF" style={{ marginLeft: 8 }} />
+                <ThemedText style={[styles.doneBtnText, { color: theme.textSecondary }]}>
+                  {dailyDifficulty === "hard" || (dailyDifficulty === "easy" && dailyCompletedMap["medium"] === todayStr) || (dailyDifficulty === "medium" && dailyCompletedMap["hard"] === todayStr) ? "Done" : "I'm done"}
+                </ThemedText>
               </Pressable>
             </View>
           </Animated.View>
@@ -1950,11 +1969,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   topSection: {
-    flexDirection: "row",
-    alignItems: "center",
     paddingHorizontal: Spacing.lg,
     marginBottom: Spacing.sm,
     gap: Spacing.sm,
+  },
+  topRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   dateRow: {
     flexDirection: "row",
@@ -1965,7 +1987,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   diffToggle: {
-    flex: 1,
     flexDirection: "row",
     borderRadius: BorderRadius.full,
     padding: 3,
@@ -1976,11 +1997,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderRadius: BorderRadius.full,
   },
   diffText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: "600",
   },
   topBarActions: {
@@ -2021,9 +2042,12 @@ const styles = StyleSheet.create({
   cellLabel: {
     fontVariant: ["tabular-nums"],
   },
+  bottomSlot: {
+    height: 52,
+    justifyContent: "center",
+  },
   hintContainer: {
     alignItems: "center",
-    paddingVertical: Spacing.md,
   },
   hintPill: {
     flexDirection: "row",
@@ -2118,6 +2142,19 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 17,
   },
+  doneBtn: {
+    width: "100%",
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: Spacing.sm,
+    borderWidth: 1,
+  },
+  doneBtnText: {
+    fontWeight: "600",
+    fontSize: 15,
+  },
   tutorialTopSection: {
     paddingHorizontal: Spacing.lg,
     marginBottom: Spacing.sm,
@@ -2158,6 +2195,9 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
   },
   tutorialWinPill: {
+    paddingHorizontal: Spacing.lg,
+  },
+  tutorialWinPillInner: {
     flexDirection: "row",
     alignItems: "center",
     padding: Spacing.md,
@@ -2175,6 +2215,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.sm,
+  },
+  tutorialNextInline: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.full,
+    marginLeft: Spacing.sm,
   },
   tutorialNextBtnText: {
     color: "#FFFFFF",
