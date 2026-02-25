@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-02-25T06:08:03.853Z",
+  "registryVersion": "2026-02-25T06:09:03.369Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -613,7 +613,7 @@
     },
     {
       "slug": "pathflow-puzzle",
-      "version": "1.0.4",
+      "version": "1.1.0",
       "buildId": "f2b8b4b5-505a-4255-92c0-2a989113716a",
       "name": "Pathflow",
       "description": "A calming path puzzle where you connect numbers in order by filling every square. Draw your way to flow.",
@@ -625,10 +625,10 @@
       "estimatedDuration": 300,
       "assets": {
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/pathflow-puzzle/f2b8b4b5-505a-4255-92c0-2a989113716a/icon.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/pathflow-puzzle/f2b8b4b5-505a-4255-92c0-2a989113716a/icon40.webp",
-        "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/pathflow-puzzle/f2b8b4b5-505a-4255-92c0-2a989113716a/icon80.webp",
         "levels": "https://stellarin-practa-verification.replit.app/assets/practa/pathflow-puzzle/f2b8b4b5-505a-4255-92c0-2a989113716a/levels.json",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/pathflow-puzzle/f2b8b4b5-505a-4255-92c0-2a989113716a/icon120.webp"
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/pathflow-puzzle/f2b8b4b5-505a-4255-92c0-2a989113716a/icon120.webp",
+        "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/pathflow-puzzle/f2b8b4b5-505a-4255-92c0-2a989113716a/icon80.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/pathflow-puzzle/f2b8b4b5-505a-4255-92c0-2a989113716a/icon40.webp"
       },
       "configSchema": {
         "fields": {
@@ -649,7 +649,7 @@
       ],
       "replitJson": {
         "REPLIT_USER": null,
-        "generatedAt": "2026-02-24T19:22:02.247Z",
+        "generatedAt": "2026-02-25T06:08:40.428Z",
         "REPLIT_USERID": null,
         "REPLIT_DOMAINS": "ebf0cb4a-6247-4df6-abec-f7e93b9b66fe-00-3fosx1btn763l.picard.replit.dev",
         "REPLIT_DEV_DOMAIN": "ebf0cb4a-6247-4df6-abec-f7e93b9b66fe-00-3fosx1btn763l.picard.replit.dev"
@@ -757,15 +757,15 @@
       "requiresAI": false,
       "estimatedDuration": 180,
       "assets": {
-        "hints": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/hints.json",
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_icon.webp",
-        "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.webp",
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/splash.mp4",
-        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json",
-        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon120.webp",
+        "hints": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/hints.json",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon40.webp",
         "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon80.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon40.webp"
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/splash.mp4",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon120.webp",
+        "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.webp",
+        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json",
+        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json"
       },
       "configSchema": {
         "fields": {

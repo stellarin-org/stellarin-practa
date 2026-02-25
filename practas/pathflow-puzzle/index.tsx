@@ -272,14 +272,14 @@ const DAILY_CONFIGS: Record<DailyDifficulty, DailyConfig> = {
     icon: "cloud",
     sizes: [{ w: 5, h: 5 }, { w: 5, h: 6 }, { w: 6, h: 5 }],
     blockedRange: [1, 3],
-    waypointDensity: 5,
+    waypointDensity: 4,
   },
   hard: {
     label: "Hard",
     icon: "zap",
     sizes: [{ w: 6, h: 6 }, { w: 6, h: 7 }, { w: 7, h: 6 }],
     blockedRange: [2, 5],
-    waypointDensity: 7,
+    waypointDensity: 5,
   },
 };
 
@@ -488,7 +488,9 @@ function generateHardWithBridge(dateStr: string): Level {
     const bridgeKey = cellKey(chosenBridge[0], chosenBridge[1]);
 
     const pathLen = bestPath.length;
-    const numWaypoints = Math.max(2, Math.min(Math.ceil(pathLen / 7) + 1, 3));
+    const hardBaseWp = Math.ceil(pathLen / 5) + 1;
+    const hardVariance = Math.floor(rng() * 4) - 2;
+    const numWaypoints = Math.max(2, Math.min(hardBaseWp + hardVariance, 9));
     const labels: Record<string, number> = {};
 
     const findNonBridgeIdx = (target: number, dir: number): number => {
@@ -545,7 +547,9 @@ function generateHardWithBridge(dateStr: string): Level {
   }
 
   const pathLen = stdPath.length;
-  const numWaypoints = Math.max(2, Math.min(Math.ceil(pathLen / 7) + 1, 3));
+  const fbBaseWp = Math.ceil(pathLen / 5) + 1;
+  const fbVariance = Math.floor(rng() * 4) - 2;
+  const numWaypoints = Math.max(2, Math.min(fbBaseWp + fbVariance, 9));
   const labels: Record<string, number> = {};
   labels[cellKey(stdPath[0][0], stdPath[0][1])] = 1;
   labels[cellKey(stdPath[pathLen - 1][0], stdPath[pathLen - 1][1])] = numWaypoints;
@@ -690,10 +694,9 @@ function generateDailyPuzzle(dateStr: string, difficulty: DailyDifficulty): Leve
   }
 
   const pathLen = bestPath.length;
-  const numWaypoints = Math.max(2, Math.min(
-    Math.ceil(pathLen / config.waypointDensity) + 1,
-    difficulty === "medium" ? 4 : 6
-  ));
+  const baseWaypoints = Math.ceil(pathLen / config.waypointDensity) + 1;
+  const variance = Math.floor(rng() * 4) - 2;
+  const numWaypoints = Math.max(2, Math.min(baseWaypoints + variance, 9));
   const labels: Record<string, number> = {};
   labels[cellKey(bestPath[0][0], bestPath[0][1])] = 1;
   labels[cellKey(bestPath[pathLen - 1][0], bestPath[pathLen - 1][1])] = numWaypoints;
