@@ -7,7 +7,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { View, StyleSheet, Pressable, Platform, Dimensions, Vibration } from "react-native";
+import { View, StyleSheet, Pressable, Platform, Dimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { Feather } from "@expo/vector-icons";
@@ -37,11 +37,16 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const BASE_CIRCLE_SIZE = 100;
 const MAX_CIRCLE_SIZE = 180;
-const HOLD_DURATION = 8000;
-const SQUEEZE_DURATION = 6000;
-const SQUEEZE_HARDER_DURATION = 6000;
-const RELEASE_DURATION = 12000;
-const DEEP_RELEASE_DURATION = 8000;
+
+const DEFAULT_TOTAL_DURATION = 40000;
+
+const PHASE_PROPORTIONS = {
+  hold: 0.16,
+  squeeze: 0.12,
+  squeeze_harder: 0.12,
+  release: 0.36,
+  deep_release: 0.24,
+};
 
 const COLORS = {
   calm: "#6366F1",
@@ -84,29 +89,37 @@ export default function SqueezeRelease({ context, onComplete, showSettings, onSe
   const attentionOpacity3 = useSharedValue(0);
   
   const phaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const hapticIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const escalationIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const hapticTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isMountedRef = useRef(true);
-  const hapticLevelRef = useRef(0);
-  const currentBpmRef = useRef(80);
-  const targetBpmRef = useRef(80);
-  const exerciseStartTimeRef = useRef(0);
-  const heartbeatRunningRef = useRef(false);
+  const hapticRunningRef = useRef(false);
+  const hapticStartTimeRef = useRef(0);
+  const hapticTotalDurationRef = useRef(DEFAULT_TOTAL_DURATION);
+
+  const cfg = context.config ?? {};
+  const rawDuration = Number(cfg.totalDuration) || 40;
+  const totalDuration = Math.max(20, Math.min(120, Number.isFinite(rawDuration) ? rawDuration : 40)) * 1000;
+
+  const phaseDurations = {
+    hold: totalDuration * PHASE_PROPORTIONS.hold,
+    squeeze: totalDuration * PHASE_PROPORTIONS.squeeze,
+    squeeze_harder: totalDuration * PHASE_PROPORTIONS.squeeze_harder,
+    release: totalDuration * PHASE_PROPORTIONS.release,
+    deep_release: totalDuration * PHASE_PROPORTIONS.deep_release,
+  };
 
   const clearAllTimers = useCallback(() => {
     if (phaseTimerRef.current) {
       clearTimeout(phaseTimerRef.current);
       phaseTimerRef.current = null;
     }
-    if (hapticIntervalRef.current) {
-      clearInterval(hapticIntervalRef.current);
-      hapticIntervalRef.current = null;
+  }, []);
+
+  const stopHapticEngine = useCallback(() => {
+    hapticRunningRef.current = false;
+    if (hapticTimerRef.current) {
+      clearTimeout(hapticTimerRef.current);
+      hapticTimerRef.current = null;
     }
-    if (escalationIntervalRef.current) {
-      clearInterval(escalationIntervalRef.current);
-      escalationIntervalRef.current = null;
-    }
-    hapticLevelRef.current = 0;
   }, []);
 
   useEffect(() => {
@@ -114,6 +127,7 @@ export default function SqueezeRelease({ context, onComplete, showSettings, onSe
     return () => {
       isMountedRef.current = false;
       clearAllTimers();
+      stopHapticEngine();
       cancelAnimation(leftScale);
       cancelAnimation(rightScale);
       cancelAnimation(leftOpacity);
@@ -126,7 +140,7 @@ export default function SqueezeRelease({ context, onComplete, showSettings, onSe
       cancelAnimation(pulseOpacity);
       cancelAnimation(colorPhase);
     };
-  }, [clearAllTimers]);
+  }, [clearAllTimers, stopHapticEngine]);
 
   const triggerHaptic = useCallback((style: Haptics.ImpactFeedbackStyle) => {
     if (Platform.OS !== "web") {
@@ -140,77 +154,57 @@ export default function SqueezeRelease({ context, onComplete, showSettings, onSe
     }
   }, []);
 
-  const triggerRigidHaptic = useCallback(() => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid);
-    }
+  const MIN_BPM = 50;
+  const MAX_BPM = 160;
+  const PEAK_POSITION = 0.38;
+
+  const getSineWaveBpm = useCallback((elapsed: number, duration: number) => {
+    const t = Math.min(elapsed / duration, 1);
+    const normalized = t <= PEAK_POSITION
+      ? t / PEAK_POSITION
+      : 1 - (t - PEAK_POSITION) / (1 - PEAK_POSITION);
+    const sine = Math.sin(normalized * Math.PI / 2);
+    return MIN_BPM + (MAX_BPM - MIN_BPM) * sine;
   }, []);
 
-  const bpmToMs = useCallback((bpm: number) => 60000 / bpm, []);
-  
-  const triggerHeartbeat = useCallback(async () => {
-    if (!isMountedRef.current) return;
-    if (Platform.OS === 'web') return;
-    
-    if (Platform.OS === 'ios') {
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      setTimeout(async () => {
-        if (isMountedRef.current) await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      }, 100);
-    } else {
-      Vibration.vibrate([0, 40, 60, 20]);
-    }
-  }, []);
+  const startHapticEngine = useCallback((duration: number) => {
+    if (hapticRunningRef.current) return;
+    if (Platform.OS === "web") return;
+    if (cfg.hapticFeedback === false) return;
+    hapticRunningRef.current = true;
+    hapticStartTimeRef.current = Date.now();
+    hapticTotalDurationRef.current = duration;
 
-  const startContinuousHeartbeat = useCallback((initialTargetBpm: number = 100) => {
-    if (heartbeatRunningRef.current) return;
-    heartbeatRunningRef.current = true;
-    exerciseStartTimeRef.current = Date.now();
-    currentBpmRef.current = initialTargetBpm;
-    targetBpmRef.current = initialTargetBpm;
-    
-    const runHeartbeat = () => {
-      if (!isMountedRef.current || !heartbeatRunningRef.current) return;
-      
-      const current = currentBpmRef.current;
-      const target = targetBpmRef.current;
-      
-      const smoothingFactor = 0.08;
-      currentBpmRef.current = current + (target - current) * smoothingFactor;
-      
-      triggerHeartbeat();
-      
-      const interval = bpmToMs(currentBpmRef.current);
-      hapticIntervalRef.current = setTimeout(runHeartbeat, interval);
+    const tick = () => {
+      if (!isMountedRef.current || !hapticRunningRef.current) return;
+
+      const elapsed = Date.now() - hapticStartTimeRef.current;
+      if (elapsed >= hapticTotalDurationRef.current) {
+        hapticRunningRef.current = false;
+        return;
+      }
+
+      const bpm = getSineWaveBpm(elapsed, hapticTotalDurationRef.current);
+      const intervalMs = 60000 / bpm;
+
+      const t = elapsed / hapticTotalDurationRef.current;
+      const impactIntensity = t <= PEAK_POSITION
+        ? Math.sin((t / PEAK_POSITION) * Math.PI / 2)
+        : Math.sin(((1 - (t - PEAK_POSITION) / (1 - PEAK_POSITION))) * Math.PI / 2);
+
+      if (impactIntensity > 0.7) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      } else if (impactIntensity > 0.35) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } else {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+
+      hapticTimerRef.current = setTimeout(tick, intervalMs);
     };
-    
-    runHeartbeat();
-  }, [triggerHeartbeat, bpmToMs]);
 
-  const setHeartbeatTarget = useCallback((targetBpm: number) => {
-    targetBpmRef.current = targetBpm;
-  }, []);
-
-  const stopContinuousHeartbeat = useCallback(() => {
-    heartbeatRunningRef.current = false;
-    if (hapticIntervalRef.current) {
-      clearTimeout(hapticIntervalRef.current as ReturnType<typeof setTimeout>);
-      hapticIntervalRef.current = null;
-    }
-  }, []);
-
-  const stopHapticPulse = useCallback(() => {
-    if (hapticIntervalRef.current) {
-      clearTimeout(hapticIntervalRef.current as ReturnType<typeof setTimeout>);
-      clearInterval(hapticIntervalRef.current as ReturnType<typeof setInterval>);
-      hapticIntervalRef.current = null;
-    }
-    if (escalationIntervalRef.current) {
-      clearInterval(escalationIntervalRef.current);
-      escalationIntervalRef.current = null;
-    }
-    hapticLevelRef.current = 0;
-  }, []);
+    tick();
+  }, [getSineWaveBpm]);
 
   const startPulsingRing = useCallback(() => {
     pulseOpacity.value = 0.6;
@@ -285,74 +279,66 @@ export default function SqueezeRelease({ context, onComplete, showSettings, onSe
       triggerHaptic(Haptics.ImpactFeedbackStyle.Medium);
       setPhase("hold");
       progress.value = 0;
-      progress.value = withTiming(0.2, { duration: HOLD_DURATION });
-      intensity.value = withTiming(0.4, { duration: HOLD_DURATION });
-      colorPhase.value = withTiming(1, { duration: HOLD_DURATION });
-      animateCirclesGrow(1.3, HOLD_DURATION);
-      startContinuousHeartbeat(100);
+      progress.value = withTiming(0.2, { duration: phaseDurations.hold });
+      intensity.value = withTiming(0.4, { duration: phaseDurations.hold });
+      colorPhase.value = withTiming(1, { duration: phaseDurations.hold });
+      animateCirclesGrow(1.3, phaseDurations.hold);
+      startHapticEngine(totalDuration * 1.15);
       startPulsingRing();
       
       phaseTimerRef.current = setTimeout(() => {
         if (!isMountedRef.current) return;
         setPhase("squeeze");
-        triggerHaptic(Haptics.ImpactFeedbackStyle.Heavy);
-        progress.value = withTiming(0.4, { duration: SQUEEZE_DURATION });
-        intensity.value = withTiming(0.7, { duration: SQUEEZE_DURATION });
-        colorPhase.value = withTiming(2, { duration: SQUEEZE_DURATION });
-        animateCirclesGrow(1.6, SQUEEZE_DURATION);
-        setHeartbeatTarget(130);
+        progress.value = withTiming(0.4, { duration: phaseDurations.squeeze });
+        intensity.value = withTiming(0.7, { duration: phaseDurations.squeeze });
+        colorPhase.value = withTiming(2, { duration: phaseDurations.squeeze });
+        animateCirclesGrow(1.6, phaseDurations.squeeze);
         
         phaseTimerRef.current = setTimeout(() => {
           if (!isMountedRef.current) return;
           setPhase("squeeze_harder");
-          triggerHaptic(Haptics.ImpactFeedbackStyle.Heavy);
-          progress.value = withTiming(0.6, { duration: SQUEEZE_HARDER_DURATION });
-          intensity.value = withTiming(1, { duration: SQUEEZE_HARDER_DURATION });
-          colorPhase.value = withTiming(3, { duration: SQUEEZE_HARDER_DURATION });
-          animateCirclesGrow(1.9, SQUEEZE_HARDER_DURATION);
-          setHeartbeatTarget(160);
+          progress.value = withTiming(0.6, { duration: phaseDurations.squeeze_harder });
+          intensity.value = withTiming(1, { duration: phaseDurations.squeeze_harder });
+          colorPhase.value = withTiming(3, { duration: phaseDurations.squeeze_harder });
+          animateCirclesGrow(1.9, phaseDurations.squeeze_harder);
           
           phaseTimerRef.current = setTimeout(() => {
             if (!isMountedRef.current) return;
             setPhase("release");
-            triggerHaptic(Haptics.ImpactFeedbackStyle.Heavy);
-            progress.value = withTiming(0.8, { duration: RELEASE_DURATION });
-            intensity.value = withTiming(0.5, { duration: RELEASE_DURATION });
-            colorPhase.value = withTiming(4, { duration: RELEASE_DURATION });
-            animateCirclesShrink(RELEASE_DURATION);
-            setHeartbeatTarget(80);
+            progress.value = withTiming(0.8, { duration: phaseDurations.release });
+            intensity.value = withTiming(0.5, { duration: phaseDurations.release });
+            colorPhase.value = withTiming(4, { duration: phaseDurations.release });
+            animateCirclesShrink(phaseDurations.release);
             stopPulsingRing();
             
             phaseTimerRef.current = setTimeout(() => {
               if (!isMountedRef.current) return;
               setPhase("deep_release");
-              triggerHaptic(Haptics.ImpactFeedbackStyle.Light);
-              progress.value = withTiming(1, { duration: DEEP_RELEASE_DURATION });
-              intensity.value = withTiming(0, { duration: DEEP_RELEASE_DURATION });
-              colorPhase.value = withTiming(5, { duration: DEEP_RELEASE_DURATION });
-              animateCirclesShrink(DEEP_RELEASE_DURATION);
-              setHeartbeatTarget(60);
+              progress.value = withTiming(1, { duration: phaseDurations.deep_release });
+              intensity.value = withTiming(0, { duration: phaseDurations.deep_release });
+              colorPhase.value = withTiming(5, { duration: phaseDurations.deep_release });
+              animateCirclesShrink(phaseDurations.deep_release);
               
               phaseTimerRef.current = setTimeout(() => {
                 if (!isMountedRef.current) return;
-                stopContinuousHeartbeat();
+                stopHapticEngine();
                 setPhase("complete");
-              }, DEEP_RELEASE_DURATION);
-            }, RELEASE_DURATION);
-          }, SQUEEZE_HARDER_DURATION);
-        }, SQUEEZE_DURATION);
-      }, HOLD_DURATION);
+              }, phaseDurations.deep_release);
+            }, phaseDurations.release);
+          }, phaseDurations.squeeze_harder);
+        }, phaseDurations.squeeze);
+      }, phaseDurations.hold);
     } else if (!touching && phase !== "place" && phase !== "complete") {
       if (phase === "release" || phase === "deep_release") {
         clearAllTimers();
-        stopContinuousHeartbeat();
+        stopHapticEngine();
         stopPulsingRing();
         progress.value = withTiming(1, { duration: 300 });
         intensity.value = withTiming(0, { duration: 300 });
         setPhase("complete");
       } else {
         clearAllTimers();
-        stopContinuousHeartbeat();
+        stopHapticEngine();
         stopPulsingRing();
         resetCircles();
         progress.value = withTiming(0, { duration: 300 });
@@ -361,8 +347,8 @@ export default function SqueezeRelease({ context, onComplete, showSettings, onSe
         setPhase("place");
       }
     }
-  }, [phase, progress, intensity, colorPhase, animateCirclesGrow, animateCirclesShrink, resetCircles, 
-      startContinuousHeartbeat, setHeartbeatTarget, stopContinuousHeartbeat, startPulsingRing, stopPulsingRing, triggerHaptic, triggerSuccessHaptic, clearAllTimers, stopAttentionAnimation]);
+  }, [phase, progress, intensity, colorPhase, phaseDurations, totalDuration, animateCirclesGrow, animateCirclesShrink, resetCircles, 
+      startHapticEngine, stopHapticEngine, startPulsingRing, stopPulsingRing, triggerHaptic, triggerSuccessHaptic, clearAllTimers, stopAttentionAnimation]);
 
   useEffect(() => {
     const newBothTouching = leftActive && rightActive;
@@ -380,12 +366,12 @@ export default function SqueezeRelease({ context, onComplete, showSettings, onSe
       },
       metadata: { 
         exerciseType: "squeeze-release",
-        holdDuration: HOLD_DURATION / 1000,
-        squeezeDuration: SQUEEZE_DURATION / 1000,
-        squeezeHarderDuration: SQUEEZE_HARDER_DURATION / 1000,
-        releaseDuration: RELEASE_DURATION / 1000,
-        deepReleaseDuration: DEEP_RELEASE_DURATION / 1000,
-        totalDuration: (HOLD_DURATION + SQUEEZE_DURATION + SQUEEZE_HARDER_DURATION + RELEASE_DURATION + DEEP_RELEASE_DURATION) / 1000,
+        holdDuration: phaseDurations.hold / 1000,
+        squeezeDuration: phaseDurations.squeeze / 1000,
+        squeezeHarderDuration: phaseDurations.squeeze_harder / 1000,
+        releaseDuration: phaseDurations.release / 1000,
+        deepReleaseDuration: phaseDurations.deep_release / 1000,
+        totalDuration: totalDuration / 1000,
         completedAt: Date.now(),
       },
     });
@@ -589,8 +575,6 @@ export default function SqueezeRelease({ context, onComplete, showSettings, onSe
     contentOpacity.value = withTiming(1, { duration: 600, easing: Easing.out(Easing.ease) });
     startAttentionAnimation();
   }, [contentOpacity, startAttentionAnimation]);
-
-  const cfg = context.config ?? {};
 
   const getPhaseText = () => {
     switch (phase) {
