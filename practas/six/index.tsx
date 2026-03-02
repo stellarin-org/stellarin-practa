@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, createContext, useContext, useRef } from "react";
-import { View, StyleSheet, Pressable, Platform, Image, useWindowDimensions, ScrollView } from "react-native";
+import { View, StyleSheet, Pressable, Platform, Image, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import * as Sharing from "expo-sharing";
@@ -18,7 +18,6 @@ import Animated, {
   FadeIn,
   FadeOut,
 } from "react-native-reanimated";
-import { BlurView } from "expo-blur";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -27,7 +26,7 @@ import { Spacing, BorderRadius } from "@/constants/theme";
 import { PractaContext, PractaCompleteHandler } from "@/types/flow";
 import { usePractaChrome } from "@/context/PractaChromeContext";
 import { ImageSourcePropType } from "react-native";
-import { getApiUrl } from "@/lib/query-client";
+import type { PractaAI } from "@/lib/practa-ai";
 
 const WORD_LENGTH = 6;
 const INITIAL_ROWS = 6;
@@ -40,8 +39,9 @@ const EXAMPLE_WORDS = [
 ];
 
 const COLORS = {
-  correct: "#6AAA64",
-  present: "#C9B458",
+  correct: "#4CAF50",
+  correctDouble: "#7B61D6",
+  present: "#F5900E",
   absent: { dark: "#3A3A3C", light: "#787C7E" },
   tile: { dark: "#121213", light: "#FFFFFF" },
   tileBorder: { dark: "#3A3A3C", light: "#D3D6DA" },
@@ -120,7 +120,7 @@ function getDailyWord(words: string[]): string {
   return words[safeIndex];
 }
 
-type LetterState = "empty" | "filled" | "correct" | "present" | "absent";
+type LetterState = "empty" | "filled" | "correct" | "correctDouble" | "present" | "absent" | "pending";
 
 function evaluateGuess(guess: string, target: string): LetterState[] {
   const result: LetterState[] = new Array(guess.length).fill("absent");
@@ -130,15 +130,23 @@ function evaluateGuess(guess: string, target: string): LetterState[] {
     targetLetterCounts[letter] = (targetLetterCounts[letter] || 0) + 1;
   }
   
+  const correctCounts: Record<string, number> = {};
   for (let i = 0; i < guess.length; i++) {
     if (guess[i] === target[i]) {
       result[i] = "correct";
       targetLetterCounts[guess[i]]--;
+      correctCounts[guess[i]] = (correctCounts[guess[i]] || 0) + 1;
     }
   }
   
   for (let i = 0; i < guess.length; i++) {
-    if (result[i] !== "correct" && targetLetterCounts[guess[i]] > 0) {
+    if (result[i] === "correct" && correctCounts[guess[i]] > 1) {
+      result[i] = "correctDouble";
+    }
+  }
+  
+  for (let i = 0; i < guess.length; i++) {
+    if (result[i] !== "correct" && result[i] !== "correctDouble" && targetLetterCounts[guess[i]] > 0) {
       result[i] = "present";
       targetLetterCounts[guess[i]]--;
     }
@@ -155,17 +163,25 @@ function evaluatePartialGuess(guess: string, target: string): LetterState[] {
     targetLetterCounts[letter] = (targetLetterCounts[letter] || 0) + 1;
   }
   
+  const correctCounts: Record<string, number> = {};
   for (let i = 0; i < guess.length; i++) {
     if (guess[i] === target[i]) {
       result[i] = "correct";
       targetLetterCounts[guess[i]]--;
+      correctCounts[guess[i]] = (correctCounts[guess[i]] || 0) + 1;
     } else {
-      result[i] = "pending" as LetterState;
+      result[i] = "pending";
     }
   }
   
   for (let i = 0; i < guess.length; i++) {
-    if (result[i] === ("pending" as LetterState)) {
+    if (result[i] === "correct" && correctCounts[guess[i]] > 1) {
+      result[i] = "correctDouble";
+    }
+  }
+  
+  for (let i = 0; i < guess.length; i++) {
+    if (result[i] === "pending") {
       if (targetLetterCounts[guess[i]] > 0) {
         result[i] = "present";
         targetLetterCounts[guess[i]]--;
@@ -393,12 +409,14 @@ function LetterTile({ letter, state, immediate = false, pop = false, falling = f
   }, [celebrating, celebrateDelay]);
 
   const getBackgroundColor = () => {
-    if (!immediate && state !== "correct" && state !== "present" && state !== "absent") {
+    if (!immediate && state !== "correct" && state !== "correctDouble" && state !== "present" && state !== "absent") {
       return isDark ? COLORS.tile.dark : COLORS.tile.light;
     }
     switch (state) {
       case "correct":
         return COLORS.correct;
+      case "correctDouble":
+        return COLORS.correctDouble;
       case "present":
         return COLORS.present;
       case "absent":
@@ -409,7 +427,7 @@ function LetterTile({ letter, state, immediate = false, pop = false, falling = f
   };
 
   const getBorderColor = () => {
-    if (state === "correct" || state === "present" || state === "absent") {
+    if (state === "correct" || state === "correctDouble" || state === "present" || state === "absent") {
       return "transparent";
     }
     if (state === "filled") {
@@ -418,7 +436,7 @@ function LetterTile({ letter, state, immediate = false, pop = false, falling = f
     return isDark ? COLORS.tileBorder.dark : COLORS.tileBorder.light;
   };
 
-  const isRevealed = state === "correct" || state === "present" || state === "absent";
+  const isRevealed = state === "correct" || state === "correctDouble" || state === "present" || state === "absent";
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -584,6 +602,20 @@ function TutorialOverlay({ visible, onDismiss }: TutorialOverlayProps) {
               <ThemedText style={styles.tutorialBold}>L</ThemedText> is not in the word
             </ThemedText>
           </View>
+
+          <View style={styles.tutorialExampleCompact}>
+            <View style={styles.tutTileRow}>
+              <TutorialTile letter="P" color={COLORS.correctDouble} />
+              <TutorialTile letter="E" borderColor={emptyBorder} />
+              <TutorialTile letter="P" color={COLORS.correctDouble} />
+              <TutorialTile letter="P" borderColor={emptyBorder} />
+              <TutorialTile letter="E" borderColor={emptyBorder} />
+              <TutorialTile letter="R" borderColor={emptyBorder} />
+            </View>
+            <ThemedText style={[styles.tutorialExampleLabel, { color: theme.textSecondary }]}>
+              <ThemedText style={styles.tutorialBold}>P</ThemedText> is correct in multiple spots
+            </ThemedText>
+          </View>
         </View>
 
         <Pressable
@@ -630,6 +662,8 @@ function KeyboardKey({ letter, state, onPress, shimmerProgress = -1, keyIndex = 
     switch (state) {
       case "correct":
         return COLORS.correct;
+      case "correctDouble":
+        return COLORS.correctDouble;
       case "present":
         return COLORS.present;
       case "absent":
@@ -639,7 +673,7 @@ function KeyboardKey({ letter, state, onPress, shimmerProgress = -1, keyIndex = 
     }
   };
 
-  const textColor = state === "correct" || state === "present" || state === "absent" 
+  const textColor = state === "correct" || state === "correctDouble" || state === "present" || state === "absent" 
     ? "#FFFFFF" 
     : theme.text;
 
@@ -691,6 +725,96 @@ type GameState = "playing" | "won" | "lost";
 
 const AI_COMMENT_INTERVAL = 20000;
 
+function buildAIPrompt(
+  guesses: string[],
+  targetWord: string,
+  gameState: GameState,
+  remainingRows: number,
+  letterStates: Record<string, LetterState>,
+  partialGuess: string,
+): string {
+  const typingInfo = partialGuess && partialGuess.length > 0 && partialGuess.length < 6
+    ? `\nCurrently typing: "${partialGuess}" (${partialGuess.length}/6 letters typed — they seem stuck mid-word!)`
+    : "";
+
+  const guessDetails = (guesses || []).map((g: string, i: number) => {
+    const result = g.split("").map((letter: string, j: number) => {
+      if (letter === targetWord[j]) return `${letter}(green)`;
+      if (targetWord.includes(letter)) return `${letter}(yellow)`;
+      return `${letter}(gray)`;
+    }).join(" ");
+    return `Guess ${i + 1}: ${result}`;
+  }).join("\n");
+
+  const greenPositions: string[] = Array(6).fill("_");
+  const yellowLetters = new Set<string>();
+  const grayLetters = new Set<string>();
+
+  for (const guess of (guesses || [])) {
+    for (let i = 0; i < guess.length; i++) {
+      const letter = guess[i];
+      if (letter === targetWord[i]) {
+        greenPositions[i] = letter;
+      } else if (targetWord.includes(letter)) {
+        yellowLetters.add(letter);
+      } else {
+        grayLetters.add(letter);
+      }
+    }
+  }
+
+  const hasInfo = guesses && guesses.length > 0;
+  let knownInfo = "";
+  if (hasInfo) {
+    const pattern = greenPositions.join("");
+    const yellows = Array.from(yellowLetters).join(", ") || "none";
+    const grays = Array.from(grayLetters).join(", ") || "none";
+    knownInfo = `\n\nWhat we know:\n- Pattern: ${pattern}\n- Yellow (in word, wrong spot): ${yellows}\n- Gray (not in word): ${grays}`;
+
+    if (yellowLetters.size > 0) {
+      knownInfo += `\n- CONSTRAINT: Any word suggestion MUST contain: ${Array.from(yellowLetters).join(", ")}`;
+    }
+    if (grayLetters.size > 0) {
+      knownInfo += `\n- CONSTRAINT: Any word suggestion MUST NOT contain: ${Array.from(grayLetters).join(", ")}`;
+    }
+  }
+
+  let situationNote = "";
+  const remaining = remainingRows - (guesses?.length || 0);
+  if (remaining <= 2 && remaining > 0) {
+    situationNote = `\n\nPRESSURE: Only ${remaining} guess${remaining === 1 ? "" : "es"} left! Be urgent but encouraging.`;
+  }
+  if (gameState === "won") {
+    situationNote = "\n\nTHEY GOT IT! Celebrate like you both cracked it together!";
+  }
+  if (gameState === "lost") {
+    situationNote = `\n\nThey ran out of guesses. The word was ${targetWord}. Be a supportive friend.`;
+  }
+
+  return `You're playing a 6-letter word guessing game together with someone as their co-player buddy. You do NOT know the answer. You're figuring it out together based on the clues.
+
+Game right now:
+- Guess ${guesses?.length || 0} of ${remainingRows || 6}
+- Status: ${gameState}
+${guessDetails ? `\n${guessDetails}` : "\nNo guesses yet — you're both staring at an empty board."}${typingInfo}${knownInfo}${situationNote}
+
+How to be:
+- You're a co-player, not a spectator. You're solving this together. Think out loud like a friend would.
+- ACTIVELY HELP by analyzing the pattern. Look at the known green positions, yellow letters, and eliminated letters and reason about what fits.
+- Suggest specific words that could work! "what about PRINCE?" or "try DUSTER maybe?" — real six-letter words only.
+- CRITICAL: Any word you suggest MUST include ALL yellow letters and MUST NOT use any gray letters. Double-check before suggesting. If E is yellow, your suggestion must contain E. If S is gray, your suggestion must NOT contain S.
+- Point out letter patterns: "words ending in -LY are common" or "that E and R combo... maybe -ER ending?" or "I bet it ends in -ED or -ING" or "double letters maybe?"
+- Comment on their actual guess: "oh smart, that tested a lot of new letters" or "hmm same letters as before, let's try something different"
+- If they're mid-word (partially typed), notice it! Comment on what they're spelling so far — "ooh are you going for something starting with CR?" or help them finish it: "CRA... CRATER maybe?" or encourage them: "I like where you're going with that"
+- React naturally. Excited by greens, intrigued by yellows, bummed by all-grays.
+- If no guesses yet, suggest a good starting strategy or word.
+- When they win: celebrate like you both cracked it together.
+- When they lose: be a supportive friend, not patronizing.
+- Talk like texting a friend. Casual, lowercase fine. No emojis.
+
+Reply with JUST ONE short comment (max 120 chars). No quotes around it. No prefixes. Just the comment.`;
+}
+
 function useAICoPlayer(
   gameState: GameState,
   guesses: string[],
@@ -699,6 +823,7 @@ function useAICoPlayer(
   letterStates: Record<string, LetterState>,
   aiEnabled: boolean,
   currentGuess: string,
+  ai?: PractaAI,
 ) {
   const [comment, setComment] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -711,39 +836,35 @@ function useAICoPlayer(
   currentGuessRef.current = currentGuess;
 
   const fetchComment = useCallback(async () => {
-    if (!aiEnabled || !targetWord) return;
+    if (!aiEnabled || !targetWord || !ai) return;
     setIsLoading(true);
     try {
-      const baseUrl = getApiUrl();
-      const url = new URL("/api/ai-comment", baseUrl);
       const partial = currentGuessRef.current;
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          guesses,
-          targetWord,
-          gameState,
-          remainingRows,
-          letterStates,
-          guessNumber: guesses.length,
-          currentGuess: partial || undefined,
-        }),
+      const prompt = buildAIPrompt(guesses, targetWord, gameState, remainingRows, letterStates, partial);
+
+      const result = await ai.gemini({
+        model: "gemini-2.5-flash",
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          maxOutputTokens: 1500,
+          temperature: 1.0,
+          thinkingConfig: { thinkingBudget: 1024 },
+        },
       });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.comment) {
-          setComment(data.comment);
-          setVisible(true);
-          if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
-          dismissTimerRef.current = setTimeout(() => setVisible(false), 8000);
-        }
+
+      const raw = result?.text || "";
+      const cleaned = raw.replace(/^["']+|["']+$/g, "").trim().split("\n")[0].trim();
+      if (cleaned && cleaned.length <= 150) {
+        setComment(cleaned);
+        setVisible(true);
+        if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
+        dismissTimerRef.current = setTimeout(() => setVisible(false), 8000);
       }
     } catch {
     } finally {
       setIsLoading(false);
     }
-  }, [aiEnabled, targetWord, guesses, gameState, remainingRows, letterStates]);
+  }, [aiEnabled, targetWord, guesses, gameState, remainingRows, letterStates, ai]);
 
   useEffect(() => {
     if (!aiEnabled || gameState !== "playing" || !targetWord) return;
@@ -873,7 +994,7 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
   const HINT_LETTER_DURATION = 800;
 
   const aiEnabled = context.config?.aiEnabled !== false;
-  const aiCoPlayer = useAICoPlayer(gameState, guesses, targetWord, remainingRows, letterStates, aiEnabled, currentGuess);
+  const aiCoPlayer = useAICoPlayer(gameState, guesses, targetWord, remainingRows, letterStates, aiEnabled, currentGuess, context.ai);
 
   const findMatchingValidWord = useCallback((): string | null => {
     if (guesses.length === 0 || !targetWord) return null;
@@ -912,6 +1033,8 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
       if (shownHintWords.has(word)) continue;
       if (word.length !== WORD_LENGTH) continue;
       
+      if (currentGuess.length > 0 && !word.startsWith(currentGuess)) continue;
+      
       let matches = true;
       
       for (let i = 0; i < WORD_LENGTH; i++) {
@@ -944,15 +1067,16 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
     }
     
     return null;
-  }, [guesses, targetWord, validWords, shownHintWords]);
+  }, [guesses, targetWord, validWords, shownHintWords, currentGuess]);
 
   const getHintFileWord = useCallback((): string | null => {
     const hint = hints[targetWord];
     if (hint && hint.length === 6 && !shownHintWords.has(hint)) {
+      if (currentGuess.length > 0 && !hint.startsWith(currentGuess)) return null;
       return hint;
     }
     return null;
-  }, [hints, targetWord, shownHintWords]);
+  }, [hints, targetWord, shownHintWords, currentGuess]);
 
   const getNextHintWord = useCallback((): string => {
     const matchingWord = findMatchingValidWord();
@@ -1003,20 +1127,23 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
   }, [getNextHintWord]);
 
   const startHintTimer = useCallback(() => {
-    if (gameState !== "playing" || guesses.length === 0 || currentGuess.length > 0) {
+    if (gameState !== "playing" || guesses.length === 0) {
       return;
     }
     
     resetHintTimer();
     
+    const delay = currentGuess.length > 0 ? 7000 : HINT_DELAY;
+    
     hintTimerRef.current = setTimeout(() => {
-      if (gameState === "playing" && guesses.length > 0 && currentGuess.length === 0) {
+      if (gameState === "playing" && guesses.length > 0) {
         const word = getNextHintWord();
+        if (word === "ILOVEU" && currentGuess.length > 0) return;
         setHintWord(word);
         setShowHint(true);
-        showNextHintLetter(word, 0);
+        showNextHintLetter(word, Math.max(0, currentGuess.length));
       }
-    }, HINT_DELAY);
+    }, delay);
   }, [gameState, guesses.length, currentGuess.length, getNextHintWord, resetHintTimer, showNextHintLetter]);
 
   useEffect(() => {
@@ -1025,12 +1152,8 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
       return;
     }
     
-    if (currentGuess.length > 0) {
+    if (guesses.length > 0) {
       resetHintTimer();
-      return;
-    }
-    
-    if (guesses.length > 0 && currentGuess.length === 0) {
       startHintTimer();
     }
     
@@ -1243,13 +1366,30 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
     return evaluatePartialGuess(currentGuess, targetWord);
   }, [currentGuess, targetWord]);
 
+  const liveKeyboardStates = useMemo(() => {
+    if (currentGuess.length === 0) return letterStates;
+    const live = { ...letterStates };
+    for (let i = 0; i < currentGuess.length; i++) {
+      const letter = currentGuess[i];
+      if (live[letter]) continue;
+      if (letter === targetWord[i]) {
+        live[letter] = "correct";
+      } else if (targetWord.includes(letter)) {
+        live[letter] = "present";
+      } else {
+        live[letter] = "absent";
+      }
+    }
+    return live;
+  }, [letterStates, currentGuess, targetWord]);
+
   const updateKeyboardStates = useCallback((guess: string, states: LetterState[]) => {
     setLetterStates((prev) => {
       const newStates = { ...prev };
       for (let i = 0; i < guess.length; i++) {
         const letter = guess[i];
         const state = states[i];
-        if (!newStates[letter] || state === "correct" || (state === "present" && newStates[letter] === "absent")) {
+        if (!newStates[letter] || state === "correct" || state === "correctDouble" || (state === "present" && newStates[letter] === "absent")) {
           newStates[letter] = state;
         }
       }
@@ -1341,7 +1481,7 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
     const lines = guesses.map((guess) => {
       const states = evaluateGuess(guess, targetWord);
       return states.map((s) => 
-        s === "correct" ? "🟩" : s === "present" ? "🟨" : "⬛"
+        s === "correctDouble" ? "🟪" : s === "correct" ? "🟩" : s === "present" ? "🟧" : "⬛"
       ).join("");
     });
     
@@ -1387,7 +1527,7 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
       const ghostWord = ghostWords[i] || "";
       const isGhostActive = activeGhostRows.has(i);
       
-      const showHintInRow = isCurrentRow && showHint && hintWord && currentGuess.length === 0;
+      const showHintInRow = isCurrentRow && showHint && hintWord && (currentGuess.length === 0 || hintWord.startsWith(currentGuess));
 
       const cells = [];
       for (let j = 0; j < WORD_LENGTH; j++) {
@@ -1408,7 +1548,7 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
               fadeOutDelay={fadeOutDelay}
             />
           );
-        } else if (showHintInRow) {
+        } else if (showHintInRow && j >= currentGuess.length) {
           cells.push(
             <HintLetterTile
               key={`hint-${i}-${j}-${hintWord}`}
@@ -1499,7 +1639,7 @@ export default function MyPracta({ context, onComplete, showSettings, onSettings
                         <KeyboardKey
                           key={key}
                           letter={key}
-                          state={letterStates[key]}
+                          state={liveKeyboardStates[key]}
                           onPress={handleKeyPressWithReset}
                           shimmerProgress={shimmerProgress}
                           keyIndex={rowStartIndex + keyIdx}
