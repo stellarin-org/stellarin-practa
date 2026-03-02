@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-03-02T01:18:59.670Z",
+  "registryVersion": "2026-03-02T01:47:52.379Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -251,9 +251,9 @@
       "estimatedDuration": 20,
       "assets": {
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/icon.webp",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/icon120.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/icon40.webp",
         "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/icon80.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/icon40.webp"
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/icon120.webp"
       },
       "configSchema": {
         "fields": {
@@ -599,7 +599,7 @@
     },
     {
       "slug": "ospan-a",
-      "version": "1.0.12",
+      "version": "1.0.14",
       "buildId": "788de9d5-2cdf-436f-9a8c-3c62f8784424",
       "name": "Math & Memory (OSPAN)",
       "description": "Adaptive Operation Span training for working memory and executive control",
@@ -610,9 +610,10 @@
       "requiresAI": false,
       "estimatedDuration": 420,
       "assets": {
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/ospan-a/788de9d5-2cdf-436f-9a8c-3c62f8784424/splash.mp4",
-        "content": "https://stellarin-practa-verification.replit.app/assets/practa/ospan-a/788de9d5-2cdf-436f-9a8c-3c62f8784424/content.json",
-        "wellness-bg": "https://stellarin-practa-verification.replit.app/assets/practa/ospan-a/788de9d5-2cdf-436f-9a8c-3c62f8784424/wellness-bg.webp"
+        "icon": "https://stellarin-practa-verification.replit.app/assets/practa/ospan-a/788de9d5-2cdf-436f-9a8c-3c62f8784424/icon.webp",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/ospan-a/788de9d5-2cdf-436f-9a8c-3c62f8784424/icon120.webp",
+        "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/ospan-a/788de9d5-2cdf-436f-9a8c-3c62f8784424/icon80.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/ospan-a/788de9d5-2cdf-436f-9a8c-3c62f8784424/icon40.webp"
       },
       "configSchema": {
         "fields": {
@@ -629,7 +630,14 @@
         "expo-haptics",
         "react-native-reanimated",
         "react-native-safe-area-context"
-      ]
+      ],
+      "replitJson": {
+        "REPLIT_USER": null,
+        "generatedAt": "2026-03-02T01:47:36.784Z",
+        "REPLIT_USERID": null,
+        "REPLIT_DOMAINS": "4b161d47-d615-4d38-a65d-8f810daebc8b-00-nmnq4ic8d6uy.worf.replit.dev",
+        "REPLIT_DEV_DOMAIN": "4b161d47-d615-4d38-a65d-8f810daebc8b-00-nmnq4ic8d6uy.worf.replit.dev"
+      }
     },
     {
       "slug": "pathflow-puzzle",

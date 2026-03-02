@@ -74,23 +74,15 @@ function generateArithmeticProblem(): ArithmeticProblem {
   const A = Math.floor(Math.random() * 9) + 1;
   const B = Math.floor(Math.random() * 9) + 1;
   const C = Math.floor(Math.random() * 9) + 1;
-  const ops = ["+", "-", "*"] as const;
-  const op1 = ops[Math.floor(Math.random() * ops.length)];
+  const ops = ["+", "-"] as const;
+  const op = ops[Math.floor(Math.random() * ops.length)];
 
-  let result: number;
-  if (op1 === "+") {
-    result = A * B + C;
-  } else if (op1 === "-") {
-    result = A * B - C;
-  } else {
-    result = A * B * C;
-  }
+  const result = op === "+" ? A * B + C : A * B - C;
 
   const showCorrect = Math.random() > 0.5;
   const displayedResult = showCorrect ? result : result + (Math.random() > 0.5 ? Math.floor(Math.random() * 5) + 1 : -(Math.floor(Math.random() * 5) + 1));
 
-  const opSymbol = op1 === "*" ? "x" : op1;
-  const display = `(${A} x ${B}) ${opSymbol === "x" ? "+" : opSymbol} ${C} = ${displayedResult}`;
+  const display = `(${A} x ${B}) ${op} ${C} = ${displayedResult}`;
 
   return { display, isCorrect: showCorrect };
 }
@@ -887,23 +879,61 @@ export default function OSPANPracta({ context, onComplete, onSettings, showSetti
     );
   };
 
+  const getSessionHeadline = (spanScore: number, maxSpan: number, isNewRecord: boolean) => {
+    if (isNewRecord && maxSpan >= 5) return { title: "New Record!", subtitle: "You pushed past your personal best!", icon: "star" as const };
+    if (isNewRecord) return { title: "Personal Best!", subtitle: "You're setting new benchmarks!", icon: "award" as const };
+    if (spanScore >= 6) return { title: "Outstanding!", subtitle: "Elite-level working memory!", icon: "star" as const };
+    if (spanScore >= 5) return { title: "Impressive!", subtitle: "Strong cognitive performance!", icon: "award" as const };
+    if (spanScore >= 4) return { title: "Great Session!", subtitle: "Solid working memory skills!", icon: "trending-up" as const };
+    if (spanScore >= 3) return { title: "Nice Work!", subtitle: "Building your mental muscle!", icon: "thumbs-up" as const };
+    return { title: "Good Effort!", subtitle: "Every session strengthens your brain!", icon: "zap" as const };
+  };
+
+  const getSpanLevel = (span: number): { label: string; color: string } => {
+    if (span >= 7) return { label: "Exceptional", color: theme.success };
+    if (span >= 6) return { label: "Advanced", color: theme.success };
+    if (span >= 5) return { label: "Strong", color: theme.primary };
+    if (span >= 4) return { label: "Developing", color: theme.primary };
+    if (span >= 3) return { label: "Building", color: theme.textSecondary };
+    return { label: "Starting", color: theme.textSecondary };
+  };
+
   const renderSummary = () => {
     const trials = sessionTrials;
     const meanListLength = trials.length > 0 ? trials.reduce((sum, t) => sum + t.listLength, 0) / trials.length : 0;
     const maxListLength = trials.length > 0 ? Math.max(...trials.map((t) => t.listLength)) : 0;
     const processingAcc = trials.length > 0 ? trials.reduce((sum, t) => sum + t.processingAccuracy, 0) / trials.length : 0;
     const memoryAcc = trials.length > 0 ? trials.reduce((sum, t) => sum + t.memoryAccuracy, 0) / trials.length : 0;
-    const successRate = trials.length > 0 ? trials.filter((t) => t.success).length / trials.length : 0;
     const highScore = getHighScore();
+    const isNewRecord = maxListLength >= highScore && maxListLength > 0;
+    const headline = getSessionHeadline(meanListLength, maxListLength, isNewRecord);
+    const spanLevel = getSpanLevel(maxListLength);
+
+    const mathCorrect = trials.reduce((sum, t) => sum + Math.round(t.processingAccuracy * t.listLength), 0);
+    const mathTotal = trials.reduce((sum, t) => sum + t.listLength, 0);
+    const lettersCorrect = trials.reduce((sum, t) => sum + Math.round(t.memoryAccuracy * t.listLength), 0);
+    const lettersTotal = mathTotal;
 
     return (
       <Animated.View entering={FadeIn} style={styles.summaryContainer}>
+        <Confetti show={isNewRecord || meanListLength >= 5} />
         <ScrollView contentContainerStyle={styles.summaryScroll} showsVerticalScrollIndicator={false}>
           <View style={[styles.iconContainer, { backgroundColor: theme.success + "20" }]}>
-            <Feather name="award" size={48} color={theme.success} />
+            <Feather name={headline.icon} size={48} color={theme.success} />
           </View>
 
-          <ThemedText style={styles.summaryTitle}>Session Complete</ThemedText>
+          <ThemedText style={styles.summaryTitle}>{headline.title}</ThemedText>
+          <ThemedText style={[styles.subtitle, { color: theme.textSecondary, marginBottom: Spacing.lg }]}>{headline.subtitle}</ThemedText>
+
+          <View style={[styles.summaryCard, { backgroundColor: theme.backgroundSecondary }]}>
+            <View style={styles.spanHighlight}>
+              <ThemedText style={[styles.spanNumber, { color: theme.primary }]}>{maxListLength}</ThemedText>
+              <ThemedText style={[styles.spanLabel, { color: theme.textSecondary }]}>Best Span This Session</ThemedText>
+              <View style={[styles.levelBadge, { backgroundColor: spanLevel.color + "20" }]}>
+                <ThemedText style={[styles.levelText, { color: spanLevel.color }]}>{spanLevel.label}</ThemedText>
+              </View>
+            </View>
+          </View>
 
           <View style={[styles.summaryCard, { backgroundColor: theme.backgroundSecondary }]}>
             <View style={styles.summaryRow}>
@@ -911,35 +941,31 @@ export default function OSPANPracta({ context, onComplete, onSettings, showSetti
               <ThemedText style={[styles.summaryValue, { color: theme.primary }]}>{meanListLength.toFixed(1)}</ThemedText>
             </View>
             <View style={styles.summaryRow}>
-              <ThemedText style={{ color: theme.textSecondary }}>Best Span</ThemedText>
-              <ThemedText style={styles.summaryValue}>{maxListLength}</ThemedText>
-            </View>
-            <View style={styles.summaryRow}>
-              <ThemedText style={{ color: theme.textSecondary }}>Trials Completed</ThemedText>
+              <ThemedText style={{ color: theme.textSecondary }}>Rounds Completed</ThemedText>
               <ThemedText style={styles.summaryValue}>{trials.length}</ThemedText>
             </View>
             <View style={styles.summaryRow}>
-              <ThemedText style={{ color: theme.textSecondary }}>Math Accuracy</ThemedText>
-              <ThemedText style={styles.summaryValue}>{Math.round(processingAcc * 100)}%</ThemedText>
+              <ThemedText style={{ color: theme.textSecondary }}>Math</ThemedText>
+              <ThemedText style={styles.summaryValue}>{mathCorrect} / {mathTotal} correct</ThemedText>
             </View>
             <View style={styles.summaryRow}>
-              <ThemedText style={{ color: theme.textSecondary }}>Recall Accuracy</ThemedText>
-              <ThemedText style={styles.summaryValue}>{Math.round(memoryAcc * 100)}%</ThemedText>
-            </View>
-            <View style={styles.summaryRow}>
-              <ThemedText style={{ color: theme.textSecondary }}>Attention Score</ThemedText>
-              <ThemedText style={[styles.summaryValue, { color: theme.success }]}>{Math.round(successRate * 100)}%</ThemedText>
+              <ThemedText style={{ color: theme.textSecondary }}>Letters Recalled</ThemedText>
+              <ThemedText style={styles.summaryValue}>{lettersCorrect} / {lettersTotal} correct</ThemedText>
             </View>
           </View>
 
           {storedData.attempts.length > 0 ? (
             <View style={[styles.progressSection, { backgroundColor: theme.backgroundSecondary }]}>
-              <ThemedText style={styles.progressTitle}>Progress (Last {storedData.attempts.length} sessions)</ThemedText>
+              <ThemedText style={styles.progressTitle}>Your Journey</ThemedText>
               <View style={styles.summaryRow}>
-                <ThemedText style={{ color: theme.textSecondary }}>All-Time Best</ThemedText>
+                <ThemedText style={{ color: theme.textSecondary }}>All-Time Best Span</ThemedText>
                 <ThemedText style={[styles.summaryValue, { color: theme.primary }]}>{highScore}</ThemedText>
               </View>
-              {maxListLength >= highScore && maxListLength > 0 ? (
+              <View style={styles.summaryRow}>
+                <ThemedText style={{ color: theme.textSecondary }}>Sessions Completed</ThemedText>
+                <ThemedText style={styles.summaryValue}>{storedData.attempts.length}</ThemedText>
+              </View>
+              {isNewRecord ? (
                 <View style={[styles.newRecord, { backgroundColor: theme.success + "20" }]}>
                   <Feather name="star" size={16} color={theme.success} />
                   <ThemedText style={[styles.newRecordText, { color: theme.success }]}>New Personal Best!</ThemedText>
@@ -1232,7 +1258,7 @@ const styles = StyleSheet.create({
   summaryTitle: {
     fontSize: 28,
     fontWeight: "700",
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.xs,
   },
   summaryCard: {
     width: "100%",
@@ -1248,6 +1274,29 @@ const styles = StyleSheet.create({
   },
   summaryValue: {
     fontSize: 18,
+    fontWeight: "600",
+  },
+  spanHighlight: {
+    alignItems: "center",
+    paddingVertical: Spacing.md,
+  },
+  spanNumber: {
+    fontSize: 56,
+    fontWeight: "800",
+    lineHeight: 64,
+  },
+  spanLabel: {
+    fontSize: 14,
+    marginTop: Spacing.xs,
+    marginBottom: Spacing.sm,
+  },
+  levelBadge: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.full,
+  },
+  levelText: {
+    fontSize: 13,
     fontWeight: "600",
   },
   progressSection: {

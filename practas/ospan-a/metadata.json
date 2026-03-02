@@ -1,10 +1,11 @@
 {
   "name": "Math & Memory (OSPAN)",
-  "version": "1.0.12",
+  "version": "1.0.14",
   "description": "Adaptive Operation Span training for working memory and executive control",
   "author": "Practa",
   "estimatedDuration": 420,
   "requiresAI": false,
+  "offlineCapable": true,
   "configSchema": {
     "fields": {
       "aiEnabled": {
@@ -31,5 +32,7 @@
     "attention"
   ],
   "requiredPermissions": [],
-  "assets": {}
+  "assets": {
+    "icon": "icon.png"
+  }
 }
