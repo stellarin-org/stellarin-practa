@@ -1,7 +1,8 @@
 {
   "buildId": "ab49b186-1b8a-41c8-8eb3-6143c4311945",
-  "createdAt": "2026-02-21T19:54:20.531Z",
+  "createdAt": "2026-03-02T02:00:44.543Z",
   "assets": {
+    "icon": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/icon.webp",
     "letterC": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-c.mp3",
     "letterH": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-h.mp3",
     "letterK": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-k.mp3",
@@ -9,6 +10,9 @@
     "letterQ": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-q.mp3",
     "letterR": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-r.mp3",
     "letterS": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-s.mp3",
-    "letterT": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-t.mp3"
+    "letterT": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-t.mp3",
+    "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/icon120.webp",
+    "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/icon80.webp",
+    "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/icon40.webp"
   }
 }

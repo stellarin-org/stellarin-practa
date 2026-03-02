@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-03-02T01:59:31.462Z",
+  "registryVersion": "2026-03-02T02:00:46.095Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -181,7 +181,7 @@
     },
     {
       "slug": "dual-nback",
-      "version": "2.0.6",
+      "version": "2.0.8",
       "buildId": "ab49b186-1b8a-41c8-8eb3-6143c4311945",
       "name": "Dual N-Back",
       "description": "Train your working memory by tracking position and audio simultaneously with the Dual N-Back exercise",
@@ -192,6 +192,7 @@
       "requiresAI": false,
       "estimatedDuration": 30,
       "assets": {
+        "icon": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/icon.webp",
         "letterC": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-c.mp3",
         "letterH": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-h.mp3",
         "letterK": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-k.mp3",
@@ -199,7 +200,10 @@
         "letterQ": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-q.mp3",
         "letterR": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-r.mp3",
         "letterS": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-s.mp3",
-        "letterT": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-t.mp3"
+        "letterT": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-t.mp3",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/icon120.webp",
+        "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/icon80.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/icon40.webp"
       },
       "configSchema": {
         "fields": {
@@ -219,7 +223,14 @@
         "expo-linear-gradient",
         "react-native-reanimated",
         "react-native-safe-area-context"
-      ]
+      ],
+      "replitJson": {
+        "REPLIT_USER": null,
+        "generatedAt": "2026-03-02T02:00:24.220Z",
+        "REPLIT_USERID": null,
+        "REPLIT_DOMAINS": "d8c67eba-3b23-4193-b496-1aea89559369-00-r6q53526w472.riker.replit.dev",
+        "REPLIT_DEV_DOMAIN": "d8c67eba-3b23-4193-b496-1aea89559369-00-r6q53526w472.riker.replit.dev"
+      }
     },
     {
       "slug": "good-news",
@@ -236,9 +247,9 @@
       "assets": {
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/icon.webp",
         "news": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/news.json",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/icon120.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/icon40.webp",
         "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/icon80.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/icon40.webp"
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/icon120.webp"
       },
       "configSchema": {
         "fields": {

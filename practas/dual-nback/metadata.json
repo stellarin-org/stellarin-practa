@@ -1,10 +1,11 @@
 {
   "name": "Dual N-Back",
-  "version": "2.0.6",
+  "version": "2.0.8",
   "description": "Train your working memory by tracking position and audio simultaneously with the Dual N-Back exercise",
   "author": "Your Name",
   "estimatedDuration": 30,
   "requiresAI": false,
+  "offlineCapable": true,
   "dependencies": [
     "@expo/vector-icons",
     "expo-audio",
@@ -35,6 +36,7 @@
   ],
   "requiredPermissions": [],
   "assets": {
+    "icon": "icon.png",
     "letterC": "letter-c.mp3",
     "letterH": "letter-h.mp3",
     "letterK": "letter-k.mp3",
