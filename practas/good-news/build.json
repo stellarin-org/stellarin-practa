@@ -1,7 +1,11 @@
 {
   "buildId": "eb6d297d-9b7e-4164-9287-520b076b14fb",
-  "createdAt": "2026-01-03T09:29:23.928Z",
+  "createdAt": "2026-03-02T01:59:29.182Z",
   "assets": {
-    "news": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/news.json"
+    "icon": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/icon.webp",
+    "news": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/news.json",
+    "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/icon120.webp",
+    "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/icon80.webp",
+    "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/icon40.webp"
   }
 }

@@ -132,7 +132,7 @@ function NewsCard({ item, theme: appTheme }: { item: NewsItem; theme: any }) {
 
 const CDN_NEWS_PATH = "assets/shared/300a73ff-5180-43a6-b9dd-f3bac1d73dc2/news.json";
 
-export default function GoodNews({ context, onComplete, onSkip, onSettings, showSettings }: GoodNewsProps) {
+export default function GoodNews({ context, onComplete, onSettings, showSettings }: GoodNewsProps) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const { setConfig } = usePractaChrome();
@@ -230,13 +230,6 @@ export default function GoodNews({ context, onComplete, onSkip, onSettings, show
         <ThemedText style={styles.completeButtonText}>Done Reading</ThemedText>
       </Pressable>
       
-      {onSkip ? (
-        <Pressable onPress={onSkip} style={styles.skipButton}>
-          <ThemedText style={[styles.skipText, { color: theme.textSecondary }]}>
-            Skip for now
-          </ThemedText>
-        </Pressable>
-      ) : null}
     </View>
   );
 
@@ -428,14 +421,6 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "600",
     fontSize: 16,
-  },
-  skipButton: {
-    padding: Spacing.md,
-    alignItems: "center",
-    marginTop: Spacing.sm,
-  },
-  skipText: {
-    fontSize: 14,
   },
   emptyState: {
     alignItems: "center",

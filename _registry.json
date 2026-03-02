@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-03-02T01:54:58.867Z",
+  "registryVersion": "2026-03-02T01:59:31.462Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -223,7 +223,7 @@
     },
     {
       "slug": "good-news",
-      "version": "1.1.1",
+      "version": "1.1.3",
       "buildId": "eb6d297d-9b7e-4164-9287-520b076b14fb",
       "name": "Good News",
       "description": "A feed of positive and uplifting news stories",
@@ -234,7 +234,33 @@
       "requiresAI": false,
       "estimatedDuration": 60,
       "assets": {
-        "news": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/news.json"
+        "icon": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/icon.webp",
+        "news": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/news.json",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/icon120.webp",
+        "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/icon80.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/good-news/eb6d297d-9b7e-4164-9287-520b076b14fb/icon40.webp"
+      },
+      "configSchema": {
+        "fields": {
+          "aiEnabled": {
+            "type": "boolean",
+            "label": "AI Features",
+            "default": true
+          }
+        }
+      },
+      "dependencies": [
+        "@expo/vector-icons",
+        "@tanstack/react-query",
+        "expo-haptics",
+        "react-native-safe-area-context"
+      ],
+      "replitJson": {
+        "REPLIT_USER": null,
+        "generatedAt": "2026-03-02T01:59:08.798Z",
+        "REPLIT_USERID": null,
+        "REPLIT_DOMAINS": "4375a8e7-3b1b-452e-af38-ec3baab6498d-00-1rnbwwhxdj84f.spock.replit.dev",
+        "REPLIT_DEV_DOMAIN": "4375a8e7-3b1b-452e-af38-ec3baab6498d-00-1rnbwwhxdj84f.spock.replit.dev"
       }
     },
     {
@@ -785,15 +811,15 @@
       "requiresAI": false,
       "estimatedDuration": 180,
       "assets": {
-        "hints": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/hints.json",
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_icon.webp",
-        "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.webp",
-        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/splash.mp4",
-        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json",
-        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon120.webp",
+        "hints": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/hints.json",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon40.webp",
         "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon80.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon40.webp"
+        "splash": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/splash.mp4",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/icon120.webp",
+        "sixLogo": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/six_logo.webp",
+        "wordlist": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/wordlist.json",
+        "validWords": "https://stellarin-practa-verification.replit.app/assets/practa/six/d65f36c4-2d03-4357-8c0f-4db5d19562cc/valid-words.json"
       },
       "configSchema": {
         "fields": {
