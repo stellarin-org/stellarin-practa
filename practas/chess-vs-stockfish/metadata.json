@@ -1,0 +1,46 @@
+{
+  "name": "Chess",
+  "version": "1.0.1",
+  "description": "Play chess against Stockfish 16 engine with adjustable difficulty",
+  "author": "Your Name",
+  "estimatedDuration": 600,
+  "requiresAI": false,
+  "offlineCapable": false,
+  "dependencies": [
+    "@expo/vector-icons",
+    "@react-native-community/slider",
+    "expo-haptics",
+    "react-native-gesture-handler",
+    "react-native-reanimated",
+    "react-native-safe-area-context"
+  ],
+  "configSchema": {
+    "fields": {
+      "aiEnabled": {
+        "type": "boolean",
+        "label": "Enable AI Features",
+        "description": "Allow this Practa to use AI-powered enhancements when available",
+        "default": true
+      }
+    },
+    "requiredConfig": false
+  },
+  "widget": {
+    "enabled": true,
+    "displayName": "Chess",
+    "description": "Quick access to play chess against Stockfish"
+  },
+  "id": "chess-vs-stockfish",
+  "type": "widget",
+  "category": "games",
+  "tags": [
+    "chess",
+    "strategy",
+    "stockfish",
+    "game"
+  ],
+  "requiredPermissions": [],
+  "assets": {
+    "icon": "icon.png"
+  }
+}

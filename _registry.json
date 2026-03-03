@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-03-02T02:00:46.095Z",
+  "registryVersion": "2026-03-03T01:00:09.189Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -39,6 +39,51 @@
         "react-native-reanimated",
         "react-native-safe-area-context"
       ]
+    },
+    {
+      "slug": "chess-vs-stockfish",
+      "version": "1.0.1",
+      "buildId": "9da761c2-d773-44c4-870a-1f19937849ae",
+      "name": "Chess",
+      "description": "Play chess against Stockfish 16 engine with adjustable difficulty",
+      "author": "Your Name",
+      "category": "games",
+      "practaType": "games",
+      "type": "core",
+      "requiresAI": false,
+      "estimatedDuration": 600,
+      "assets": {
+        "icon": "https://stellarin-practa-verification.replit.app/assets/practa/chess-vs-stockfish/9da761c2-d773-44c4-870a-1f19937849ae/icon.webp",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/chess-vs-stockfish/9da761c2-d773-44c4-870a-1f19937849ae/icon120.webp",
+        "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/chess-vs-stockfish/9da761c2-d773-44c4-870a-1f19937849ae/icon80.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/chess-vs-stockfish/9da761c2-d773-44c4-870a-1f19937849ae/icon40.webp"
+      },
+      "configSchema": {
+        "fields": {
+          "aiEnabled": {
+            "type": "boolean",
+            "label": "Enable AI Features",
+            "default": true,
+            "description": "Allow this Practa to use AI-powered enhancements when available"
+          }
+        },
+        "requiredConfig": false
+      },
+      "dependencies": [
+        "@expo/vector-icons",
+        "@react-native-community/slider",
+        "expo-haptics",
+        "react-native-gesture-handler",
+        "react-native-reanimated",
+        "react-native-safe-area-context"
+      ],
+      "replitJson": {
+        "REPLIT_USER": "woodenfox",
+        "generatedAt": "2026-03-03T00:59:37.776Z",
+        "REPLIT_USERID": "22787089",
+        "REPLIT_DOMAINS": "dd62830a-7a01-4fc2-a9f4-7cc50756fd10-00-37vvqa21mdiga.picard.replit.dev",
+        "REPLIT_DEV_DOMAIN": "dd62830a-7a01-4fc2-a9f4-7cc50756fd10-00-37vvqa21mdiga.picard.replit.dev"
+      }
     },
     {
       "slug": "daily-sudoku",
@@ -193,6 +238,9 @@
       "estimatedDuration": 30,
       "assets": {
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/icon.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/icon40.webp",
+        "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/icon80.webp",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/icon120.webp",
         "letterC": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-c.mp3",
         "letterH": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-h.mp3",
         "letterK": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-k.mp3",
@@ -200,10 +248,7 @@
         "letterQ": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-q.mp3",
         "letterR": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-r.mp3",
         "letterS": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-s.mp3",
-        "letterT": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-t.mp3",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/icon120.webp",
-        "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/icon80.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/icon40.webp"
+        "letterT": "https://stellarin-practa-verification.replit.app/assets/practa/dual-nback/ab49b186-1b8a-41c8-8eb3-6143c4311945/letter-t.mp3"
       },
       "configSchema": {
         "fields": {
