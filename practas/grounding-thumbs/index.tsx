@@ -154,43 +154,49 @@ export default function SqueezeRelease({ context, onComplete, showSettings, onSe
     }
   }, []);
 
-  const MIN_BPM = 50;
-  const MAX_BPM = 160;
+  const MIN_BPM = 40;
+  const MAX_BPM = 128;
   const PEAK_POSITION = 0.38;
 
   const getSineWaveBpm = useCallback((elapsed: number, duration: number) => {
     const t = Math.min(elapsed / duration, 1);
-    const normalized = t <= PEAK_POSITION
-      ? t / PEAK_POSITION
-      : 1 - (t - PEAK_POSITION) / (1 - PEAK_POSITION);
-    const sine = Math.sin(normalized * Math.PI / 2);
-    return MIN_BPM + (MAX_BPM - MIN_BPM) * sine;
+    let curve: number;
+    if (t <= PEAK_POSITION) {
+      const rampT = t / PEAK_POSITION;
+      curve = Math.sin(rampT * Math.PI / 2);
+    } else {
+      const decayT = (t - PEAK_POSITION) / (1 - PEAK_POSITION);
+      curve = Math.pow(1 - decayT, 3);
+    }
+    return MIN_BPM + (MAX_BPM - MIN_BPM) * curve;
   }, []);
+
+  const nextBeatTimeRef = useRef(0);
 
   const startHapticEngine = useCallback((duration: number) => {
     if (hapticRunningRef.current) return;
     if (Platform.OS === "web") return;
     if (cfg.hapticFeedback === false) return;
     hapticRunningRef.current = true;
-    hapticStartTimeRef.current = Date.now();
+    const startTime = Date.now();
+    hapticStartTimeRef.current = startTime;
     hapticTotalDurationRef.current = duration;
+    nextBeatTimeRef.current = startTime;
 
     const tick = () => {
       if (!isMountedRef.current || !hapticRunningRef.current) return;
 
-      const elapsed = Date.now() - hapticStartTimeRef.current;
+      const now = Date.now();
+      const elapsed = now - hapticStartTimeRef.current;
       if (elapsed >= hapticTotalDurationRef.current) {
         hapticRunningRef.current = false;
         return;
       }
 
-      const bpm = getSineWaveBpm(elapsed, hapticTotalDurationRef.current);
-      const intervalMs = 60000 / bpm;
-
       const t = elapsed / hapticTotalDurationRef.current;
       const impactIntensity = t <= PEAK_POSITION
         ? Math.sin((t / PEAK_POSITION) * Math.PI / 2)
-        : Math.sin(((1 - (t - PEAK_POSITION) / (1 - PEAK_POSITION))) * Math.PI / 2);
+        : Math.pow(1 - (t - PEAK_POSITION) / (1 - PEAK_POSITION), 3);
 
       if (impactIntensity > 0.7) {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
@@ -200,7 +206,11 @@ export default function SqueezeRelease({ context, onComplete, showSettings, onSe
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
 
-      hapticTimerRef.current = setTimeout(tick, intervalMs);
+      const bpm = getSineWaveBpm(elapsed, hapticTotalDurationRef.current);
+      const intervalMs = 60000 / bpm;
+      nextBeatTimeRef.current += intervalMs;
+      const delay = Math.max(1, nextBeatTimeRef.current - Date.now());
+      hapticTimerRef.current = setTimeout(tick, delay);
     };
 
     tick();

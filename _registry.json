@@ -1,5 +1,5 @@
 {
-  "registryVersion": "2026-03-03T01:00:09.189Z",
+  "registryVersion": "2026-03-05T05:38:47.976Z",
   "practas": [
     {
       "slug": "chess-puzzles",
@@ -54,9 +54,9 @@
       "estimatedDuration": 600,
       "assets": {
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/chess-vs-stockfish/9da761c2-d773-44c4-870a-1f19937849ae/icon.webp",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/chess-vs-stockfish/9da761c2-d773-44c4-870a-1f19937849ae/icon120.webp",
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/chess-vs-stockfish/9da761c2-d773-44c4-870a-1f19937849ae/icon40.webp",
         "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/chess-vs-stockfish/9da761c2-d773-44c4-870a-1f19937849ae/icon80.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/chess-vs-stockfish/9da761c2-d773-44c4-870a-1f19937849ae/icon40.webp"
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/chess-vs-stockfish/9da761c2-d773-44c4-870a-1f19937849ae/icon120.webp"
       },
       "configSchema": {
         "fields": {
@@ -321,7 +321,7 @@
     },
     {
       "slug": "grounding-thumbs",
-      "version": "2.7.0",
+      "version": "2.7.1",
       "buildId": "ae435e2f-0360-4b16-b7ee-f61f30a45dce",
       "name": "Grounding Thumbs",
       "description": "A relaxation exercise using multitouch. Place both thumbs on the circles, hold and squeeze, then slowly release to let tension melt away.",
@@ -333,9 +333,9 @@
       "estimatedDuration": 20,
       "assets": {
         "icon": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/icon.webp",
-        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/icon40.webp",
+        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/icon120.webp",
         "icon80": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/icon80.webp",
-        "icon120": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/icon120.webp"
+        "icon40": "https://stellarin-practa-verification.replit.app/assets/practa/grounding-thumbs/ae435e2f-0360-4b16-b7ee-f61f30a45dce/icon40.webp"
       },
       "configSchema": {
         "fields": {
@@ -470,7 +470,7 @@
       ],
       "replitJson": {
         "REPLIT_USER": null,
-        "generatedAt": "2026-03-02T01:18:26.787Z",
+        "generatedAt": "2026-03-05T05:38:11.957Z",
         "REPLIT_USERID": null,
         "REPLIT_DOMAINS": "54999f09-2ef7-49ba-b5bd-07ceabdaaffa-00-1rdt30l231eo5.spock.replit.dev",
         "REPLIT_DEV_DOMAIN": "54999f09-2ef7-49ba-b5bd-07ceabdaaffa-00-1rdt30l231eo5.spock.replit.dev"
